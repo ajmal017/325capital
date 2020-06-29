@@ -1,0 +1,127 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+al	sc.py	/^al = (-5, 8, 0, 15)$/;"	v
+al	screen0.py	/^al = (-2, 3, 0, 10)$/;"	v
+aplots	screen1.py	/^def aplots(df, name, x, y, z, t, al, xlabel, ylabel, l):$/;"	f
+bars	score.py	/^bars = [df1.loc[ticker, x] for x in data]$/;"	v
+bubb	screen0.py	/^def bubb(df, x, y, h, al):$/;"	f
+bubb	screen1.py	/^def bubb(df, x, y, h, al):$/;"	f
+c	screen0.py	/^            c=palette325[experience],$/;"	v
+c	screen0.py	/^        c=palette325[experience],$/;"	v
+chart	screen0.py	/^chart = sns.scatterplot(data=df4, x=x, y=y, hue='325', legend=False)$/;"	v
+chart	screen0.py	/^chart = sns.scatterplot(data=df4, x=x, y=y, hue='325',$/;"	v
+chart	screen0.py	/^chart = sns.stripplot($/;"	v
+color	sc.py	/^            color='grey',$/;"	v
+color	score.py	/^                 color = 'grey',$/;"	v
+contscat	screen0.py	/^def contscat(df, x, y, h, al):$/;"	f
+contscat	screen1.py	/^def contscat(df, x, y, h, al):$/;"	f
+data	score.py	/^data = ['debt_total_mrq', 'cash_mrq']$/;"	v
+data	screen0.py	/^    data=df4,$/;"	v
+decimals	screen0.py	/^        decimals=0,$/;"	v
+df	newsc.py	/^df = getcombinedsheet(sheets)$/;"	v
+df1	sc.py	/^df1 = getasheet(filenames, sheets)$/;"	v
+df1	score.py	/^df1 = getasheet(filenames, sheets)$/;"	v
+df12	screen0.py	/^df12 = getsheets(sheet_name)$/;"	v
+df2	sc.py	/^df2 = df1[include_mask & pipeline_mask & industry_mask]$/;"	v
+df4	screen0.py	/^df4 = df4.join(df12[['last_price', 'ev_to_ebitda_ltm']], rsuffix='_12')$/;"	v
+df4	screen0.py	/^df4 = getsheets(sheet_name)$/;"	v
+dftemp	screen0.py	/^dftemp = df4[xmask]$/;"	v
+dftemp	screen0.py	/^dftemp = dftemp[ymask]$/;"	v
+dpi	screen0.py	/^    dpi=600)$/;"	v
+ebitda	score.py	/^ebitda = df1.loc[ticker, 'ebitda_ltm']$/;"	v
+ebitdaadj	score.py	/^ebitdaadj = ebitda * 1.30$/;"	v
+filenames	sc.py	/^filenames = ["with325.xlsx"]$/;"	v
+filenames	score.py	/^filenames = ["with325.xlsx"]$/;"	v
+fontsize	sc.py	/^            fontsize=5,$/;"	v
+fontweight	screen0.py	/^    fontweight="light")$/;"	v
+fontweight	screen0.py	/^    fontweight="light",$/;"	v
+g	sc.py	/^    g =ax1.scatter(x = df2[x], y = df2[y], c = df2[z].map(huepalette), s = df2[t] * 100)$/;"	v
+g1	score.py	/^    g1 = ax1.bar(x = 1, height = bar, bottom = y_offset, width = width)$/;"	v
+get_key_stats	screen0.py	/^def get_key_stats(tgt):$/;"	f
+get_key_stats	screen1.py	/^def get_key_stats(tgt):$/;"	f
+getasheet	screen0.py	/^def getasheet(filenames,sheets):$/;"	f
+getasheet	screen1.py	/^def getasheet(filenames, sheets):$/;"	f
+getcombinedsheet	screen0.py	/^def getcombinedsheet(filenames):$/;"	f
+getcombinedsheet	screen1.py	/^def getcombinedsheet(filenames):$/;"	f
+getfidelitysheets	screen0.py	/^def getfidelitysheets(filenames):$/;"	f
+getfidelitysheets	screen1.py	/^def getfidelitysheets(filenames):$/;"	f
+getsheets	screen0.py	/^def getsheets(name):$/;"	f
+getsheets	screen1.py	/^def getsheets(name):$/;"	f
+getyahoosheet	screen0.py	/^def getyahoosheet(filenames):$/;"	f
+getyahoosheet	screen1.py	/^def getyahoosheet(filenames):$/;"	f
+ha	score.py	/^                 ha = 'center',$/;"	v
+ha	screen0.py	/^    ha="left")$/;"	v
+height	score.py	/^    height = rect.get_height()$/;"	v
+huepalette	sc.py	/^huepalette = dict(zip(set(df2[z]), itertools.cycle(palette325)))$/;"	v
+industries	sc.py	/^industries = ['IT']$/;"	v
+industry_facets	screen1.py	/^def industry_facets():$/;"	f
+industry_mask	sc.py	/^industry_mask = df1['short_industry'].isin(industries)$/;"	v
+inplace	screen0.py	/^    inplace=True)$/;"	v
+l	sc.py	/^l = True$/;"	v
+legend2	screen0.py	/^legend2 = ax2.legend($/;"	v
+loc	screen0.py	/^    loc="upper right",$/;"	v
+name	sc.py	/^name = 'test'$/;"	v
+new_categories	screen0.py	/^    new_categories=['Reengage', 'Recent', 'Current'],$/;"	v
+palette	screen0.py	/^    palette=[$/;"	v
+palette325	screen0.py	/^palette325 = [$/;"	v
+palette325	screen1.py	/^palette325 = [$/;"	v
+pipeline_mask	sc.py	/^pipeline_mask = df1['325'] > 0$/;"	v
+position	screen0.py	/^    position=($/;"	v
+pri	screen0.py	/^pri = df4[df4['325_experience'].isin(['Current', 'Recent'])]$/;"	v
+pri	screen0.py	/^pri = pri[screen_columns]$/;"	v
+removals	screen0.py	/^    removals=[$/;"	v
+rotation	screen0.py	/^    rotation="horizontal",$/;"	v
+s	screen0.py	/^            s=dftemp.index[i],$/;"	v
+s	screen0.py	/^        s=dftemp.index[i],$/;"	v
+scat	screen0.py	/^def scat(df, x, y, h, al):$/;"	f
+scat	screen1.py	/^def scat(df, x, y, h, al):$/;"	f
+scatter1	screen0.py	/^    scatter1 = ax1.scatter($/;"	v
+scatter2	screen0.py	/^        scatter2 = ax2.scatter($/;"	v
+screen_columns	screen0.py	/^screen_columns = [$/;"	v
+sec	screen0.py	/^sec = pd.concat([sec4, sec12])$/;"	v
+sec12	screen0.py	/^sec12 = df12[['short_sector', 'ev', 'ebitda_ltm',$/;"	v
+sec4	screen0.py	/^sec4 = df4[['short_sector', 'ev', 'ebitda_ltm', 'revenue_ltm',$/;"	v
+sheet_name	screen0.py	/^sheet_name = "Screen Dec 2019"$/;"	v
+sheet_name	screen0.py	/^sheet_name = "Screen Mar 2020"$/;"	v
+sheets	newsc.py	/^sheets = ["combined yahoo and fidelity.xlsx"]$/;"	v
+sheets	sc.py	/^sheets = {"Sheet1": [0, "A:CR", 2179]}$/;"	v
+sheets	score.py	/^sheets = {"Sheet1": [0, "A:CR", 2179]}$/;"	v
+symbol	screen0.py	/^        symbol="%"))$/;"	v
+t	sc.py	/^t = 'revenue_growth_yoy'$/;"	v
+ticker	score.py	/^ticker = 'SSYS'$/;"	v
+title	screen0.py	/^    title="Rev. Growth (LTM)")$/;"	v
+twoplots	screen1.py	/^def twoplots(df, name, x, y, z, t, al, xlabel, ylabel, l):$/;"	f
+va	score.py	/^                 va = 'bottom')$/;"	v
+weight	sc.py	/^            weight='light')$/;"	v
+weight	screen0.py	/^            weight='light')$/;"	v
+width	score.py	/^width = 0.55$/;"	v
+x	newsc.py	/^x = 'net_debt_to_ebtida_ltm'$/;"	v
+x	sc.py	/^x = 'net_debt_to_ebitda_ltm'$/;"	v
+x	screen0.py	/^    x=x,$/;"	v
+x	screen0.py	/^x = '325_experience'$/;"	v
+x	screen0.py	/^x = 'ev_to_ebitda_ltm'$/;"	v
+x	screen0.py	/^x = 'net_debt_to_ebitda_ltm'$/;"	v
+xlabel	sc.py	/^xlabel = 'Net Debt to EBITDA (LTM)'$/;"	v
+xmask	screen0.py	/^xmask = (df4[x] > al[0]) & (df4[x] < al[1])$/;"	v
+xmax	screen0.py	/^        xmax=1,$/;"	v
+xoffset	screen0.py	/^    xoffset = 0$/;"	v
+xy	score.py	/^                 xy = (rect.get_x() + rect.get_width() \/ 2, height \/ 2),$/;"	v
+xy	screen0.py	/^            xy=(dftemp[x][i] + xoffset, dftemp[y][i]),$/;"	v
+xy	screen0.py	/^        xy=(dftemp[x][i] + xoffset, dftemp[y][i]),$/;"	v
+xytext	score.py	/^                 xytext = (0,3), textcoords = "offset points",$/;"	v
+y	newsc.py	/^y = 'ev_to_ebitda_ltm'$/;"	v
+y	sc.py	/^y = 'ev_to_ebitda_ltm'$/;"	v
+y	screen0.py	/^    y=y,$/;"	v
+y	screen0.py	/^y = 'ev_to_ebitda_ltm'$/;"	v
+y	screen0.py	/^y = 'net_debt_to_ebitda_ltm'$/;"	v
+y	screen0.py	/^y = 'ocf_ltm_to_ebitda_ltm'$/;"	v
+y	screen0.py	/^y = 'revenue_growth_ltm'$/;"	v
+y	screen0.py	/^y = 'sgm_ltm_minus_sgm_low'$/;"	v
+y_offset	score.py	/^y_offset = np.zeros(1)$/;"	v
+ylabel	sc.py	/^ylabel = 'EV to EBITDA (LTM)'$/;"	v
+ymask	screen0.py	/^ymask = (dftemp[y] > al[2]) & (dftemp[y] < al[3])$/;"	v
+z	sc.py	/^z = 'short_industry'$/;"	v

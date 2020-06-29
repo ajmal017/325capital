@@ -1309,20 +1309,29 @@ def get_fscore(tickers):
             df['capex_to_revenue_avg_3'] = (all.capitalExpenditure[three] / all.revenue[three]).mean() # cf, inc
             df['float'] = pd.to_numeric(key_stats.float[ticker])
 
-            df.set_index('symbol', inplace = True)
+            # Put in the past experience flags
+            try:
+                df['sector'] = ttfdf.sector[ticker]
+                df['business'] = ttfdf.business[ticker]
+                df['short_sector'] = ttfdf.short_sector[ticker]
+                df['tamale_status'] = ttfdf.tamale_status[ticker]
+                df['last_work'] = ttfdf.last_work[ticker]
+                df['sagard_peers'] = pd.to_numeric(ttfdf.sagard_peers[ticker])
+            except:
+                df['sector'] = profile.sector[0]
+                df['business'] = profile.industry[0]
+                df['short_sector'] = profile.sector[0]
+                df['tamale_status'] = 'N/A'
+                df['last_work'] =  'N/A'
+                df['sagard_peers'] = 0
 
-            print(df)
+            df.set_index('symbol', inplace = True)
 
             # Get tests
             df = run_tests(df)
 
-            print('tests: ', df)
-
             # Get earnings power elements
             df = add_ep(df)
-
-            print('ep added ', df)
-
 
             returndf = returndf.append(df)
             print('Got and appended {}'.format(ticker))
