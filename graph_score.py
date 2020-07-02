@@ -15,10 +15,21 @@ plt.style.use('325.mplstyle')
 # Which ticker you want the score for
 ticker = sys.argv[1]
 
-filenames = ['fscores.xlsx']
-sheets = {'Sheet1':[0, 'A:ED', 1609]}
-#df1 = getasheet(filenames,sheets,'symbol')
-df1 = get_fscore(ticker)
+# Put in an optional flag to pull live or not (TRUE or FALSE)
+live = int(sys.argv[2])
+
+print('ticker is ', ticker, 'live is ', live)
+print('types are: ', type(ticker), type(live))
+
+# If it is live, pull live data, otherwise use fscores. Note that fscores may have fresher tests
+if bool(live):
+    print('live is ', bool(live), 'so get live data')
+    df1 = get_fscore(ticker)
+else:
+    filenames = ['fscores.xlsx']
+    sheets = {'Sheet1':[0, 'A:EG', 1609]}
+    df1 = getasheet(filenames, sheets, 'symbol')
+
 categories = ['sector', 'business', 'short_sector', 'tamale_status', 'last_work']
 for category in categories:
     df1[category] = df1[category].astype('category')

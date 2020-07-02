@@ -17,7 +17,7 @@ pd.set_option('display.max_seq_items', 200)
 # It also uses Fundamental Analysis toolkit so have the api_key ready
 api_key = "c350f6f5a4396d349ee4bbacde3d5999"
 filenames = ['fscores.xlsx']
-sheets = {'Sheet1':[0, 'A:ED', 1609]}
+sheets = {'Sheet1':[0, 'A:EG', 1609]}
 d = getasheet(filenames, sheets, 'symbol')
 
 # Split out the most wanted sectors
@@ -55,7 +55,7 @@ sbm_tests = [
     'roic_high_5_test',
     'dividend_growth_3_test',
     'gm_ltm_test',
-    'em_margin_ltm_test',
+    'ebitda_margin_ltm_test',
     'sgam_ltm_test',
     'revenue_growth_3_test',
     'revenue_growth_max_test',
@@ -92,10 +92,53 @@ experience_tests = [
         'last_work',
         'sagard_peers'
         ]
-# screen for wanted spaces
+
+
 b = d[d.short_sector.isin(short_sector_wanted)].copy()
 b = b[~b.sector.isin(sector_not_wanted)].copy()
 
+live_tests = {
+        'ev_to_ebitda_ltm_test' : 8, # less than June 2020 median is 7.19. High qartile is 12.33, low quartile is -5.31
+        'pe_to_mid_cycle_ratio_test': (b.pe / b.pe_mid_cycle).quantile(q = 0.5),  # less than  June 2020 low quartile is .533632, high q is 1.49
+        'price_change_52_test': b.price_change_52.quantile(q = 0.5), # less than June 2020 median, low quartile is -.3875, high q is .182
+        'price_change_last_Q_test': b.price_change_last_Q.quantile(q = 0.5), # less than  June 2020 low q, median is .2952, high q is .596285
+
+        'roic_high_5_test': b.roic_high_5.quantile(q = .75), # greater than June 2020 top quartile
+        'gm_ltm_test' : b.gm_ltm.quantile(q = 0.5), # greater than  June 2020 top quartile,.555943 median = .345134
+        'dividend_growth_3_test': b.dividend_growth_3.quantile(q = 0.5), # greater than June 2020 median Top quartile is 0.011755
+        'ebitda_margin_ltm_test': b.ebitda_margin_ltm.quantile(q = .75), # greater than June 2020 Top quartile, median is .0659
+        'sgam_ltm_test': b.sgam_ltm.quantile(q = 0.5), # greater than  June 2020 median, low quartile = .108991 high q = .439870
+        'revenue_growth_3_test': b.revenue_growth_3.quantile(q = 0.5), # greater than  June 2020 median. Top quartile = .450341
+        'revenue_growth_max_test': .14, # greater than original Sagard test
+        'market_leader_test' : 1, # greater than market leader score will be a year if so or 0 if NOT
+
+        'capex_to_revenue_avg_3_test': b.capex_to_revenue_avg_3.quantile(q = 0.5), # greater than June 2020 top quartile, median = .028490
+        'roic_change_from_ic_test' : 0, # less than
+        'surplus_cash_as_percent_of_price_test':b.surplus_cash_as_percent_of_price.quantile(q = .75), # greater than June 2020 top quartile is .123063, median is -.113380
+        'additional_debt_from_ebitda_multiple_per_share_test' : 0, # greater than
+        'icf_avg_3_to_fcf_test': 1, # greater than
+        'icf_to_ocf_test': ( b.icf_ltm / b.ocf_ltm ).quantile(q = .75), # greater than  June 2020 high quartile .142, median is -.274591
+        'equity_sold_test': b.equity_sold.quantile(q = .75), # greater than June 2020 top quartile
+        'financing_acquired_test': b.financing_acquired.quantile(q = 0.5), # greater than June 2020 median
+        'capex_to_ocf_test': b.capex_to_ocf.quantile(q = 0.5), # greater than June 2020 median.  High quartile is .396726
+
+        'net_debt_to_ebitda_ltm_test': 3, # greater than original Sagard test. current June 2020 median is 1.975
+        'ebitda_to_interest_coverage_test': b.ebitda_to_interest_coverage.quantile(q = 0.5), # less than June 2020 median
+
+        'short_interest_ratio_test': b.short_interest_ratio.quantile(q = 0.5), # greater than June 2020 top quartile 7.26, median = 3.92
+        'insider_ownership_total_test': b.insider_ownership_total.quantile(q = .75), # greater than June 2020 top quartile .182050, median = .0607
+        'insiders_can_get_out_quickly_test': (b.insider_ownership_total / b.adv_as_percent_so ).quantile(q = .75), # greater than June 2020 top quartile
+        'adv_avg_months_3_test': b.adv_avg_months_3.quantile(q = 0.5), # less than June 2020 median
+        'float_test': b.float.quantile(q = 0.25), # less than June 2020 lowest quartile
+        'insiders_selling_ltm_test': b.insiders_selling_ltm.quantile(q = 0.5), # less than June 2020 median; lowest quartile is 0
+
+        'price_opp_at_em_high_test' : 1.3, # greater than June 2020 median is 0.909
+        'price_opp_at_sgam_low_test': 1.2, # greater than June 2020 median is 0.9837
+        'price_opp_at_roic_high_test': 1.2, # greater than June 2020 median is 1.167, high quartile is 1.5
+        }
+
+
+# screen for wanted spaces
 # screeners for 235 actives
 actives = b[b.last_work == 'Active'].copy()
 

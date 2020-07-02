@@ -1154,6 +1154,9 @@ def get_fscore(tickers):
             all['fcfe'] = all.netCashProvidedByOperatingActivities + all.interestExpense + all.capitalExpenditure # cf
             all['fcfe_to_marketcap'] = all.fcfe / all.marketCapitalization # cf, bs
 
+            # convert the dataframe to correct dtypes (let pandas infer correct conversion)
+            all = all.convert_dtypes()
+
             benchmarks = {
                     'debt_to_ebitda_ltm_benchmark' : 3,
                     }
@@ -1229,7 +1232,7 @@ def get_fscore(tickers):
                                         )
             # ROIC section
             df['tax_rate'] = all.incomeTaxExpense[now] / all.incomeBeforeTax[now] # inc
-            all.roic = all.operatingIncome * (1 - df.tax_rate) / all.investedCapital # inc, bs 062720 Changed to after tax
+            all.roic = all.operatingIncome * (1 - df.tax_rate[0]) / all.investedCapital # inc, bs 062720 Changed to after tax
             df['roic_high_5'] = all.roic[five].max() # km
             df['roic_avg_5'] = all.roic[five].median() # km
             df['roic_ago_5'] = all.roic.last('5Y')[0] # km
@@ -1331,7 +1334,7 @@ def get_fscore(tickers):
             df = run_tests(df)
 
             # Get earnings power elements
-            df = add_ep(df)
+            df = run_eps(df, inc = inc, bs = bs, cf = cf)
 
             returndf = returndf.append(df)
             print('Got and appended {}'.format(ticker))
@@ -1525,7 +1528,7 @@ def get_ep(*, ticker, inc = pd.DataFrame(), bs = pd.DataFrame(), cf = pd.DataFra
 
     return forecast, inputs
 
-def add_ep(d_in = pd.DataFrame(), ebitda_scenario = []):
+def run_eps(d_in, inc = pd.DataFrame(), bs = pd.DataFrame(), cf = pd.DataFrame(), ebitda_scenario = []):
     # This function takes an fscore dataframe and adds the ep scores to it
     # used to update a dataframe with new scores on the fly
     # Assumes dataframe has a) tickers as its index
@@ -1540,7 +1543,7 @@ def add_ep(d_in = pd.DataFrame(), ebitda_scenario = []):
     for i in d.index:
         print('working on ', i)
         try:
-            forecast, inputs = get_ep(ticker = i, ebitda_scenario = ebitda_scenario)
+            forecast, inputs = get_ep(ticker = i, inc = inc, bs = bs, cf = cf, ebitda_scenario = ebitda_scenario)
             d.loc[i,'sell_price'] = forecast.T.value_per_share[5]
             d.loc[i,'ep_irr'] = ((d.loc[i,'sell_price'] /d.loc[i,'price']) ** ( 1 / 5)) -1
             d.loc[i,'buy_price_ten_percent'] =d.loc[i,'sell_price'] / ((1 + inputs.ep_discount[0]) ** 5)
@@ -1552,7 +1555,7 @@ def add_ep(d_in = pd.DataFrame(), ebitda_scenario = []):
 
         # Run the down scenarios and store the values
         try:
-            forecast, inputs = get_ep(ticker = i, revenue_scenario = down, ebitda_scenario = ebitda_scenario)
+            forecast, inputs = get_ep(ticker = i, inc = inc, bs = bs, cf = cf, revenue_scenario = down, ebitda_scenario = ebitda_scenario)
             d.loc[i,'sell_price_down'] = forecast.T.value_per_share[5]
             d.loc[i,'ep_irr_down'] = ((d.loc[i,'sell_price_down'] /d.loc[i,'price']) ** ( 1 / 5)) -1
             d.loc[i,'buy_price_ten_percent_down'] =d.loc[i,'sell_price_down'] / ((1 + inputs.ep_discount[0]) ** 5)
@@ -1595,7 +1598,7 @@ def add_ep(d_in = pd.DataFrame(), ebitda_scenario = []):
         # sector based covid19 scenario from above
         ep_sector = pd.DataFrame()
         try:
-            forecast, inputs = get_ep(ticker = i, revenue_scenario = rscens[d.loc[i, 'short_sector']], ebitda_scenario = ebitda_scenario)
+            forecast, inputs = get_ep(ticker = i, inc = inc, bs = bs, cf = cf, revenue_scenario = rscens[d.loc[i, 'short_sector']], ebitda_scenario = ebitda_scenario)
             d.loc[i,'sell_price_sector'] = forecast.T.value_per_share[5]
             d.loc[i,'ep_irr_sector'] = ((d.loc[i,'sell_price_sector'] /d.loc[i,'price']) ** ( 1 / 5)) -1
             d.loc[i,'buy_price_ten_percent_sector'] =d.loc[i,'sell_price_sector'] / ((1 + inputs.ep_discount[0]) ** 5)
@@ -1607,7 +1610,7 @@ def add_ep(d_in = pd.DataFrame(), ebitda_scenario = []):
 
     return d
 
-def run_tests(df_in = pd.DataFrame()):
+def run_tests(df_in = pd.DataFrame(), tests = []):
     # This function takes a datafraame of scores and runs tests on it.
     # And returns the updated dataframe with new tests run
     # It assumes the input dataframe has all the right data in it already
@@ -1619,46 +1622,46 @@ def run_tests(df_in = pd.DataFrame()):
 
     # tests
     # Set up some benchmarks to compare for scoring based on Russell 2000 medians or top quartiles
-    tests = {
-            'ev_to_ebitda_ltm_test' : 8, # June 2020 median is 7.19. High qartile is 12.33, low quartile is -5.31
-            'pe_to_mid_cycle_ratio_test': .85, # June 2020 low quartile is .533632, high q is 1.49
-            'price_change_52_test': -.14725, #June 2020 median, low quartile is -.3875, high q is .182
-            'price_change_last_Q_test': .051763, # June 2020 low q, median is .2952, high q is .596285
+    if len(tests) == 0:
+        tests = {
+            'ev_to_ebitda_ltm_test' : 8, # less than June 2020 median is 7.19. High qartile is 12.33, low quartile is -5.31
+            'pe_to_mid_cycle_ratio_test': .85,  # less than  June 2020 low quartile is .533632, high q is 1.49
+            'price_change_52_test': -.14725, # less than June 2020 median, low quartile is -.3875, high q is .182
+            'price_change_last_Q_test': .051763, # less than  June 2020 low q, median is .2952, high q is .596285
 
-            'roic_high_5_test': .080157, # June 2020 top quartile
-            'gm_ltm_test' : .345134, # June 2020 top quartile,.555943 median = .345134
-            'dividend_growth_3_test': .05, # June 2020 median Top quartile is 0.011755
-            'ebitda_margin_ltm_test': .130, # June 2020 Top quartile, median is .0659
-            'sgam_ltm_test': .217179, # June 2020 median, low quartile = .108991 high q = .439870
-            'revenue_growth_3_test': .124, # June 2020 median. Top quartile = .450341
-            'revenue_growth_max_test': .14, # original Sagard test
-            'market_leader_test' : 1, # market leader score will be a year if so or 0 if NOT
+            'roic_high_5_test': .080157, # greater than June 2020 top quartile
+            'gm_ltm_test' : .345134, # greater than  June 2020 top quartile,.555943 median = .345134
+            'dividend_growth_3_test': .05, # greater than June 2020 median Top quartile is 0.011755
+            'ebitda_margin_ltm_test': .130, # greater than June 2020 Top quartile, median is .0659
+            'sgam_ltm_test': .217179, # greater than  June 2020 median, low quartile = .108991 high q = .439870
+            'revenue_growth_3_test': .124, # greater than  June 2020 median. Top quartile = .450341
+            'revenue_growth_max_test': .14, # greater than original Sagard test
+            'market_leader_test' : 1, # greater than market leader score will be a year if so or 0 if NOT
 
-            'capex_to_revenue_avg_3_test': .009, # June 2020 top quartile, median = .028490
-            'roic_change_from_ic_test' : 0,
-            'surplus_cash_as_percent_of_price_test':-.1133, # June 2020 top quartile is .123063, median is -.113380
-            'additional_debt_from_ebitda_multiple_per_share_test' : 0,
-            'icf_avg_3_to_fcf_test': 1,
-            'icf_to_ocf_test': -.274591, # June 2020 high quartile .142, median is -.274591
-            'equity_sold_test': 2.55, # June 2020 top quartile
-            'financing_acquired_test': 42, # June 2020 median
-            'capex_to_ocf_test': .099408, # June 2020 median.  High quartile is .396726
+            'capex_to_revenue_avg_3_test': .009, # greater than June 2020 top quartile, median = .028490
+            'roic_change_from_ic_test' : 0, # less than
+            'surplus_cash_as_percent_of_price_test':-.1133, # greater than June 2020 top quartile is .123063, median is -.113380
+            'additional_debt_from_ebitda_multiple_per_share_test' : 0, # greater than
+            'icf_avg_3_to_fcf_test': 1, # greater than
+            'icf_to_ocf_test': -.274591, # greater than  June 2020 high quartile .142, median is -.274591
+            'equity_sold_test': 2.55, # greater than June 2020 top quartile
+            'financing_acquired_test': 42, # greater than June 2020 median
+            'capex_to_ocf_test': .099408, # greater than June 2020 median.  High quartile is .396726
 
-            'net_debt_to_ebitda_ltm_test': 3, # original Sagard test. current June 2020 median is 1.975
-            'ebitda_to_interest_coverage_test': 3.4, # June 2020 median
+            'net_debt_to_ebitda_ltm_test': 3, # greater than original Sagard test. current June 2020 median is 1.975
+            'ebitda_to_interest_coverage_test': 3.4, # less than June 2020 median
 
-            'short_interest_ratio_test': 7.26, # June 2020 top quartile 7.26, median = 3.92
-            'insider_ownership_total_test': .182050, # June 2020 top quartile .182050, median = .0607
-            'insiders_can_get_out_quickly_test': 19.658, # June 2020 top quartile
-            'adv_avg_months_3_test': .376, # June 2020 median
-            'float_test': 14.31, # June 2020 lowest quartile
-            'insiders_selling_ltm_test': .035, # June 2020 median; lowest quartile is 0
+            'short_interest_ratio_test': 7.26, # greater than June 2020 top quartile 7.26, median = 3.92
+            'insider_ownership_total_test': .182050, # greater than June 2020 top quartile .182050, median = .0607
+            'insiders_can_get_out_quickly_test': 19.658, # greater than June 2020 top quartile
+            'adv_avg_months_3_test': .376, # less than June 2020 median
+            'float_test': 14.31, # less than June 2020 lowest quartile
+            'insiders_selling_ltm_test': .035, # less than June 2020 median; lowest quartile is 0
 
-            'price_opp_at_em_high_test' : 1.3, # June 2020 median is 0.909
-            'price_opp_at_sgam_low_test': 1.2, # June 2020 median is 0.9837
-            'price_opp_at_roic_high_test': 1.2, # June 2020 median is 1.167, high quartile is 1.5
+            'price_opp_at_em_high_test' : 1.3, # greater than June 2020 median is 0.909
+            'price_opp_at_sgam_low_test': 1.2, # greater than June 2020 median is 0.9837
+            'price_opp_at_roic_high_test': 1.2, # greater than June 2020 median is 1.167, high quartile is 1.5
             }
-
 
     ttfdf = get_master_screen_sheets('Screen Mar 2020')
 

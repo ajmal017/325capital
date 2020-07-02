@@ -1,0 +1,13 @@
+# Ignore all image directory files
+images/
+
+# Ignore old excels
+old_excels/
+
+# Ignore all images that are Pngs or PDFs
+*.pdf
+
+*.png
+
+# Ignore pycache directory
+/__pycache__
