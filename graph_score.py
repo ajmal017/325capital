@@ -15,11 +15,11 @@ plt.style.use('325.mplstyle')
 # Which ticker you want the score for
 ticker = sys.argv[1]
 
-# Put in an optional flag to pull live or not (TRUE or FALSE)
-live = int(sys.argv[2])
-
-print('ticker is ', ticker, 'live is ', live)
-print('types are: ', type(ticker), type(live))
+# Put in an optional flag to pull live.  If not flag, then don't
+try:
+    live = int(sys.argv[2])
+except:
+    live = 0
 
 # If it is live, pull live data, otherwise use fscores. Note that fscores may have fresher tests
 if bool(live):
@@ -27,7 +27,7 @@ if bool(live):
     df1 = get_fscore(ticker)
 else:
     filenames = ['fscores.xlsx']
-    sheets = {'Sheet1':[0, 'A:EG', 1609]}
+    sheets = {'Sheet1':[0, 'A:EG', 1615]}
     df1 = getasheet(filenames, sheets, 'symbol')
 
 categories = ['sector', 'business', 'short_sector', 'tamale_status', 'last_work']
@@ -106,11 +106,6 @@ values = [adv * 1000, adv/so * 100, adv/so*market_cap, 5/market_cap*100, 12.5/ma
 title = "Trading Stats"
 series_bar(ax, data_labels, values,title, False)
 
-plt.savefig("{}.pdf".format(ticker), dpi = 300, bbox_inches = 'tight')
+plt.savefig("{}.png".format(ticker), dpi = 300, bbox_inches = 'tight')
+fig.tight_layout()
 plt.show()
-
-
-
-
-
-
