@@ -16,10 +16,8 @@ pd.set_option('display.max_seq_items', 200)
 # This sheet is populated using build_fscores_excel.py
 # It also uses Fundamental Analysis toolkit so have the api_key ready
 api_key = "c350f6f5a4396d349ee4bbacde3d5999"
-filenames = ['fscores.xlsx']
-sheets = {'Sheet1':[0, 'A:EG', 1615]}
-d = getasheet(filenames, sheets, 'symbol')
-
+d = pd.read_excel('fscores.xlsx')
+d = d.set_index('symbol')
 # Get teh revenues for a series of auto part retailers for 10 years or more
 auto_retailers = ['AAP', 'GPC', 'AZO', 'ORLY']
 auto_parts = ['MPAA', 'THRM', 'DORM', 'SMP']
