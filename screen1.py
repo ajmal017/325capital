@@ -542,7 +542,6 @@ def n_stacked_bar(ax, data_labels, values, title, percent, segment_labels = []):
 
 def compare_series_bar(ax, data_labels, value_list, title, percent):
 
-    import math
 
     xlocs = np.arange(len(data_labels))
     number_of_series = len(value_list)
@@ -552,7 +551,7 @@ def compare_series_bar(ax, data_labels, value_list, title, percent):
 
     for j, values in enumerate(value_list):
         for i,v in enumerate(values):
-            if math.isnan(v):
+            if(not isinstance(v, float)):
                 values[i] = 0
 
         x_locations = xlocs + (j * width)
@@ -588,9 +587,8 @@ def compare_series_bar(ax, data_labels, value_list, title, percent):
 
 def series_bar(ax, data_labels, values, title, percent):
 
-    import math
     for i,v in enumerate(values):
-        if math.isnan(v):
+        if (not isinstance(v, float)):
             values[i] = 0
 
     high = max(max(values), percent*0.25) * 1.35
@@ -602,7 +600,7 @@ def series_bar(ax, data_labels, values, title, percent):
     for i,rect in enumerate(g):
         height = rect.get_height()
         width = rect.get_width()
-        label_fix = abs(high-low)/24
+        label_fix = abs(high-low)/ 50
 
         if values[i] < 0:
             label_fix = -label_fix
@@ -628,9 +626,8 @@ def series_bar(ax, data_labels, values, title, percent):
 
 def series_line(*, ax, data_label, values, title, percent):
 
-    import math
     for i,v in enumerate(values):
-        if math.isnan(v):
+        if (not isinstance(v, float)):
             values[i] = 0
 
     high = max(max(values), percent*0.25) * 1.35
@@ -1022,9 +1019,11 @@ def get_fscore(tickers):
     api_key = "c350f6f5a4396d349ee4bbacde3d5999"
 
     # Read a 325 Screen Master sheet to get the 325 Capital scores
+    # Changed this to read fscores becuase it may not be more uptodate on status 7/6/20
     # change this to read the fscores sheet becuase it should be quicker
     # ttf is 't'hree 't'wenty 'f'ive
-    ttfdf = get_master_screen_sheets('Screen Mar 2020')
+    ttfdf = pd.read_excel('fscores.xlsx')
+    ttfdf = ttfdf.set_index('symbol')
 
     # Get a names translation from Yahoo to database_titles
     filenames = ["yahoo_to_database_titles.xlsx"]
@@ -1898,7 +1897,8 @@ def run_tests(df_in = pd.DataFrame(), tests = []):
                     'ev_to_ebitda_ltm_test',
                     'price_change_52_test'
                     ]
-            df.loc[i,'VALUATION_test'] = sum(df.loc[i,valuation_tests]) / len(valuation_tests)
+            # When getting average, fill NAs with 0
+            df.loc[i,'VALUATION_test'] = sum(df.loc[i,valuation_tests].fillna(0)) / len(valuation_tests)
 
             # superior business model tests
             df.loc[i,'roic_high_5_test'] = df.loc[i,'roic_high_5'] >= tests['roic_high_5_test']
@@ -1925,7 +1925,7 @@ def run_tests(df_in = pd.DataFrame(), tests = []):
                 'revenue_growth_max_test',
                 'market_leader_test'
                 ]
-            df.loc[i,'SBM_test'] = sum(df.loc[i,sbm_tests]) / len(sbm_tests)
+            df.loc[i,'SBM_test'] = sum(df.loc[i,sbm_tests].fillna(0)) / len(sbm_tests)
 
             # poor use of cash tests / watch-outs (lower is better)
             df.loc[i,'capex_to_revenue_avg_3_test'] = df.loc[i,'capex_to_revenue_avg_3'] >= tests['capex_to_revenue_avg_3_test']
@@ -1949,7 +1949,7 @@ def run_tests(df_in = pd.DataFrame(), tests = []):
                 'financing_acquired_test',
                 'capex_to_ocf_test'
                 ]
-            df.loc[i,'PUOC_test'] = sum(df.loc[i,puoc_tests]) / len(puoc_tests)
+            df.loc[i,'PUOC_test'] = sum(df.loc[i,puoc_tests].fillna(0)) / len(puoc_tests)
 
             # balance sheet risk tests (lower is better)
             df.loc[i,'icf_and_ocf_negative'] = (df.loc[i,'icf_ltm'] < 0) & (df.loc[i,'ocf_ltm'] < 0)
@@ -1961,7 +1961,7 @@ def run_tests(df_in = pd.DataFrame(), tests = []):
                 'net_debt_to_ebitda_ltm_test',
                 'ebitda_to_interest_coverage_test',
                 ]
-            df.loc[i,'BS_risks_test'] = sum(df.loc[i,bs_risks_tests]) / len(bs_risks_tests)
+            df.loc[i,'BS_risks_test'] = sum(df.loc[i,bs_risks_tests].fillna(0)) / len(bs_risks_tests)
 
             # trading issues tests (lower is better)
             df.loc[i,'short_interest_ratio_test'] = df.loc[i,'short_interest_ratio'] >= tests['short_interest_ratio_test']
@@ -1979,7 +1979,7 @@ def run_tests(df_in = pd.DataFrame(), tests = []):
                 'float_test',
                 'insiders_selling_ltm_test'
                 ]
-            df.loc[i,'TRADE_test'] = sum(df.loc[i,trade_tests]) / len(trade_tests)
+            df.loc[i,'TRADE_test'] = sum(df.loc[i,trade_tests].fillna(0)) / len(trade_tests)
 
             # performance improvement opp tests
             df.loc[i,'price_opp_at_em_high_test'] = df.loc[i,'price_opp_at_em_high'] >= tests['price_opp_at_em_high_test']
@@ -1990,7 +1990,7 @@ def run_tests(df_in = pd.DataFrame(), tests = []):
                 'price_opp_at_sgam_low_test',
                 'price_opp_at_em_high_test',
                 ]
-            df.loc[i,'PI_test'] = sum(df.loc[i,pi_tests]) / len(pi_tests)
+            df.loc[i,'PI_test'] = sum(df.loc[i,pi_tests].fillna(0)) / len(pi_tests)
         except:
             print('Cant run tests on input dataframe, check the dataframe and try again')
             return None

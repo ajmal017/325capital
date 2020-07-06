@@ -21,13 +21,16 @@ try:
 except:
     live = 0
 
+d = pd.read_excel('fscores.xlsx')
+d = d.set_index('symbol')
 # If it is live, pull live data, otherwise use fscores. Note that fscores may have fresher tests
 if bool(live):
     print('live is ', bool(live), 'so get live data')
     df1 = get_fscore(ticker)
+    d.update(df1)
+    d.to_excel('fscores.xlsx')
 else:
-    df1 = pd.read_excel('fscores.xlsx')
-    df1 = df1.set_index('symbol')
+    df1 = d
 
 categories = ['sector', 'business', 'short_sector', 'tamale_status', 'last_work']
 for category in categories:
@@ -78,7 +81,7 @@ ax.annotate(xy = (1.5, max(values) * 1.2), s = "ratios of improvement to current
 # Second Row, Third Column
 ax = fig.add_subplot(gs[1,2])
 data = ['ep_today_sector', 'buy_price_ten_percent', 'buy_price_ten_percent_sector']
-title = "EP price today and buy prices. \n status = {}, market leader ={}".format(df1.loc[ticker,'last_work'], df1.loc[ticker, 'market_leader_test'])
+title = "EP price today and buy prices. \n status = {}, market leader ={}".format(df1.loc[ticker,'tamale_status'], df1.loc[ticker, 'market_leader_test'])
 values = [df1.loc[ticker,i] for i in data]
 series_bar(ax, data, values, title, False)
 
@@ -106,5 +109,4 @@ title = "Trading Stats"
 series_bar(ax, data_labels, values,title, False)
 
 plt.savefig("{}.png".format(ticker), dpi = 300, bbox_inches = 'tight')
-fig.tight_layout()
 plt.show()

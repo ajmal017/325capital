@@ -3,14 +3,17 @@ images/
 
 # Ignore old excels
 old_excels/
+#
+# Ignore pycache directory
+__pycache__/
+
+# Ignore pyc files
+*.pyc
 
 # Ignore all images that are Pngs or PDFs
 *.pdf
 
 *.png
-
-# Ignore pycache directory
-__pycache__/
 
 # ignore the log file fscores building produces
 *.log
