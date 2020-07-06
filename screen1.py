@@ -602,7 +602,8 @@ def series_bar(ax, data_labels, values, title, percent):
     for i,rect in enumerate(g):
         height = rect.get_height()
         width = rect.get_width()
-        label_fix = abs(high-low)/22
+        label_fix = abs(high-low)/24
+
         if values[i] < 0:
             label_fix = -label_fix
         if percent:
