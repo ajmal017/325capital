@@ -11,3 +11,6 @@ old_excels/
 
 # Ignore pycache directory
 __pycache__/
+
+# ignore the log file fscores building produces
+*.log
