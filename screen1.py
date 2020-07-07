@@ -428,6 +428,8 @@ def get_yahoo_labels(data):
     return data_labels
 
 def category_bar(ax, data_labels, values, title):
+    # This function creates bars even when variables are not continuous
+    # eg. they are defined as categories in the dataframe
 
     xlocs = np.arange(len(data_labels))
     g = ax.scatter(xlocs, values)
@@ -438,6 +440,8 @@ def category_bar(ax, data_labels, values, title):
     return ax
 
 def n_stacked_bar(ax, data_labels, values, title, percent, segment_labels = []):
+# This is a New stacked bar that puts data labels in the right place
+# And also puts in the segment labels on the last bar
 
     import math
 
@@ -541,7 +545,8 @@ def n_stacked_bar(ax, data_labels, values, title, percent, segment_labels = []):
     return ax
 
 def compare_series_bar(ax, data_labels, value_list, title, percent):
-
+# This creates a plot of side by side bars with different colors and
+# labels the tops
 
     xlocs = np.arange(len(data_labels))
     number_of_series = len(value_list)
@@ -551,7 +556,7 @@ def compare_series_bar(ax, data_labels, value_list, title, percent):
 
     for j, values in enumerate(value_list):
         for i,v in enumerate(values):
-            if(not isinstance(v, float)):
+            if(not isinstance(v, float)) & (not isinstance(v, int)):
                 values[i] = 0
 
         x_locations = xlocs + (j * width)
@@ -560,7 +565,7 @@ def compare_series_bar(ax, data_labels, value_list, title, percent):
         for i,rect in enumerate(g):
             height = rect.get_height()
             width = rect.get_width()
-            label_fix = abs(high-low)/22
+            label_fix = abs(high-low)/50
             if values[i] < 0:
                 label_fix = -label_fix
             if percent:
@@ -586,6 +591,7 @@ def compare_series_bar(ax, data_labels, value_list, title, percent):
 
 
 def series_bar(ax, data_labels, values, title, percent):
+    # This function plots a simple series with the labels on each bar
 
     for i,v in enumerate(values):
         if (not isinstance(v, float)):
@@ -625,6 +631,8 @@ def series_bar(ax, data_labels, values, title, percent):
     return ax
 
 def series_line(*, ax, data_label, values, title, percent):
+    # This function creates a line graph with the values
+    # plotted along each line
 
     for i,v in enumerate(values):
         if (not isinstance(v, float)):
@@ -668,6 +676,8 @@ def series_line(*, ax, data_label, values, title, percent):
     return ax
 
 def stacked_bar(ax,x, data_labels,values,title):
+    # This is the old stacked bar without segment values
+    # written into the last bar
 
     import math
 
@@ -717,6 +727,8 @@ def stacked_bar(ax,x, data_labels,values,title):
     return ax
 
 def scat(df, x, y, h, al):
+    # this function creates a simple scatter plot
+    # with a hue and puts labels on each dot
 
     import itertools
 
@@ -736,7 +748,6 @@ def scat(df, x, y, h, al):
     plt.ylim(al[2], al[3])
 
     huepalette = dict(zip(set(dftemp[h]), itertools.cycle(palette325)))
-    print(huepalette)
 
     chart = sns.scatterplot(x=x, y=y, data=dftemp, hue=h, palette=huepalette)
     chart.set_ylabel(y, rotation='horizontal', position=(0, 1.05))
@@ -750,40 +761,47 @@ def scat(df, x, y, h, al):
 
 
 def bubb(df, x, y, h, al):
+    # This function creates a bubble size with h and also
+    # puts labels on each bubble. But will take continous data
+    # and graph each one without a range. to get a bucketed range,
+    # use contscat
 
     # set up plot space
     fig = plt.figure()
     ax = plt.axes()
 
     # select the data given the limts we wanted
-    xmask = (df[x] > al[0]) & (df[x] < al[1])
-    dftemp = df[xmask]
+    # xmask = (df[x] > al[0]) & (df[x] < al[1])
+    # dftemp = df[xmask]
 
-    ymask = (dftemp[y] > al[2]) & (dftemp[y] < al[3])
-    dftemp = dftemp[ymask]
+    # ymask = (dftemp[y] > al[2]) & (dftemp[y] < al[3])
+    # dftemp = dftemp[ymask]
 
-    plt.xlim(al[0], al[1])
-    plt.ylim(al[2], al[3])
-
-    chart = sns.scatterplot(x=x, y=y, data=dftemp, size=h, hue=h)
+    chart = sns.scatterplot(ax = ax, x=x, y=y, data=df, size=h, hue=h)
     chart.set_ylabel(y, rotation='horizontal', position=(0, 1.05))
     chart.set_xticks(np.linspace(al[0], al[1], 5))
     chart.set_yticks(np.linspace(al[2], al[3], 4))
 
-    for i in range(0, dftemp.shape[0]):
-        chart.text(
-            dftemp[x][i]*1.05,
-            dftemp[y][i]-0.02,
-            dftemp.index[i],
-            horizontalalignment='left',
-            fontsize=5,
-            color='grey',
-            weight='light')
+    for i in range(0, df.shape[0]):
+        chart.annotate(
+                s = df.index[i],
+                xy = ( df[x][i]*1.05, df[y][i]-0.02),
+                horizontalalignment='left',
+                fontsize=5,
+                color='grey',
+                weight='light'
+                )
 
-    return dftemp
+    plt.xlim(al[0], al[1])
+    plt.ylim(al[2], al[3])
+
+    return ax
 
 
-def contscat(df, x, y, h, al):
+def contbubb(df, x, y, h, al):
+    # This function is like a bubble chart but takes continuous
+    # data for h and makes buckets out of it for easier
+    # viewing rather than an individual color for each inidividual value
 
     # set up plot space
     fig = plt.figure()
@@ -928,7 +946,9 @@ def industry_facets(df):
     plt.show()
 
 def aplots(df, name, x, y, z, t, al, xlabel, ylabel, l):
-# twoplots produces two subplots with dimensions from a dataframe
+# aplots is an old function to test running graphs. I keep it to
+# remember some formatting that was nice in case I want to use it
+# again.
 # x = x, y = y, z = hue, t = size, xlabel is xaxis, ylabel is y axis
 # l is true or false for include legend or not.
 
@@ -1996,4 +2016,201 @@ def run_tests(df_in = pd.DataFrame(), tests = []):
             return None
 
     return df
+
+def weight_tests(df_in = pd.DataFrame(), weights = []):
+    # This function sets tests and returns the key variables in a dictonary
+    # So that calling functions have access to the latest tests
+    # If the function is called with a proper dataframe, d, it will calculate
+    # live tests based on those and return that.
+
+    TESTS = ['VALUATION_test', 'SBM_test', 'PUOC_test', 'BS_risks_test', 'TRADE_test', 'PI_tests']
+    valuation_tests = [
+       'pe_to_mid_cycle_ratio_test',
+       'ev_to_ebitda_ltm_test',
+       'price_change_52_test'
+       ]
+    sbm_tests = [
+        'roic_high_5_test',
+        'dividend_growth_3_test',
+        'gm_ltm_test',
+        'ebitda_margin_ltm_test',
+        'sgam_ltm_test',
+        'revenue_growth_3_test',
+        'revenue_growth_max_test',
+        'market_leader_test'
+        ]
+
+    puoc_tests = [
+        'capex_to_revenue_avg_3_test',
+        'roic_change_from_ic_test',
+        'surplus_cash_as_percent_of_price_test',
+        'additional_debt_from_ebitda_multiple_per_share_test',
+        'icf_avg_3_to_fcf_test',
+        'icf_to_ocf_test',
+        'equity_sold_test',
+        'financing_acquired_test',
+        'capex_to_ocf_test'
+        ]
+    bs_risks_tests = [
+        'icf_and_ocf_negative_test',
+        'net_debt_to_ebitda_ltm_test',
+        'ebitda_to_interest_coverage_test',
+        ]
+    trade_tests = [
+        'short_interest_ratio_test',
+        'insider_ownership_total_test',
+        'insiders_can_get_out_quickly_test',
+        'adv_avg_months_3_test',
+        'float_test',
+        'insiders_selling_ltm_test'
+        ]
+    pi_tests = [
+            'price_opp_at_em_high_test' ,
+            'price_opp_at_sgam_low_test',
+            'price_opp_at_roic_high_test',
+            ]
+
+    valuation = [
+       'pe_to_mid_cycle_ratio',
+       'ev_to_ebitda_ltm',
+       'price_change_52'
+       ]
+
+    sbm = [
+        'roic_high_5',
+        'dividend_growth_3',
+        'gm_ltm',
+        'ebitda_margin_ltm',
+        'sgam_ltm',
+        'revenue_growth_3',
+        'revenue_growth_max',
+        'market_leader'
+        ]
+
+    puoc = [
+        'capex_to_revenue_avg_3',
+        'roic_change_from_ic',
+        'surplus_cash_as_percent_of_price',
+        'additional_debt_from_ebitda_multiple_per_share',
+        'icf_avg_3_to_fcf',
+        'icf_to_ocf',
+        'equity_sold',
+        'financing_acquired',
+        'capex_to_ocf'
+        ]
+
+    bs_risks = [
+        'icf_and_ocf_negative',
+        'net_debt_to_ebitda_ltm',
+        'ebitda_to_interest_coverage',
+        ]
+
+    trade = [
+        'short_interest_ratio',
+        'insider_ownership_total',
+        'insiders_can_get_out_quickly',
+        'adv_avg_months_3',
+        'float',
+        'insiders_selling_ltm'
+        ]
+
+    pi = [
+            'price_opp_at_em_high' ,
+            'price_opp_at_sgam_low',
+            'price_opp_at_roic_high',
+            ]
+
+    # Weights can be anything, but let's try between 0 and 1
+    if len(weights) == 0:
+        weights = {
+                'ev_to_ebitda_ltm_test'                                  :1, # less than June 2020 median is 7.19. High qartile is 12.33, low quartile is -5.31
+                'pe_to_mid_cycle_ratio_test'                             :0, # less than  June 2020 low quartile is .533632, high q is 1.49
+                'price_change_52_test'                                   :1, # less than June 2020 median, low quartile is -.3875, high q is .182
+                'price_change_last_Q_test'                               :0, # less than  June 2020 low q, median is .2952, high q is .596285
+
+                'roic_high_5_test'                                       :0, # greater than June 2020 top quartile
+                'gm_ltm_test'                                            :1, # greater than  June 2020 top quartile,.555943 median = .345134
+                'dividend_growth_3_test'                                 :0, # greater than June 2020 median Top quartile is 0.011755
+                'ebitda_margin_ltm_test'                                 :1, # greater than June 2020 Top quartile, median is .0659
+                'sgam_ltm_test'                                          :0, # greater than  June 2020 median, low quartile = .108991 high q = .439870
+                'revenue_growth_3_test'                                  :1, # greater than  June 2020 median. Top quartile = .450341
+                'revenue_growth_max_test'                                :0, # greater than original Sagard test
+                'market_leader_test'                                     :1, # greater than market leader score will be a year if so or 0 if NOT
+
+                'capex_to_revenue_avg_3_test'                            :1, # greater than June 2020 top quartile, median = .028490
+                'roic_change_from_ic_test'                               :0, # less than
+                'surplus_cash_as_percent_of_price_test'                  :0, # greater than June 2020 top quartile is .123063, median is -.113380
+                'additional_debt_from_ebitda_multiple_per_share_test'    :0, # greater than
+                'icf_avg_3_to_fcf_test'                                  :0, # greater than
+                'icf_to_ocf_test'                                        :0, # greater than  June 2020 high quartile .142, median is -.274591
+                'equity_sold_test'                                       :1, # greater than June 2020 top quartile
+                'financing_acquired_test'                                :1, # greater than June 2020 median
+                'capex_to_ocf_test'                                      :1, # greater than June 2020 median.  High quartile is .396726
+                'icf_and_ocf_negative_test'                              :1, # should not be the case
+
+                'net_debt_to_ebitda_ltm_test'                            :1, # greater than original Sagard test. current June 2020 median is 1.975
+                'ebitda_to_interest_coverage_test'                       :1, # less than June 2020 median
+
+                'short_interest_ratio_test'                              :0, # greater than June 2020 top quartile 7.26, median = 3.92
+                'insider_ownership_total_test'                           :0, # greater than June 2020 top quartile .182050, median = .0607
+                'insiders_can_get_out_quickly_test'                      :1, # greater than June 2020 top quartile
+                'adv_avg_months_3_test'                                  :1, # less than June 2020 median
+                'float_test'                                             :1, # less than June 2020 lowest quartile
+                'insiders_selling_ltm_test'                              :1, # less than June 2020 median; lowest quartile is 0
+
+                'price_opp_at_em_high_test'                              :1, # greater than June 2020 median is 0.909
+                'price_opp_at_sgam_low_test'                             :1, # greater than June 2020 median is 0.9837
+                'price_opp_at_roic_high_test'                            :1, # greater than June 2020 median is 1.167, high quartile is 1.5
+                }
+
+    # Make a copy so that we don't accidentally trash original dataframe
+    d = df_in.copy()
+
+    # Go through all the stocks in the data (even if it just one)
+    for i in d.index:
+
+        # For each one, calculate a new scores, weighted by the weights
+        weighted_score = 0
+        weight_sum = 0
+        for test in valuation_tests:
+            weighted_score += d.loc[i,test] * weights[test]
+            weight_sum += weights[test]
+        d.loc[i, 'w_val_test'] = weighted_score / weight_sum
+
+        weighted_score = 0
+        weight_sum = 0
+        for test in sbm_tests:
+            weighted_score += d.loc[i,test] * weights[test]
+            weight_sum += weights[test]
+        d.loc[i, 'w_sbm_test'] = weighted_score / weight_sum
+
+        weighted_score = 0
+        weight_sum = 0
+        for test in puoc_tests:
+            weighted_score += d.loc[i,test] * weights[test]
+            weight_sum += weights[test]
+        d.loc[i, 'w_puoc_test'] = weighted_score / weight_sum
+
+        weighted_score = 0
+        weight_sum = 0
+        for test in bs_risks_tests:
+            weighted_score += d.loc[i,test] * weights[test]
+            weight_sum += weights[test]
+        d.loc[i, 'w_bs_risks_test'] = weighted_score / weight_sum
+
+        weighted_score = 0
+        weight_sum = 0
+        for test in trade_tests:
+            weighted_score += d.loc[i,test] * weights[test]
+            weight_sum += weights[test]
+        d.loc[i, 'w_trade_test'] = weighted_score / weight_sum
+
+        weighted_score = 0
+        weight_sum = 0
+        for test in pi_tests:
+            weighted_score += d.loc[i,test] * weights[test]
+            weight_sum += weights[test]
+        d.loc[i, 'w_pi_test'] = weighted_score / weight_sum
+
+    return d
 
