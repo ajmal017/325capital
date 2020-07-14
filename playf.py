@@ -140,3 +140,6 @@ live_tests = {
 # screeners for 235 actives
 actives = b[b.last_work == 'Active'].copy()
 
+day_one = ['GPX', 'NVEE', 'MPAA', 'CMCO', 'LDL', 'NXGN', 'ATRO', 'ICFI', 'PETS', 'MTSC', 'TRS', 'INGN']
+do = b.loc[day_one]
+

@@ -1236,12 +1236,12 @@ def get_fscore(tickers):
             df['date_of_data'] = pd.to_datetime(dt.datetime.today())
             df['price'] =  hist.last('1D')['Close'][0]
             df['revenue_ltm'] = pd.to_numeric(key_stats.revenue_ltm[ticker]) # 062720 Use Yahoo revenue - more comfrotable than FA
-            df['revenue_growth_3'] = all.revenue.pct_change(periods = 3)[five].last('1Y')[0] # inc
-            df['revenue_growth_max'] = all.revenue.pct_change(periods = 3)[five].max() # inc
+            df['revenue_growth_3'] = (1 + all.revenue.pct_change(periods = 4)[five].last('1Y')[0]) ** (1 / 3) - 1 # inc
+            df['revenue_growth_max'] = (1 + all.revenue.pct_change(periods = 4)[five].max()) ** ( 1 / 3) - 1 # inc
             df['ebitda_ltm'] = pd.to_numeric(key_stats.ebitda_ltm[ticker])
             df['ev'] = pd.to_numeric(key_stats.ev[ticker])
             df['ev_to_ebitda_ltm'] = df.ev / df.ebitda_ltm
-            df['total_debt_ltm'] = pd.to_numeric(key_stats.debt_total_mrq[ticker])
+            df['total_debt_ltm'] = all.longTermDebt[now] / 1e6
             df['cash_ltm'] = pd.to_numeric(key_stats.cash_mrq[ticker])
             df['market_cap'] = pd.to_numeric(key_stats.market_cap[ticker])
             df['so'] = pd.to_numeric(key_stats.so[ticker])
