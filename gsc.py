@@ -30,7 +30,7 @@ palette325 = [
     "#000000"]
 
 # Which ticker you want the score for
-ticker = sys.argv[1]
+ticker = sys.argv[1].upper()
 
 # Put in an optional flag to pull live.  If not flag, then don't
 try:

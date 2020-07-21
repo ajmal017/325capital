@@ -12,8 +12,8 @@ pd.set_option('display.max_rows', 999)
 pd.set_option('display.max_seq_items', 999)
 plt.style.use('325.mplstyle')
 
-# Which ticker you want the score for
-ticker = sys.argv[1]
+# Which ticker you want the score for/ convert to upper in case user put in lower case
+ticker = sys.argv[1].upper()
 
 # Put in an optional flag to pull live.  If not flag, then don't
 try:

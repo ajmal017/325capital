@@ -1141,7 +1141,13 @@ def get_fscore(tickers):
             bs.index = pd.to_datetime(bs.index)
             bs.sort_index(inplace = True)
             # Set BS ltm to last BS
-            bsltm = bs.last('1Q')
+            bs_quarters = fa.balance_sheet_statement(ticker, api_key, period = 'quarter').T
+            if bs_quarters.empty:
+                logging.warning('get bs_quarters failed: {}'.format(ticker))
+                continue
+            bs_quarters.index = pd.to_datetime(bs_quarters.index)
+            bs_quarters.sort_index(inplace = True)
+            bsltm = bs_quarters.last('1Q')
             bsltm.index = [pd.to_datetime('2020-03-01')]
             bs = bs.append(bsltm)
 
