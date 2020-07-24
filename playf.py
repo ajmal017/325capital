@@ -16,6 +16,8 @@ pd.set_option('display.max_seq_items', 200)
 # This sheet is populated using build_fscores_excel.py
 # It also uses Fundamental Analysis toolkit so have the api_key ready
 api_key = "c350f6f5a4396d349ee4bbacde3d5999"
+
+# Read the main database into d
 d = pd.read_excel('fscores.xlsx')
 d = d.set_index('symbol')
 # Split out the most wanted sectors
@@ -92,6 +94,7 @@ experience_tests = [
         ]
 
 
+# B is the short database that filters out the sectors we care about
 b = d[d.short_sector.isin(short_sector_wanted)].copy()
 b = b[~b.sector.isin(sector_not_wanted)].copy()
 
@@ -141,5 +144,6 @@ live_tests = {
 actives = b[b.last_work == 'Active'].copy()
 
 day_one = ['GPX', 'NVEE', 'MPAA', 'CMCO', 'LDL', 'NXGN', 'ATRO', 'ICFI', 'PETS', 'MTSC', 'TRS', 'INGN']
+# cut out the day one tickers
 do = b.loc[day_one]
 
