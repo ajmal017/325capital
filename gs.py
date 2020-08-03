@@ -44,7 +44,7 @@ df1.loc[ticker,'last_price'] =  hist.last('1D').Close[0]
 # Make the first row of graphs
 fig = plt.figure(constrained_layout = True)
 gs = fig.add_gridspec(3,3)
-fig.suptitle(ticker + "\n" + "{} {}".format(df1.business[ticker], df1.last_price[ticker]))
+fig.suptitle(ticker + " - {} \n{} {}".format(df1.name[ticker], df1.business[ticker], df1.last_price[ticker]))
 
 # First Row, First Column
 ax = fig.add_subplot(gs[0,0])
