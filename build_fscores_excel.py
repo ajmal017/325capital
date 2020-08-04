@@ -2,7 +2,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from screen1 import getasheet, palette325, series_bar, get_historic_prices, category_bar, get_fscore, get_fidelity_sheets
+from graphics_325 import getasheet, palette325, series_bar, category_bar
+from getdata_325 import get_historic_prices, get_fidelity_sheets
+from screen1 import get_fscore
 import pandas as pd
 import datetime as dt
 import sys
@@ -23,7 +25,8 @@ plt.style.use('325.mplstyle')
 
 # Which ticker you want the score for
 # Get the fidelity data
-filenames = ['../sc1.xls', '../sc2.xls', '../sc3.xls', '../sc4.xls', '../sc5.xls']
+filenames = ['../sc1.xls', '../sc2.xls',
+             '../sc3.xls', '../sc4.xls', '../sc5.xls']
 for filen in filenames:
 
     f = []
@@ -34,5 +37,3 @@ for filen in filenames:
 
     filenumber = re.search('\d', filen)[0]
     df.to_excel('fscores_{}.xlsx'.format(filenumber))
-
-

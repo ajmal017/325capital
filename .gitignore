@@ -17,3 +17,6 @@ __pycache__/
 
 # ignore the log file fscores building produces
 *.log
+
+# ignore potential intermediary csv files
+*.csv

@@ -20,6 +20,11 @@ api_key = "c350f6f5a4396d349ee4bbacde3d5999"
 # Read the main database into d
 d = pd.read_excel('fscores.xlsx')
 d = d.set_index('symbol')
+
+d['ep'] = d.ebitda_ltm - d.capex_ltm * .7
+d['estmktcap'] = d.ep - d.net_debt_ltm+d.ocf_ltm * 5
+d['basereturn'] = (d.estmktcap/d.market_cap) ** .2 - 1
+
 # Split out the most wanted sectors
 short_sector_wanted = ['TMT',
                        'Healthcare',
@@ -47,6 +52,7 @@ sector_not_wanted = ['Biotechnology',
 
 TESTS = ['VALUATION_test', 'SBM_test',
          'PUOC_test', 'BS_risks_test', 'TRADE_test']
+
 valuation_tests = [
     'pe_to_mid_cycle_ratio_test',
     'ev_to_ebitda_ltm_test',
@@ -94,10 +100,35 @@ experience_tests = [
     'sagard_peers'
 ]
 
+irexclude = [
+    'Resorts & Casinos',
+    'Biotechnology',
+    'Restaurants',
+    'Apparel Retail',
+    'Semiconductors',
+    'Broadcasting',
+    'Entertainment',
+    'Medical Care Facilities',
+    'Resorts & Casinos',
+    'UtilitiesRegulated Water',
+    'Marine Shipping',
+    'Airlines',
+    'Gambling',
+]
+
 
 # B is the short database that filters out the sectors we care about
 b = d[d.short_sector.isin(short_sector_wanted)].copy()
 b = b[~b.sector.isin(sector_not_wanted)].copy()
+b = b[b.ev <= 2000]
+
+irlist = b[~b.business.isin(irexclude)].copy()
+# irexclude = pd.read_csv('irexclude.csv')
+# irlist = b[~b.business.isin(irexclude.business)].copy()
+
+# irlist['EP'] = irlist.ebitda_ltm - irlist.capex_ltm * .7
+# irlist['EstMktCap'] = irlist.EP - irlist.net_debt_ltm+irlist.ocf_ltm * 5
+# irlist['BaseReturn'] = (irlist.EstMktCap/irlist.market_cap) ** .2 - 1
 
 live_tests = {
     # less than June 2020 median is 7.19. High qartile is 12.33, low quartile is -5.31
