@@ -17,6 +17,7 @@ pd.set_option('display.max_seq_items', 200)
 # It also uses Fundamental Analysis toolkit so have the api_key ready
 api_key = "c350f6f5a4396d349ee4bbacde3d5999"
 
+
 # Read the main database into d
 d = pd.read_excel('fscores.xlsx')
 d = d.set_index('symbol')
@@ -49,6 +50,22 @@ short_sector_not_wanted = ['Financial Services',
 sector_not_wanted = ['Biotechnology',
                      'Capital Markets'
                      ]
+# Michael definitions of excluded at business level
+# Anil removed Medical Care Facilities on Aug 05, 2020 'Medical Care Facilities',
+business_not_wanted = [
+    'Resorts & Casinos',
+    'Biotechnology',
+    'Restaurants',
+    'Apparel Retail',
+    'Semiconductors',
+    'Broadcasting',
+    'Entertainment',
+    'Resorts & Casinos',
+    'UtilitiesRegulated Water',
+    'Marine Shipping',
+    'Airlines',
+    'Gambling',
+]
 
 TESTS = ['VALUATION_test', 'SBM_test',
          'PUOC_test', 'BS_risks_test', 'TRADE_test']
@@ -100,36 +117,16 @@ experience_tests = [
     'sagard_peers'
 ]
 
-irexclude = [
-    'Resorts & Casinos',
-    'Biotechnology',
-    'Restaurants',
-    'Apparel Retail',
-    'Semiconductors',
-    'Broadcasting',
-    'Entertainment',
-    'Medical Care Facilities',
-    'Resorts & Casinos',
-    'UtilitiesRegulated Water',
-    'Marine Shipping',
-    'Airlines',
-    'Gambling',
-]
-
 
 # B is the short database that filters out the sectors we care about
+# Favor using one database called b rather than creating a new one called irlist
 b = d[d.short_sector.isin(short_sector_wanted)].copy()
 b = b[~b.sector.isin(sector_not_wanted)].copy()
+b = b[~b.business.isin(business_not_wanted)].copy()
 b = b[b.ev <= 2000]
 
-irlist = b[~b.business.isin(irexclude)].copy()
-# irexclude = pd.read_csv('irexclude.csv')
-# irlist = b[~b.business.isin(irexclude.business)].copy()
 
-# irlist['EP'] = irlist.ebitda_ltm - irlist.capex_ltm * .7
-# irlist['EstMktCap'] = irlist.EP - irlist.net_debt_ltm+irlist.ocf_ltm * 5
-# irlist['BaseReturn'] = (irlist.EstMktCap/irlist.market_cap) ** .2 - 1
-
+# Run some live tests on the resulting b to compare anything we want against this population
 live_tests = {
     # less than June 2020 median is 7.19. High qartile is 12.33, low quartile is -5.31
     'ev_to_ebitda_ltm_test': 8,

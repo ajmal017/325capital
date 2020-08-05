@@ -107,7 +107,7 @@ market_leader = b.market_leader_test
 
 # For those that failed roic quality test is it that they have an opportunity
 # to get back to past glory?
-could_be_good_roic = (b.roic_high_5 >= b.roic_high_5.quanitle(
+could_be_good_roic = (b.roic_high_5 >= b.roic_high_5.quantile(
     q=.5)) & (b.roic_high_5_test)
 
 # Was it that they failed on using too much ic or failed to produce r
