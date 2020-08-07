@@ -575,7 +575,7 @@ def aplots(df, name, x, y, z, t, al, xlabel, ylabel, l):
     # l is true or false for include legend or not.
 
     # tey to run real matplot lib
-    fig, ax1 = plt.subplots(nrows=1, ncols=1, sharey=True)
+    _fig, ax1 = plt.subplots(nrows=1, ncols=1, sharey=True)
     plt.style.use('325')
 
     # set up the plot

@@ -11,6 +11,8 @@ import pandas as pd
 from playf import TESTS, valuation_tests, sbm_tests, puoc_tests, trade_tests, bs_risks_tests, experience_tests
 from playf import short_sector_wanted, short_sector_not_wanted, sector_not_wanted, business_not_wanted
 
+# Set an output option when looking at output
+pd.set_option('display.float_format', lambda x: '%.2f' % x)
 
 # Get the main database from fscores.xlsx
 d = pd.read_excel('fscores.xlsx')
@@ -29,68 +31,74 @@ b = b[b.ev <= 2000]
 
 # Pull the latest live tests to compare companies to
 live_tests = {
-    # less than June 2020 median is 7.19. High qartile is 12.33, low quartile is -5.31
+    # arbitrary
     'ev_to_ebitda_ltm_test': 8,
-    # less than  June 2020 low quartile is .533632, high q is 1.49
+    # < median
     'pe_to_mid_cycle_ratio_test': (b.pe / b.pe_mid_cycle).quantile(q=0.5),
-    # less than June 2020 median, low quartile is -.3875, high q is .182
+    # < median
     'price_change_52_test': b.price_change_52.quantile(q=0.5),
-    # less than  June 2020 low q, median is .2952, high q is .596285
+    # < median
     'price_change_last_Q_test': b.price_change_last_Q.quantile(q=0.5),
 
-    # greater than June 2020 top quartile
+    # > top_quartile
     'roic_high_5_test': b.roic_high_5.quantile(q=.75),
-    # greater than  June 2020 top quartile,.555943 median = .345134
+    # > median
     'gm_ltm_test': b.gm_ltm.quantile(q=0.5),
-    # greater than June 2020 median Top quartile is 0.011755
+    # > median
     'dividend_growth_3_test': b.dividend_growth_3.quantile(q=0.5),
-    # greater than June 2020 Top quartile, median is .0659
+    # > top_quartile
     'ebitda_margin_ltm_test': b.ebitda_margin_ltm.quantile(q=.75),
-    # greater than  June 2020 median, low quartile = .108991 high q = .439870
+    # < median
     'sgam_ltm_test': b.sgam_ltm.quantile(q=0.5),
-    # greater than  June 2020 median. Top quartile = .450341
+    # > median
     'revenue_growth_3_test': b.revenue_growth_3.quantile(q=0.5),
-    'revenue_growth_max_test': .14,  # greater than original Sagard test
-    # greater than market leader score will be a year if so or 0 if NOT
+    # > 14% arbitray
+    'revenue_growth_max_test': .14,
+    # based on Sagard research yes or no
     'market_leader_test': 1,
 
-    # greater than June 2020 top quartile, median = .028490
+    # > median
     'capex_to_revenue_avg_3_test': b.capex_to_revenue_avg_3.quantile(q=0.5),
-    'roic_change_from_ic_test': 0,  # less than
-    # greater than June 2020 top quartile is .123063, median is -.113380
+    # < 0 (meaning none of the roic change related to ic)
+    'roic_change_from_ic_test': 0,
+    # > top_quartile
     'surplus_cash_as_percent_of_price_test': b.surplus_cash_as_percent_of_price.quantile(q=.75),
-    'additional_debt_from_ebitda_multiple_per_share_test': 0,  # greater than
-    'icf_avg_3_to_fcf_test': 1,  # greater than
-    # greater than  June 2020 high quartile .142, median is -.274591
+    # > 0
+    'additional_debt_from_ebitda_multiple_per_share_test': 0,
+    # > 1
+    'icf_avg_3_to_fcf_test': 1,
+    # > top_quartile
     'icf_to_ocf_test': (b.icf_ltm / b.ocf_ltm).quantile(q=.75),
-    # greater than June 2020 top quartile
+    # > top_quartile
     'equity_sold_test': b.equity_sold.quantile(q=.75),
-    # greater than June 2020 median
+    # > median
     'financing_acquired_test': b.financing_acquired.quantile(q=0.5),
-    # greater than June 2020 median.  High quartile is .396726
+    # > median
     'capex_to_ocf_test': b.capex_to_ocf.quantile(q=0.5),
 
     # greater than original Sagard test. current June 2020 median is 1.975
     'net_debt_to_ebitda_ltm_test': 3,
-    # less than June 2020 median
+    # > median
     'ebitda_to_interest_coverage_test': b.ebitda_to_interest_coverage.quantile(q=0.5),
 
-    # greater than June 2020 top quartile 7.26, median = 3.92
+    # > median
     'short_interest_ratio_test': b.short_interest_ratio.quantile(q=0.5),
-    # greater than June 2020 top quartile .182050, median = .0607
+    # > top_quartile
     'insider_ownership_total_test': b.insider_ownership_total.quantile(q=.75),
-    # greater than June 2020 top quartile
+    # > top_quartile
     'insiders_can_get_out_quickly_test': (b.insider_ownership_total / b.adv_as_percent_so).quantile(q=.75),
-    # less than June 2020 median
+    # < median
     'adv_avg_months_3_test': b.adv_avg_months_3.quantile(q=0.5),
-    # less than June 2020 lowest quartile
+    # < bottom_quartile
     'float_test': b.float.quantile(q=0.25),
-    # less than June 2020 median; lowest quartile is 0
+    # > median
     'insiders_selling_ltm_test': b.insiders_selling_ltm.quantile(q=0.5),
 
-    'price_opp_at_em_high_test': 1.3,  # greater than June 2020 median is 0.909
-    'price_opp_at_sgam_low_test': 1.2,  # greater than June 2020 median is 0.9837
-    # greater than June 2020 median is 1.167, high quartile is 1.5
+    # > 30% price opportunity
+    'price_opp_at_em_high_test': 1.3,
+    # > 20% price opportunity
+    'price_opp_at_sgam_low_test': 1.2,
+    # > 20% price opportunity
     'price_opp_at_roic_high_test': 1.2,
 }
 
@@ -100,8 +108,12 @@ live_tests = {
 # High quality  vs. Not Highquality
 # - define based on roic_high_5 > top quartile
 # - higher than average on sbm_tests
-good_roic = (b.roic >= b.roic.quantile(q=.75)) & (
-    b.SBM_test >= b.SBM_test.quantile(q=.5))
+good_roic = (b.roic >= b.roic.quantile(q=.75))
+
+sbm = (b.SBM_test >= b.SBM_test.quantile(q=.75))
+valuation = (b.VALUATION_test >= b.VALUATION_test.quantile(q=.75))
+trade = (b.TRADE_test >= b.TRADE_test.quantile(q=.75))
+bsrisks = (b.BS_risks_test >= b.BS_risks_test.quantile(q=.75))
 
 market_leader = b.market_leader_test
 
@@ -122,5 +134,12 @@ fixers = (b.price_opp_at_em_high_test > 1) & (
     b.price_opp_at_sgam_low_test > 1)
 
 # Do we have knowledge of the company or not?
-knowlege = (b.tamale_status.isin(
+knowledge = (b.tamale_status.isin(
     ['Active', 'Monitor', 'Montior', 'Pending', 'Invested']))
+
+# What is the current return expected?
+entry = (b.ep_irr_sector >= .1)
+core = (b.ep_irr_sector >= .2)
+
+show = ['name', 'roic', 'revenue_ltm', 'ebitda_ltm', 'ev_to_ebitda_ltm',
+        'tamale_status', 'price_opp_at_em_high', 'price', 'ep_irr_sector', 'business']

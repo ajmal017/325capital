@@ -81,7 +81,6 @@ def get_fscore(tickers):
             # Get the historical price data
             hist = get_historic_prices(ticker)
 
-            breakpoint()
             # Get the Fundamental Analysis data fields (check if each one loaded or not)
             profile = fa.profile(ticker, api_key)
             if profile.empty:
