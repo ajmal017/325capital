@@ -10,6 +10,11 @@ import pandas as pd
 # Get some easy definitions that we already are using
 from playf import TESTS, valuation_tests, sbm_tests, puoc_tests, trade_tests, bs_risks_tests, experience_tests
 from playf import short_sector_wanted, short_sector_not_wanted, sector_not_wanted, business_not_wanted
+import matplotlib.pyplot as plt
+import sys
+
+# Set up some convenience settings
+plt.style.use('325.mplstyle')
 
 # Set an output option when looking at output
 pd.set_option('display.float_format', lambda x: '%.2f' % x)
@@ -103,12 +108,26 @@ live_tests = {
 }
 
 # Some masks to pull priority lists out of the main database
-# First define some simple tree levels:
-# All companies:
-# High quality  vs. Not Highquality
-# - define based on roic_high_5 > top quartile
-# - higher than average on sbm_tests
-good_roic = (b.roic >= b.roic.quantile(q=.75))
+# Quality of Business - High/med/low
+
+# Michael's tree
+good_roic = (b.roic >= b.roic.quantile(q=.50))
+stable_GM = (b.gm_ltm / b.gm_high_5 >= .9)
+stable_EM = (b.ebitda_margin_ltm / b.ebitda_margin_high_5 >= .9)
+stable_revenue = (b.revenue_growth_3 > -b.revenue_growth_3.quantile(q=.1))
+high_quality = good_roic & stable_GM & stable_EM & stable_revenue
+
+entry_ep = (b.ep_irr_sector >= .1)
+core_ep = (b.ep_irr_sector >= .2)
+
+revenue_investments_working = (b.revenue_growth_3 == b.revenue_growth_max)
+
+generates_enough_cash = (b.surplus_cash_as_percent_of_price > .05) | (
+    b.ocf_ltm / b.capex_ltm > 2)
+can_borrow_enough = (b.net_debt_to_ebitda_ltm < 3)
+
+ic_increasing = (b.ic > b.ic_ago_5)
+ic_decreasing = (b.ic < b.ic_ago_5)
 
 sbm = (b.SBM_test >= b.SBM_test.quantile(q=.75))
 valuation = (b.VALUATION_test >= b.VALUATION_test.quantile(q=.75))

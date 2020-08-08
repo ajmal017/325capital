@@ -14,6 +14,10 @@ sudo apt install python3
 sudo apt install pip3
 sudo apt install ipython3
 
+# Install graphics backends for matplotlib
+sudo apt install python3-tk
+sudo apt install python3-cairo
+
 pip3 install pandas
 pip3 install matplotlib
 pip3 install seaborn
