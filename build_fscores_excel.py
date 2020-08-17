@@ -1,14 +1,14 @@
 #! /usr/bin/env python3
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-from graphics_325 import palette325, series_bar, category_bar
-from getdata_325 import getasheet, get_historic_prices, get_fidelity_sheets
-from screen1 import get_fscore
-import pandas as pd
-import datetime as dt
-import sys
 import re
+import sys
+import datetime as dt
+import pandas as pd
+from screen1 import get_fscore
+from getdata_325 import getasheet, get_historic_prices, get_fidelity_sheets
+from graphics_325 import palette325, series_bar, category_bar
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import numpy as np
 
 # Set up some convenience settings
 pd.set_option('display.max_rows', 999)

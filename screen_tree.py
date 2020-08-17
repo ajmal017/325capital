@@ -24,9 +24,32 @@ d = pd.read_excel('fscores.xlsx')
 d = d.set_index('symbol')
 
 # Add in Michael Braners quick and dirty ep
-d['ep'] = d.ebitda_ltm - d.capex_ltm * .7
-d['estmktcap'] = d.ep - d.net_debt_ltm+d.ocf_ltm * 5
-d['basereturn'] = (d.estmktcap/d.market_cap) ** .2 - 1
+d['fcf_avg_3'] = d.icf_avg_3 / d.icf_avg_3_to_fcf
+d['ep'] = (d['ebitda_ltm']-d['capex_ltm']) * .7
+d['ep_market_cap'] = d.ep * d.ep_multiple - d.net_debt_ltm + d.ep * 5
+d['base_return'] = (d.ep_market_cap/d.market_cap)**.2-1
+d['ic_change_5'] = d.ic - d.ic_ago_5
+d['ebiat_change_5'] = (d.ebit - d.ebit_ago_5) * .7
+d['return_on_growth'] = d.ebiat_change_5 / d.ic_change_5
+d['price_opp_current_ep'] = (d.ep * 10 - d.net_debt_ltm) / d.market_cap
+d['price_opp_avg_fcf'] = d.fcf_avg_3 * 5 / d.market_cap
+d['price_opp_from_growth'] = d.ic_change_5 * d.roic_high_5 * 10 - d.ic_change_5
+d['roic_trend'] = (d.roic - d.roic_ago_5)
+
+roic_test_hurdle = .1
+
+# Add in Michael's masks
+roic_up = (d.roic_trend >= 0)
+roic_high = (d.roic_avg_5 > roic_test_hurdle) & (
+    d.roic_high_5 > roic_test_hurdle)
+roic_med = (d.roic_avg_5 <= roic_test_hurdle) & (
+    d.roic_high_5 > roic_test_hurdle)
+roic_low = (d.roic_high_5 <= roic_test_hurdle)
+roic_down = (d.roic_trend < 0)
+base10 = (d.base_return >= .1)
+high_debt = (d.net_debt_to_ebitda_ltm > 3)
+valuation = d.base_return > .2
+quality_revenue = d.revenue_growth_3 > 0
 
 # B is the short database that filters out the sectors we care about
 b = d[d.short_sector.isin(short_sector_wanted)].copy()
@@ -109,56 +132,61 @@ live_tests = {
 
 # Some masks to pull priority lists out of the main database
 # Quality of Business - High/med/low
+tax_rate = .3
 
 # Michael's tree
-good_roic = (b.roic >= b.roic.quantile(q=.50))
+good_roic = (b.roic >= roic_test_hurdle)
 stable_GM = (b.gm_ltm / b.gm_high_5 >= .9)
 stable_EM = (b.ebitda_margin_ltm / b.ebitda_margin_high_5 >= .9)
 stable_revenue = (b.revenue_growth_3 > -b.revenue_growth_3.quantile(q=.1))
 high_quality = good_roic & stable_GM & stable_EM & stable_revenue
-
 entry_ep = (b.ep_irr_sector >= .1)
 core_ep = (b.ep_irr_sector >= .2)
-
 revenue_investments_working = (b.revenue_growth_3 == b.revenue_growth_max)
-
 generates_enough_cash = (b.surplus_cash_as_percent_of_price > .05) | (
     b.ocf_ltm / b.capex_ltm > 2)
 can_borrow_enough = (b.net_debt_to_ebitda_ltm < 3)
-
 ic_increasing = (b.ic > b.ic_ago_5)
 ic_decreasing = (b.ic < b.ic_ago_5)
-
 sbm = (b.SBM_test >= b.SBM_test.quantile(q=.75))
 valuation = (b.VALUATION_test >= b.VALUATION_test.quantile(q=.75))
 trade = (b.TRADE_test >= b.TRADE_test.quantile(q=.75))
 bsrisks = (b.BS_risks_test >= b.BS_risks_test.quantile(q=.75))
-
 market_leader = b.market_leader_test
+
 
 # For those that failed roic quality test is it that they have an opportunity
 # to get back to past glory?
-could_be_good_roic = (b.roic_high_5 >= b.roic_high_5.quantile(
-    q=.5)) & (b.roic_high_5_test)
+could_be_good_roic = (b.roic_high_5 >= roic_test_hurdle)
 
 # Was it that they failed on using too much ic or failed to produce r
-too_much_ic = (b.roic_change_from_ic_test)
+too_much_ic = (abs(b.roic_change_from_ic) > abs(b.roic_change_from_r))
 
 # Next distinguish between growth companies above average and margin improvement companies
-growers = (b.revenue_growth_3 > b.revenue_growth_3.quantile(q=.5)) & (
-    b.revenue_growth_max_test)
+growers = (b.revenue_growth_3 > b.revenue_growth_3.quantile(q=.75))
 
 # Next on performance opportunity focus on ebitda and sga for now
-fixers = (b.price_opp_at_em_high_test > 1) & (
-    b.price_opp_at_sgam_low_test > 1)
+fixers = (b.ebitda_margin_ltm < b.ebitda_margin_high_5)
 
 # Do we have knowledge of the company or not?
 knowledge = (b.tamale_status.isin(
     ['Active', 'Monitor', 'Montior', 'Pending', 'Invested']))
 
-# What is the current return expected?
-entry = (b.ep_irr_sector >= .1)
-core = (b.ep_irr_sector >= .2)
+show = ['name', 'roic', 'revenue_ltm', 'revenue_growth_3', 'ebitda_ltm', 'ev_to_ebitda_ltm',
+        'tamale_status', 'price_opp_at_em_high', 'price', 'base_return', 'business']
 
-show = ['name', 'roic', 'revenue_ltm', 'ebitda_ltm', 'ev_to_ebitda_ltm',
-        'tamale_status', 'price_opp_at_em_high', 'price', 'ep_irr_sector', 'business']
+
+# create some short-cut masks to correspond to the mekko big buckets
+# rh  roic high,  rr = roic rising rl = roic low rf = roic falling
+rhrr = (roic_high & ~roic_down)
+rhrf = (roic_high & roic_down)
+rlrr = (~roic_high & ~roic_down)
+rlrf = (~roic_high & roic_down)
+wasrh = (b.roic_high_5 >= roic_test_hurdle)
+
+I = b[rlrr & wasrh & too_much_ic]
+J = b[rlrr & wasrh & ~too_much_ic]
+K = b[rlrf & wasrh & too_much_ic]
+L = b[rlrf & wasrh & ~too_much_ic]
+
+actives = b[b.last_work == 'Active']

@@ -150,5 +150,5 @@ compare_series_bar(ax=ax, data_labels=actual_data, value_list=[
                    ticker_test_values, benchmark_test_values], title=title, percent=False)
 
 plt.savefig("{}.png".format(ticker), dpi=300, bbox_inches='tight')
-fig.tight_layout()
+# fig.tight_layout()
 plt.show()

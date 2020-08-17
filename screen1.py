@@ -126,7 +126,7 @@ def get_fscore(tickers):
             ev_quarters.index = pd.to_datetime(ev_quarters.index)
             ev_quarters.sort_index(inplace = True)
 
-            # Create and ltm mask and get the sums of the income statement into LTM column
+            # Create an ltm mask and get the sums of the income statement into LTM column
             ltm = (inc_quarters.index > '2019-03-01') & (inc_quarters.index <= '2020-03-01')
             ratios = ['grossProfitRatio', 'ebitdaratio', 'operatingIncomeRatio', 'netIncomeRatio']
             inct = inc.T
@@ -226,7 +226,7 @@ def get_fscore(tickers):
             all.investedCapital = all.investedCapital.replace(0, np.nan).interpolate() # inc
             all.incomeBeforeTax = all.incomeBeforeTax.replace(0, np.nan).interpolate() # inc
             all.totalAssets = all.totalAssets.replace(0, np.nan) # bs
-            all['fcfe'] = all.netCashProvidedByOperatingActivities + all.interestExpense + all.capitalExpenditure # cf
+            all['fcfe'] = all.netCashProvidedByOperatingActivities + all.capitalExpenditure # cf
             all['fcfe_to_marketcap'] = all.fcfe / all.marketCapitalization # cf, bs
 
             # convert the dataframe to correct dtypes (let pandas infer correct conversion)
@@ -235,6 +235,8 @@ def get_fscore(tickers):
             benchmarks = {
                     'debt_to_ebitda_ltm_benchmark' : 3,
                     }
+
+            breakpoint()
 
             # Create the score for ticker
             # favor yahoo stats when in doubt
@@ -256,7 +258,7 @@ def get_fscore(tickers):
 
             df['ev'] = pd.to_numeric(key_stats.ev[ticker])
             df['ev_to_ebitda_ltm'] = df.ev / df.ebitda_ltm
-            df['total_debt_ltm'] = all.longTermDebt[now] / 1e6
+            df['total_debt_ltm'] = all.totalDebt[now] / 1e6
             df['cash_ltm'] = pd.to_numeric(key_stats.cash_mrq[ticker])
             df['market_cap'] = pd.to_numeric(key_stats.market_cap[ticker])
             df['so'] = pd.to_numeric(key_stats.so[ticker])
@@ -317,7 +319,7 @@ def get_fscore(tickers):
             df['tax_rate'] = all.incomeTaxExpense[now] / all.incomeBeforeTax[now] # inc
             all.roic = all.operatingIncome * (1 - df.tax_rate[0]) / all.investedCapital # inc, bs 062720 Changed to after tax
             df['roic_high_5'] = all.roic[five].max() # km
-            df['roic_avg_5'] = all.roic[five].median() # km
+            df['roic_avg_5'] = all.roic[five].mean() # km
             df['roic_ago_5'] = all.roic.last('5Y')[0] # km
             df['roic'] = all.roic[now] # km
             df['roic_ltm_minus_roic_high'] = df.roic - df.roic_high_5
@@ -370,7 +372,7 @@ def get_fscore(tickers):
             df['capex_ago_5'] = all.capitalExpenditure.last('5Y')[0] / 1e6
             df['ocf_ltm'] = pd.to_numeric(key_stats.operating_cash_flow_ltm[ticker])
             df['icf_ltm'] = all.netCashUsedForInvestingActivites[now] / 1e6 # cf
-            df['icf_avg_3'] = all.netCashUsedForInvestingActivites[three].median() / 1e6 # cf
+            df['icf_avg_3'] = all.netCashUsedForInvestingActivites[three].mean() / 1e6 # cf
             df['icf_avg_3_to_fcf'] = df.icf_avg_3 / df.fcfe_ltm
             df['capex_to_ocf'] = df.capex_ltm / df.ocf_ltm
             df['equity_sold'] = all.commonStockIssued[now] / 1e6 # cf
