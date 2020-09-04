@@ -3,14 +3,15 @@ import pandas as pd
 import yahoo_fin.stock_info as si
 
 ticker = sys.argv[1]
-directory = '/home/michael/Documents/325capital/CanalystModels/'
+directory = sys.argv[2] if len(sys.argv) >=3 else '/home/michael/Documents/325capital/CanalystModels/'
+
 
 # load the dictionary with most recent fiscal periods (MRFP)
 with open('mrfp.txt') as f:
     mrfp_dict = eval(f.read())
 print('MRFP dictionary loaded')
 
-# lookup the MRFP for the ticker.  If missing, prompt for it. 
+# lookup the MRFP for the ticker.  If missing, prompt for it.
 mrfp = mrfp_dict.get(ticker) \
         or input('The most recent fiscal period for {0} is missing\nPlease enter the most recent fiscal period in format QQ-YYYY\n'.format(ticker))
 print('The most recent fiscal period for {0} is {1}'.format(ticker, mrfp))
@@ -87,7 +88,7 @@ for field in fields_imported:
     section_index.append(current_section)
 
 
-# add the section_index to temp_model 
+# add the section_index to temp_model
 temp_model['section'] = section_index
 
 # drop the rows where the section and index are identical
@@ -203,7 +204,7 @@ model_q['value_from_ebitda_margin'] = ( model_q.adj_ebitda_margin_high_5_yrs - m
 # value from achieving peak 5-year ROIC on last 3 year change in IC
 model_q['ic'] = model_q.bs_sum_net_debt + model_q.bs_se_total_se
 model_q['avg_ic'] = ( model_q.ic + model_q.ic.shift(2) + model_q.ic.shift(3) + model_q.ic.shift(4) ) / 4
-model_q['roic_ttm'] = model_q.ep_ttm / model_q.avg_ic 
+model_q['roic_ttm'] = model_q.ep_ttm / model_q.avg_ic
 model_q['roic_high_5_yrs'] = model_q.roic_ttm.rolling(20).max()
 model_q['change_ic_3_yrs'] = model_q.ic - model_q.ic.shift(12)
 model_q['change_ep_3_yrs'] = model_q.ep_ttm - model_q.ep_ttm.shift(12)

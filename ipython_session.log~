@@ -1,0 +1,16 @@
+# IPython log file
+
+
+get_ipython().run_line_magic('run', 'build_fscores_excel.py')
+f1 = pd.read_excel('fscores_1.xlsx')
+f2 = pd.read_excel('fscores_2.xlsx')
+f3 = pd.read_excel('fscores_3.xlsx')
+f4 = pd.read_excel('fscores_4.xlsx')
+f5 = pd.read_excel('fscores_5.xlsx')
+f = pd.concat([f1, f2, f3, f4, f5])
+f.index
+f.set_index('symbol')
+get_ipython().system('mv fscores.xlsx fscores-080720.xlsx')
+f.to_excel('fscores.xlsx')
+get_ipython().run_line_magic('clear', '')
+exit()

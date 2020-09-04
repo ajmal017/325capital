@@ -40,14 +40,6 @@ def get_fscore(tickers):
     ttfdf = pd.read_excel('fscores.xlsx')
     ttfdf = ttfdf.set_index('symbol')
 
-    # Get a names translation from Yahoo to database_titles
-    filenames = ["yahoo_to_database_titles.xlsx"]
-    sheets = {"Sheet1": [0, "A:B", 71] }
-    names = getasheet(filenames, sheets,'yahoo_name')
-
-    # Create a dictionary of new name mappings for Yahoo columns and rename them
-    new_names = dict(zip(names.index,names['database_name']))
-
     # Create a return df
     returndf = pd.DataFrame()
 
@@ -73,7 +65,6 @@ def get_fscore(tickers):
             # get the other main stock indicators from Yahoo
             try:
                 key_stats = get_key_stats(ticker)
-                key_stats.rename(columns = new_names, inplace = True)
             except:
                 logging.warning('get key stats failed: {}'.format(ticker))
                 continue
@@ -228,6 +219,8 @@ def get_fscore(tickers):
             all.totalAssets = all.totalAssets.replace(0, np.nan) # bs
             all['fcfe'] = all.netCashProvidedByOperatingActivities + all.capitalExpenditure # cf
             all['fcfe_to_marketcap'] = all.fcfe / all.marketCapitalization # cf, bs
+            all['revenue_growth_3'] = all.revenue / all.revenue.shift(3) ** (1 / 3) - 1
+            all['ebitda_growth_3'] = all.ebitda / all.ebitda.shift(3) ** (1 / 3) - 1
 
             # convert the dataframe to correct dtypes (let pandas infer correct conversion)
             all = all.convert_dtypes()
@@ -235,8 +228,6 @@ def get_fscore(tickers):
             benchmarks = {
                     'debt_to_ebitda_ltm_benchmark' : 3,
                     }
-
-            breakpoint()
 
             # Create the score for ticker
             # favor yahoo stats when in doubt
@@ -247,26 +238,24 @@ def get_fscore(tickers):
             df['date_of_data'] = pd.to_datetime(dt.datetime.today())
             df['price'] =  hist.last('1D')['Close'][0]
             df['revenue_ltm'] = pd.to_numeric(key_stats.revenue_ltm[ticker]) # 062720 Use Yahoo revenue - more comfrotable than FA
-            df['revenue_growth_3'] = (1 + all.revenue.pct_change(periods = 4)[five].last('1Y')[0]) ** (1 / 3) - 1 # inc
-            df['revenue_growth_max'] = (1 + all.revenue.pct_change(periods = 4)[five].max()) ** ( 1 / 3) - 1 # inc
-            # Changed this to use fundamental analysis instead of yahoo finance after finding issues
-            # on August 06, 2020
+            df['revenue_growth_3'] = all.revenue_growth_3[now]
+            df['revenue_growth_max'] = all.revenue_growth_3[five].max()
             df['ebitda_ltm'] = all.ebitda[now] / 1e6
             df['ebitda_avg_3'] = all.ebitda[three].mean() / 1e6
             df['ebitda_avg_5'] = all.ebitda[five].mean() / 1e6
             df['ebitda_ago_5'] = all.ebitda.last('5Y')[0] / 1e6
 
-            df['ev'] = pd.to_numeric(key_stats.ev[ticker])
+            df['ev'] = key_stats.ev[ticker]
             df['ev_to_ebitda_ltm'] = df.ev / df.ebitda_ltm
             df['total_debt_ltm'] = all.totalDebt[now] / 1e6
-            df['cash_ltm'] = pd.to_numeric(key_stats.cash_mrq[ticker])
-            df['market_cap'] = pd.to_numeric(key_stats.market_cap[ticker])
-            df['so'] = pd.to_numeric(key_stats.so[ticker])
+            df['cash_ltm'] = key_stats.cash_mrq[ticker]
+            df['market_cap'] = key_stats.market_cap[ticker]
+            df['so'] = key_stats.so[ticker]
             df['net_debt_ltm'] = df.total_debt_ltm - df.cash_ltm
             df['fcfe_ltm'] = all.fcfe[now] / 1e6
             df['fcfe_to_marketcap'] = all.fcfe[now] / all.marketCapitalization[now]
             df['low_fcfe_to_historical'] = df.fcfe_to_marketcap / all[five].fcfe_to_marketcap.max()
-            df['ebitda_cagr_to_evx'] = all.ebitda.pct_change(periods = 3)[five].max() / df.ev_to_ebitda_ltm # inc
+            df['ebitda_cagr_to_evx'] = all.ebitda_growth_3[now] / df.ev_to_ebitda_ltm # inc
 
             try:
                 df['net_insider_purchase_6'] = pd.to_numeric(inside.loc[inside.index[-1], 'Shares'].replace('%', ''))
@@ -274,13 +263,13 @@ def get_fscore(tickers):
                 logging.warning('get insider purchase failed: {}'.format(ticker))
                 df['net_insider_purchase_6'] = np.NAN
 
-            df['price_change_52'] = pd.to_numeric(key_stats.price_change_52[ticker]) # TODO from hist?
+            df['price_change_52'] = key_stats.price_change_52[ticker] # TODO from hist?
             df['price_change_ytd'] = df.price / hist.last('1Y')['Close'][0] - 1 # choose a relative time period that is comparable eg. three months, LTM, or something
             df['price_change_last_Q'] = df.price / hist.last('1Q')['Close'][0] -1 # Added to put in a relatve lagging period
             df['book_value'] = all.totalStockholdersEquity[now] / 1e6 - all.othertotalStockholdersEquity[now] / 1e6 # bs TODO https://www.investopedia.com/terms/b/bookvalue.asp
             df['eps_mid_cycle'] = all.eps[five].median() # inc
             df['pe_mid_cycle'] = all.priceEarningsRatio[five].median() # fr could use peRatio from km
-            df['pe'] = pd.to_numeric(key_stats.pe_ltm[ticker])
+            df['pe'] = key_stats.pe_ltm[ticker]
             df['pe_to_mid_cycle_ratio'] = df.pe / df.pe_mid_cycle
 
             # Margin related
@@ -483,6 +472,7 @@ def get_ep(*, ticker, inc = pd.DataFrame(), bs = pd.DataFrame(), cf = pd.DataFra
         inc.ebitda  = inc.ebitda.replace(0, np.nan).interpolate()
         inc.costOfRevenue  = inc.costOfRevenue.replace(0, np.nan).interpolate()
         inc.incomeBeforeTax  = inc.incomeBeforeTax.replace(0, np.nan).interpolate()
+        inc.revenue_growth_3 = (inc.revenue / inc.revenue.shift(3)) ** (1 / 3) - 1
         bs.totalDebt  = bs.totalDebt.replace(0, np.nan).interpolate()
         revenues = inc.revenue.fillna(0).values.reshape(-1,1)
         cogs = (inc.revenue - inc.grossProfit).fillna(0).values.reshape(-1,1)

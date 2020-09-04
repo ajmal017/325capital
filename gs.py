@@ -1,11 +1,13 @@
 #! /usr/bin/env python3
-import matplotlib.pyplot as plt
+import sys
+
 import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import pandas as pd
+
 from getdata_325 import get_historic_prices
 from graphics_325 import series_bar
 from screen1 import get_fscore
-import pandas as pd
-import sys
 
 # Set up some convenience settings
 pd.set_option('display.max_rows', 999)

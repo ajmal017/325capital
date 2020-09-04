@@ -11,10 +11,10 @@ axes.edgecolor: 2C3E50
 axes.facecolor: EAEAF2 #EAEAF2 for seaborn grey style
 axes.grid: True
 axes.labelcolor: 0.15
-axes.labelsize: 5
+axes.labelsize: 7
 axes.linewidth: 1
 axes.prop_cycle: cycler('color', ['2C3E50','5E832F','C00000','E74C3C', '2980B9','ECF0F1','FF9800','F54F29', '000000'])
-axes.titlesize: 5
+axes.titlesize: 7
 axes.spines.left: True
 axes.spines.bottom: True
 axes.spines.right: False
@@ -26,7 +26,7 @@ figure.figsize: 8.0, 5.5
 
 font.family: IBMPlex Sans, sans-serif
 font.sans-serif: IBMPlex Sans,Arial, Liberation Sans, DejaVu Sans, Bitstream Vera Sans, sans-serif
-font.size: 5.0
+font.size: 7.0
 font.weight: 200
 
 grid.color: white
@@ -35,14 +35,14 @@ grid.linewidth: 1
 
 image.cmap: Greys
 
-legend.fontsize: 5
+legend.fontsize: 7
 legend.frameon: False
 legend.numpoints: 1
 legend.scatterpoints: 1
 
 lines.linewidth: 1.0
 lines.markeredgewidth: 0
-lines.markersize: 5
+lines.markersize: 7
 lines.solid_capstyle: round
 
 patch.facecolor: 4C72B0
@@ -61,7 +61,7 @@ xtick.minor.size: 0
 xtick.minor.width: .5
 xtick.bottom: True
 xtick.top: False
-xtick.labelsize: 5
+xtick.labelsize: 7
 
 ytick.color: .15
 ytick.direction: out
@@ -72,4 +72,4 @@ ytick.minor.size: 0
 ytick.minor.width: .5
 ytick.left: False
 ytick.right: False
-ytick.labelsize: 5
+ytick.labelsize: 7

@@ -17,8 +17,8 @@ import itertools
 import re
 
 # Set up some convenience settings
-pd.set_option('display.max_rows', 200)
-pd.set_option('display.max_seq_items', 200)
+pd.set_option('display.max_rows', 900)
+pd.set_option('display.max_seq_items', 900)
 
 
 def get_token():
@@ -398,6 +398,81 @@ def get_key_stats(ticker):
         #              result_df.loc[i][1][0: len(result_df.loc[i][1])-1].replace(',', ''))
 
     returndf = resultdf.T.set_index(pd.Series(ticker))
+
+    new_names = {'Market cap (intra-day) 5': 'market_cap',
+                 'Enterprise value 3': 'ev',
+                 'Trailing P/E': 'pe_ltm',
+                 'Forward P/E 1': 'pe_ntm',
+                 'PEG Ratio (5 yr expected) 1': 'peg_expected_forward',
+                 'Price/sales (ttm)': 'ps_ltm',
+                 'Price/book (mrq)': 'pb_mrq',
+                 'Enterprise value/revenue 3': 'ev_to_revenue_ltm',
+                 'Enterprise value/EBITDA 6': 'ev_to_ebitda_ltm',
+                 'Beta (5Y monthly)': 'beta_5',
+                 '52-week change 3': 'price_change_52',
+                 'S&P500 52-week change 3': 'price_change_sp500_52',
+                 '52-week high 3': 'price_high_52',
+                 '52-week low 3': 'price_low_52',
+                 '50-day moving average 3': 'price_avg_50_day',
+                 '200-day moving average 3': 'price_average_200_day',
+                 'Avg vol (3-month) 3': 'vol_avg_3_mo',
+                 'Avg vol (10-day) 3': 'vol_avg_10_day',
+                 'Shares outstanding 5': 'so',
+                 'Float': 'float',
+                 '% held by insiders 1': 'insider_percent',
+                 '% held by institutions 1': 'insitution_percent',
+                 'Shares short (28 May 2020) 4': 'shares_short_apr15',
+                 'Short ratio (28 May 2020) 4': 'short_ratio_april15',
+                 'Short % of float (28 May 2020) 4': 'shares_short_percent_float_apr15',
+                 'Short % of shares outstanding (28 May 2020) 4': 'shares_short_outstanding_apr15',
+                 'Shares short (prior month 29 Apr 2020) 4': 'shares_short_prior_month_may',
+                 'Forward annual dividend rate 4': 'dividend_annual_forward',
+                 'Forward annual dividend yield 4': 'dividend_yield_annual_forward',
+                 'Trailing annual dividend rate 3': 'dividend_rate_ltm',
+                 'Trailing annual dividend yield 3': 'dividend_yield_ltm',
+                 '5-year average dividend yield 4': 'dividend_yield_avg_5',
+                 'Payout ratio 4': 'payout_ratio',
+                 'Dividend date 3': 'dividend_date',
+                 'Ex-dividend date 4': 'dividend_ex_date',
+                 'Last split factor 2': 'split_factor_last',
+                 'Last split date 3': 'split_date_last',
+                 'Fiscal year ends': 'year_fiscal_end',
+                 'Most-recent quarter (mrq)': 'mrq',
+                 'Profit margin': 'profit_margin_ltm',
+                 'Operating margin (ttm)': 'operating_margin_ltm',
+                 'Return on assets (ttm)': 'roa_ltm',
+                 'Return on equity (ttm)': 'roe_ltm',
+                 'Revenue (ttm)': 'revenue_ltm',
+                 'Revenue Per Share (ttm)': 'revenue_per_share_ltm',
+                 'Quarterly revenue growth (yoy)': 'quarterly_revenue_growth_yoy',
+                 'Gross profit (ttm)': 'gross_profit_ltm',
+                 'EBITDA': 'ebitda_ltm',
+                 'Net income avi to common (ttm)': 'ni_to_common_ltm',
+                 'Diluted EPS (ttm)': 'eps_diluted_ltm',
+                 'Quarterly earnings growth (yoy)': 'ni_growth_yoy',
+                 'Total cash (mrq)': 'cash_mrq',
+                 'Total cash per share (mrq)': 'cash_per_share_mrq',
+                 'Total debt (mrq)': 'debt_total_mrq',
+                 'Total debt/equity (mrq)': 'debt_to_equity_mrq',
+                 'Current ratio (mrq)': 'ratio_current_mrq',
+                 'Book value per share (mrq)': 'book_per_share_mrq',
+                 'Operating cash flow (ttm)': 'operating_cash_flow_ltm',
+                 'Levered free cash flow (ttm)': 'cash_flow_levered_ltm',
+                 'Net Debt LTM': 'net_debt_ltm',
+                 'Net Debt to EBITDA': 'net_debt_to_ebitda_ltm',
+                 '325 Score': '325',
+                 '325 Experience': '325_experience',
+                 'Tamale Status': 'tamale_status',
+                 'Last Work': 'last_work',
+                 'Sagard Peer Count': 'sagard_peers',
+                 'Market Leader?': 'market_leader_q',
+                 'Net Debt (LTM)': 'net_debt_ltm',
+                 'Net Debt to EBITDA (LTM)': 'net_debt_to_ebtida_ltm',
+                 'Cash Conversion Ratio': 'cash_conversion_ltm',
+                 'Gross Margin (LTM)': 'gross_profit_margin_ltm'}
+
+    returndf.rename(columns=new_names, inplace=True)
+    returndf = returndf.convert_dtypes()
 
     return returndf
 
