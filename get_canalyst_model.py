@@ -11,6 +11,7 @@ import pandas as pd
 
 from getdata_325 import get_key_stats
 from cantest import get_summary_page
+from screen1 import run_tests
 
 
 def get_latest_file_for_ticker(ticker, directory):
@@ -358,9 +359,8 @@ def update_fscores_with_canalyst(ticker):
     fscores = pd.read_excel('fscores.xlsx')
     fscores = fscores.set_index('symbol')
 
-    # cq refers to canalyst quarterlies, cf to canalyst fiscals
-    # cq, _cf, mrfp = get_canalyst_model(ticker, directory)
-    cq, _cf, mrfp = get_summary_page(ticker)
+    # cq refers to canalyst quarterlies, cf to canalyst fiscals. function in cantest.py
+    cq, cf, mrfp = get_summary_page(ticker)
 
     # Pull out a record to update for this ticker
     this_ticker = fscores.loc[ticker].copy()
@@ -368,11 +368,17 @@ def update_fscores_with_canalyst(ticker):
 
     # For any columns in cq, update this_ticker. (Note: tried pd.update and errors)
     shared_columns = [i for i in this_ticker.columns if i in cq.columns]
-    breakpoint()
     for col in shared_columns:
         this_ticker[col] = cq.loc[mrfp, col]
 
-    return this_ticker
+    # Update tests for this_ticker function in screen1.py
+    this_ticker = run_tests(this_ticker)
+
+    # update fscores and write it
+    fscores.update(this_ticker)
+    fscores.to_excel('fscores.xlsx')
+
+    return cq, cf, mrfp, this_ticker
 
 
 def print_mb_report(ticker):
@@ -381,19 +387,40 @@ def print_mb_report(ticker):
     as definied in get_canalyst_model and returned by it second
     """
     # get the latest canalyst data in q, f, and m which are quarterly df, fiscal year df, and mrfp
-    q, f, mrfp = get_canalyst_model(ticker, directory)
+    q, _f, mrfp = get_summary_page(ticker)
 
     # set display columns for potential value summary
-    display_value_summary = ['revenue_ltm', 'ebitda_ltm', 'ebitda_margin_ltm', 'capex_ltm', 'ep_ltm', 'revenue_growth_3', 'ep_roic_ltm', 'net_debt_ltm', 'ep_market_cap', 'fcfe_ltm', 'avg_fcfe_3_yrs',
-                             'value_from_fcfe', 'ebitda_margin_high_5', 'value_from_ebitda_margin', 'ep_delta_3', 'ic_delta_3', 'roic_high_5_yrs', 'value_from_ic', 'ep_ic_delta_3', 'total_est_value']
+    display_value_summary = [
+            'revenue_ltm',
+            'ebitda_ltm',
+            'ebitda_margin_ltm',
+            'capex_ltm',
+            'ep_ltm',
+            'revenue_growth_3',
+            'ep_roic',
+            'net_debt_ltm',
+            'ep_market_cap',
+            'fcfe_ltm',
+            'fcfe_avg_3',
+            'ep_value_from_fcfe',
+            'ebitda_margin_high_5',
+            'ep_value_from_ebitda',
+            'ep_delta_3',
+            'ic_delta_3',
+            'roic_high_5',
+            'ep_value_from_ic',
+            'ep_ic_delta_3',
+            'ep_total_est_value'
+            ]
 
     # set display for potential value relative to current market cap
     key_stats = get_key_stats(ticker)
-    market_cap = key_stats.market_cap
+    market_cap = key_stats.market_cap[0]
+
 
     # print some output
     print('\n\n')
-    print('The model for {0} has been imported'.format(ticker))
+    print(f'The model for {ticker} has been imported as of {mrfp}')
     print('The current market cap is ${0:,.0f}mm'.format(market_cap))
     print('\n')
     print(q.loc[mrfp][display_value_summary])
@@ -402,12 +429,12 @@ def print_mb_report(ticker):
     print('current ep:\t{0:.1f}x'.format(
         q.market_cap[mrfp]/market_cap))
     print('avg fcfe:\t{0:.1f}x'.format(
-        q.value_from_fcfe[mrfp]/market_cap))
+        q.ep_value_from_fcfe[mrfp]/market_cap))
     print('margin:\t\t{0:.1f}x'.format(
-        q.value_from_ebitda_margin[mrfp]/market_cap))
+        q.ep_value_from_ebitda[mrfp]/market_cap))
     print('growth:\t\t{0:.1f}x'.format(q.value_from_ic[mrfp]/market_cap))
     print('-----------\t----')
     print('total:\t\t{0:.1f}x'.format(
-        q.total_est_value[mrfp]/market_cap))
+        q.ep_total_est_value[mrfp]/market_cap))
 
-    return
+    return q

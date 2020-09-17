@@ -229,6 +229,12 @@ def get_fscore(tickers):
                     'debt_to_ebitda_ltm_benchmark' : 3,
                     }
 
+            # Create some variables to use for ep calcualtions
+            ep_multiple = 10
+            tax_rate = 0.30
+            all['ep'] = ((all.ebitda + all.capitalExpenditure) * ep_multiple - (all.totalDebt - all.cashAndShortTermInvestments)) / 1e6
+
+
             # Create the score for ticker
             # favor yahoo stats when in doubt
             # First some basic data about the ticker; note first item sets the index as well
@@ -253,6 +259,7 @@ def get_fscore(tickers):
             df['so'] = key_stats.so[ticker]
             df['net_debt_ltm'] = df.total_debt_ltm - df.cash_ltm
             df['fcfe_ltm'] = all.fcfe[now] / 1e6
+            df['fcfe_avg_3'] = all.fcfe[three].mean() / 1e6
             df['fcfe_to_marketcap'] = all.fcfe[now] / all.marketCapitalization[now]
             df['low_fcfe_to_historical'] = df.fcfe_to_marketcap / all[five].fcfe_to_marketcap.max()
             df['ebitda_cagr_to_evx'] = all.ebitda_growth_3[now] / df.ev_to_ebitda_ltm # inc
@@ -269,7 +276,7 @@ def get_fscore(tickers):
             df['book_value'] = all.totalStockholdersEquity[now] / 1e6 - all.othertotalStockholdersEquity[now] / 1e6 # bs TODO https://www.investopedia.com/terms/b/bookvalue.asp
             df['eps_mid_cycle'] = all.eps[five].median() # inc
             df['pe_mid_cycle'] = all.priceEarningsRatio[five].median() # fr could use peRatio from km
-            df['pe'] = key_stats.pe_ltm[ticker]
+            df['pe'] = pd.to_numeric(key_stats.pe_ltm[ticker])
             df['pe_to_mid_cycle_ratio'] = df.pe / df.pe_mid_cycle
 
             # Margin related
@@ -328,6 +335,8 @@ def get_fscore(tickers):
             df['ebit'] = all.operatingIncome[now] / 1e6 # inc
             df['ebit_ago_5'] = all.operatingIncome.last('5Y')[0] / 1e6# inc
             df['ic_ago_5'] = all.investedCapital.last('5Y')[0] / 1e6 # inc
+            df['ic_ago_3'] = all.investedCapital.last('3Y')[0] / 1e6 # inc
+            df['ic_delta_3'] = df.ic - df.ic_ago_3
             change_in_r =  df.ebit - df.ebit_ago_5
             change_in_ic_inverse = 1 / df.ic - 1 / df.ic_ago_5
             roic_change_from_r = change_in_r * (1 / df.ic_ago_5)
@@ -366,12 +375,32 @@ def get_fscore(tickers):
             df['capex_to_ocf'] = df.capex_ltm / df.ocf_ltm
             df['equity_sold'] = all.commonStockIssued[now] / 1e6 # cf
             df['financing_acquired'] = all.otherFinancingActivites[now] / 1e6 # cf
-            df['ep_ltm'] = (df.ebitda_ltm - df.capex_ltm) * .7
-            df['ep_avg_3'] = (df.ebitda_avg_3 - df.capex_avg_3) * .7
-            df['ep_avg_5'] = (df.ebitda_avg_5 - df.capex_avg_5) * .7
-            df['ep_ago_5'] = (df.ebitda_ago_5 - df.capex_ago_5) * .7
 
             short_columns = [i for i in key_stats.columns if 'Short' in i] # find the short interest columns in key_stats
+
+            # Basic (MB shortcut) EPs
+            df['ep_ltm'] = (df.ebitda_ltm - df.capex_ltm) * (1 - tax_rate)
+            df['ep_avg_3'] = (df.ebitda_avg_3 - df.capex_avg_3) * (1 - tax_rate)
+            df['ep_avg_5'] = (df.ebitda_avg_5 - df.capex_avg_5) * (1 - tax_rate)
+            df['ep_ago_5'] = (df.ebitda_ago_5 - df.capex_ago_5) * (1 - tax_rate)
+            df['ep_market_cap'] = df.ep_ltm * ep_multiple - df.net_debt_ltm
+            df['ep_value_from_fcfe'] = df.fcfe_avg_3 * ep_multiple
+            df['ep_value_from_ebitda'] = (
+                            (df.ebitda_margin_high_5 - df.ebitda_margin_ltm) * df.revenue_ltm
+                            * ep_multiple
+                            * (1 - tax_rate)
+                            )
+            df['ep_roic'] = df.ep_ltm / df.ic
+            df['ep_delta_3'] = all.ep - all.ep.shift(3)
+            df['ep_ic_delta_3'] = df.ep_delta_3 / df.ic_delta_3
+            df['ep_value_from_ic'] = df.ic_delta_3 * df.roic_high_5 * ep_multiple - df.ic_delta_3
+            df['ep_total_est_value'] = (
+                    df.ep_market_cap
+                    + df.ep_value_from_fcfe
+                    + df.ep_value_from_ebitda
+                    + df.ep_value_from_ic
+                    )
+
             # Trade Metrics
             try:
                 df['short_interest_ratio'] = pd.to_numeric(key_stats.loc[ticker,short_columns[0]])
@@ -404,13 +433,17 @@ def get_fscore(tickers):
                 df['tamale_status'] = ttfdf.tamale_status[ticker]
                 df['last_work'] = ttfdf.last_work[ticker]
                 df['sagard_peers'] = pd.to_numeric(ttfdf.sagard_peers[ticker])
+                df['market_leader'] = pd.to_numeric(ttfdf.market_leader[ticker])
+                df['triggers'] = ttdf.triggers[ticker]
             except:
                 df['sector'] = profile.sector[0]
                 df['business'] = profile.industry[0]
                 df['short_sector'] = profile.sector[0]
-                df['tamale_status'] = 'N/A'
-                df['last_work'] =  'N/A'
+                df['tamale_status'] = pd.NA
+                df['last_work'] = pd.NA
                 df['sagard_peers'] = 0
+                df['market_leader'] = 0
+                df['triggers'] = pd.NA
 
             df.set_index('symbol', inplace = True)
 
@@ -472,7 +505,7 @@ def get_ep(*, ticker, inc = pd.DataFrame(), bs = pd.DataFrame(), cf = pd.DataFra
         inc.ebitda  = inc.ebitda.replace(0, np.nan).interpolate()
         inc.costOfRevenue  = inc.costOfRevenue.replace(0, np.nan).interpolate()
         inc.incomeBeforeTax  = inc.incomeBeforeTax.replace(0, np.nan).interpolate()
-        inc.revenue_growth_3 = (inc.revenue / inc.revenue.shift(3)) ** (1 / 3) - 1
+        inc['revenue_growth_3'] = (inc.revenue / inc.revenue.shift(3)) ** (1 / 3) - 1
         bs.totalDebt  = bs.totalDebt.replace(0, np.nan).interpolate()
         revenues = inc.revenue.fillna(0).values.reshape(-1,1)
         cogs = (inc.revenue - inc.grossProfit).fillna(0).values.reshape(-1,1)
@@ -619,7 +652,7 @@ def get_ep(*, ticker, inc = pd.DataFrame(), bs = pd.DataFrame(), cf = pd.DataFra
 def run_eps(d_in, inc = pd.DataFrame(), bs = pd.DataFrame(), cf = pd.DataFrame(), ebitda_scenario = []):
     # This function takes an fscore dataframe and adds the ep scores to it
     # used to update a dataframe with new scores on the fly
-    # Assumes dataframe has a) tickers as its index
+    # Assumes dataframe has tickers as its index
     # It will get the forecasts and return an updated dataframe
     # Also takes and optional ebitda_scenario 1 or 10 multipler list for scenarios
 
@@ -910,21 +943,21 @@ def run_tests(df_in = pd.DataFrame(), tests = []):
     # And returns the updated dataframe with new tests run
     # It assumes the input dataframe has all the right data in it already
 
-    from getdata_325 import get_master_screen_sheets
-
     if df_in.empty:
-        print ('Cant run tests - datafrme is empty')
+        print ('Cant run tests - dataframe is empty')
         return None
 
     df = df_in.copy()
+
+    if isinstance(df, pd.Series):
+        df = pd.DataFrame(df).T
+
 
     # tests
     # Get the tests to use from set_tests. Don't send in a dataframe for live tests
     #   Note: set_tests returns a dict with 'tests' key as the main tests list
     if len(tests) == 0:
         tests = set_tests()['tests']
-
-    ttfdf = get_master_screen_sheets('Screen Mar 2020')
 
     for i in df.index:
         try:
@@ -937,7 +970,7 @@ def run_tests(df_in = pd.DataFrame(), tests = []):
                     'ev_to_ebitda_ltm_test',
                     'price_change_52_test'
                     ]
-            # When getting average, fill NAs with 0
+            # When getting average, fill NAs with 0 and replace True False with 0, 1
             df.loc[i,'VALUATION_test'] = sum(df.loc[i,valuation_tests].fillna(0)) / len(valuation_tests)
 
             # superior business model tests
@@ -948,12 +981,7 @@ def run_tests(df_in = pd.DataFrame(), tests = []):
             df.loc[i,'sgam_ltm_test'] = df.loc[i,'sgam_ltm'] <= tests['sgam_ltm_test']
             df.loc[i,'revenue_growth_3_test'] = df.loc[i,'revenue_growth_3'] > tests['revenue_growth_3_test']
             df.loc[i,'revenue_growth_max_test'] = df.loc[i,'revenue_growth_3'] > tests['revenue_growth_max_test']
-            try:
-                df.loc[i,'market_leader_test'] = ttfdf.market_leader_test[i] >= tests['market_leader_test']
-                df.loc[i,'market_leader'] = 1
-            except:
-                df.loc[i,'market_leader_test'] = False
-                df.loc[i,'market_leader'] = 0
+            df.loc[i,'market_leader_test'] = df.loc[i, 'market_leader'] >= tests['market_leader_test']
 
             sbm_tests = [
                 'roic_high_5_test',
@@ -1032,7 +1060,8 @@ def run_tests(df_in = pd.DataFrame(), tests = []):
                 ]
             df.loc[i,'PI_test'] = sum(df.loc[i,pi_tests].fillna(0)) / len(pi_tests)
         except:
-            print('Cant run tests on input dataframe, check the dataframe and try again')
+            print('Error running tests. For diagnostic purposes, printing df_in and tests')
+            print (df, tests)
             return None
 
     return df

@@ -471,8 +471,11 @@ def get_key_stats(ticker):
                  'Cash Conversion Ratio': 'cash_conversion_ltm',
                  'Gross Margin (LTM)': 'gross_profit_margin_ltm'}
 
+    # Put in place good database names from the names dictionary above
     returndf.rename(columns=new_names, inplace=True)
-    returndf = returndf.convert_dtypes()
+
+    # Replace strings with numbers whereever possible otherwise, 'ignore' meaning leave them
+    returndf = returndf.apply(pd.to_numeric, errors = 'ignore')
 
     return returndf
 
