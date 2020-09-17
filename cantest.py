@@ -13,10 +13,48 @@ import numpy as np
 from getdata_325 import get_key_stats, get_historic_prices
 from screen1 import run_tests, run_eps
 
+def update_all_fscores_with_canalyst(directory):
+    """
+    This function uses functions get_all_models to get a list of tickers for which there is a model.
+    It then runs update_fscores_with_canalyst to update fscores with whatever canalyst models it finds
+    note directory has to have a trailing / as in '/home/aks/325research/' not '/home/aks/325ressearch'
+    """
+
+    tickers_with_models = get_all_models(directory)
+
+    for i in tickers_with_models:
+        try:
+            update_fscores_with_canalyst(i, directory + i + '/Models/')
+        except:
+            print(f'Updating {i} model failed')
+            continue
+    return
+
+
+def get_all_models(directory):
+    """ get_all_models
+    This function takes a base directory of tickers where models should be (e.g. 325 Research)
+    it then looks inside each directory entry for the existence of 'Models' and returns
+    those tickers (defined as directory names <= 5) for which it finds a Model as a list'
+    note directory has to have a trailing slash
+    """
+
+    if len( directory ) == 0:
+        directory = '/home/aks/325research/'
+
+    research_files = [i for i in os.scandir(directory)]
+    ticker_dirs = [i for i in research_files if i.is_dir()]
+    model_dirs = [i.name for i in ticker_dirs if ('Models' in os.listdir(directory + i.name)) & (len(i.name) <= 5)]
+
+    models_available = [i for i in model_dirs if get_latest_file_for_ticker(i, directory + i + '/Models/')]
+
+    return models_available
+
 
 def get_latest_file_for_ticker(ticker, directory):
     """ This function takes a ticker and a directory and scans all the files and
     returns the most recent file with the ticker's name in it.
+    note directory has to have a trailing slash
     """
     # Get all the directory entries in the directory
     dir_entries = os.scandir(directory)
@@ -26,12 +64,14 @@ def get_latest_file_for_ticker(ticker, directory):
 
     # Sort the files by date (item 1) in reverse order (most recent first)
     files = sorted(files.items(), key=lambda item: item[1], reverse=True)
-    print(files)
 
     # Return the first distionary entry [0] and then the first entry of key/value pair which is the filename [0]
-    return files[0][0]
+    if files:
+        return files[0][0]
+    else:
+        return 0
 
-def get_summary_page(ticker):
+def get_summary_page(ticker, directory):
     """ This function takes a ticker and looks in Anil's 325resarch path and reads the
         latest canalyst sheet (based on get_latest_file_for_ticker function.
 
@@ -43,15 +83,18 @@ def get_summary_page(ticker):
         Example errors are:
         - out of range - not enough data
         - can't read some values, dataframe doesn't recognize some fields as numerical due to some text typed
-        - < error or something; which acutally means that there are multple columns named the same thing
+        - pandas < error acutally means that there are multple columns named the same thing
             by mistake; check parsing of fields
+
+        note directory name has to have a trailing slash
         """
 
-    # Set up to run interactively while experimenting
-    directory = '/home/aks/325research/'+ticker.upper()+'/Models'
+    # Set up to run automatically while experimenting
+    if 'Models' not in directory:
+        directory = '/home/aks/325research/'+ticker.upper()+'/Models/'
 
     # Get the latest date of the model using openpyxl and MO.MRFP field in canalyst models
-    filename = directory + '/' + get_latest_file_for_ticker(ticker, directory)
+    filename = directory + get_latest_file_for_ticker(ticker, directory)
     workbook = openpyxl.load_workbook(filename)
 
     # MRFP_range will then have a list of the sheet and the range of the date (but with $ signs)
@@ -417,16 +460,82 @@ def get_summary_page(ticker):
 
     f = f.append(q.loc[mrfp])
 
+    # Add an mrfp field for tracking in fscores
+    f['mrfp'] = mrfp
+
     # That's all folks - return the q and f dataframes
     return q, f, mrfp
 
-def print_mb_report(ticker):
+
+def print_report(tickerdf):
+    """ This function prints Michael Braner's original report.  It takes a cut of a
+    ticker from a dataframe from fscores and prints the result
+    """
+    # rename tickerdf as q for consistency with original code
+    q = tickerdf.copy()
+    ticker = q.name
+    mrfp = q.date_of_data
+
+    # set display columns for potential value summary
+    display_value_summary = [
+            'revenue_ltm',
+            'ebitda_ltm',
+            'ebitda_margin_ltm',
+            'capex_ltm',
+            'ep_ltm',
+            'revenue_growth_3',
+            'ep_roic',
+            'net_debt_ltm',
+            'ep_market_cap',
+            'fcfe_ltm',
+            'fcfe_avg_3',
+            'ep_value_from_fcfe',
+            'ebitda_margin_high_5',
+            'ep_value_from_ebitda',
+            'ep_delta_3',
+            'ic_delta_3',
+            'roic_high_5',
+            'ep_value_from_ic',
+            'ep_ic_delta_3',
+            'ep_total_est_value'
+            ]
+
+    # set display for potential value relative to current market cap
+    key_stats = get_key_stats(ticker)
+    market_cap = key_stats.market_cap[0]
+    historic = get_historic_prices(ticker)
+    last_price  = historic.last('1D').Close[0]
+
+    # Format pandas output for floats
+    pd.options.display.float_format = '{:,.2f}'.format
+    # print some output
+    print('\n\n')
+    print(f'The model for {ticker} has been imported as of {mrfp}')
+    print(f'The current market cap is ${market_cap:,.1f}M at ${last_price:,.2f}')
+    print('\n')
+    print(q[display_value_summary])
+    print('\n')
+    print('The estimated value from each source:')
+    print('current ep:\t{0:.1f}x'.format(
+        q.ep_market_cap/market_cap))
+    print('avg fcfe:\t{0:.1f}x'.format(
+        q.ep_value_from_fcfe/market_cap))
+    print('margin:\t\t{0:.1f}x'.format(
+        q.ep_value_from_ebitda/market_cap))
+    print('growth:\t\t{0:.1f}x'.format(q.ep_value_from_ic/market_cap))
+    print('-----------\t----')
+    print('total:\t\t{0:.1f}x'.format(
+        q.ep_total_est_value/market_cap))
+
+    return
+
+def print_mb_report(ticker, directory):
     """ This function prints Michael Braner's original report in his model import
     file to see if it all working correctly. It takes a ticker and a dataframe for q
     as definied in get_canalyst_model and returned by it second
     """
     # get the latest canalyst data in q, f, and m which are quarterly df, fiscal year df, and mrfp
-    q, _f, mrfp = get_summary_page(ticker)
+    q, _f, mrfp = get_summary_page(ticker, directory)
 
     # set display columns for potential value summary
     display_value_summary = [
@@ -481,7 +590,7 @@ def print_mb_report(ticker):
 
     return q
 
-def update_fscores_with_canalyst(ticker):
+def update_fscores_with_canalyst(ticker, directory):
     """
     This function takes a ticker and a directory where its latest Canalyst Model is stored
     and updates the master fscores database with the Canalyst information to be more accurate
@@ -494,7 +603,7 @@ def update_fscores_with_canalyst(ticker):
     fscores = fscores.set_index('symbol')
 
     # cq refers to canalyst quarterlies, cf to canalyst fiscals. function in cantest.py
-    cq, cf, mrfp = get_summary_page(ticker)
+    cq, cf, mrfp = get_summary_page(ticker, directory)
 
     # Pull out a record to update for this ticker
     this_ticker = fscores.loc[ticker].copy()
