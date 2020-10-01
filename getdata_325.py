@@ -18,13 +18,9 @@ import logging
 # Set up some convenience settings
 pd.set_option('display.max_rows', 900)
 pd.set_option('display.max_seq_items', 900)
-<<<<<<< HEAD
 
 # Set up graphics standards
 plt.style.use('325.mplstyle')
-=======
->>>>>>> d3b4d81c1b903220f8f8a6ae964a5c9767820674
-
 
 def get_token():
 
@@ -577,13 +573,8 @@ def get_latest_excel_for_ticker(ticker, directory):
     # Get all the directory entries in the directory
     dir_entries = os.scandir(directory)
 
-<<<<<<< HEAD
-    # Make a dictionary of all the excel files with the tickers name in it with date/time; changed to creation time on 9/23/20
-    files = {entry.name: entry.stat().st_ctime for entry in dir_entries if (ticker in entry.name) & ('.xls' in entry.name)}
-=======
     # Make a dictionary of all the excel files with the tickers name in it with date/time
     files = {entry.name: entry.stat().st_mtime for entry in dir_entries if (ticker in entry.name) & ('.xls' in entry.name)}
->>>>>>> d3b4d81c1b903220f8f8a6ae964a5c9767820674
 
     # Sort the files by date (item 1) in reverse order (most recent first)
     files = sorted(files.items(), key=lambda item: item[1], reverse=True)
@@ -614,12 +605,9 @@ def get_summary_page(ticker, directory):
 
     import openpyxl
 
-<<<<<<< HEAD
     # Stop openpyxl from complaining
     logging.captureWarnings(True)
 
-=======
->>>>>>> d3b4d81c1b903220f8f8a6ae964a5c9767820674
     # Set up to run automatically while experimenting
     if 'Models' not in directory:
         directory = '/home/aks/325research/'+ticker.upper()+'/Models/'
@@ -639,12 +627,9 @@ def get_summary_page(ticker, directory):
     c = c.set_index('Reports')
     print(f'Imported the {ticker} model from {filename} with date {mrfp}')
 
-<<<<<<< HEAD
     # Turn warnings back on
     logging.captureWarnings(False)
 
-=======
->>>>>>> d3b4d81c1b903220f8f8a6ae964a5c9767820674
     # Drop NA rows (section headers) and USD column (which reads in as all NA)
     c = c.replace(to_replace = ["NMF","NaN"], value = pd.NA)
     c = c.dropna(axis = 'index', how = 'all')
@@ -667,10 +652,7 @@ def get_summary_page(ticker, directory):
             'COGS (adj. for D&A)': 'cogs_ex_da',
             'COGS (adj. for SBC and Amortization Expense': 'cogs_ex_da',
             'SG&A (adj. for SBC)': 'sga_ex_sbc',
-<<<<<<< HEAD
             'OPEX (adj. for SBC)': 'sga_ex_sbc',
-=======
->>>>>>> d3b4d81c1b903220f8f8a6ae964a5c9767820674
             'Salaries and wages': 'sga_ex_sbc',
             'SG&A (adj. for SBC and Depreciation Expense)': 'sga_ex_sbc',
             'R&D (adj. for SBC)': 'rd_ex_sbc',
@@ -757,10 +739,6 @@ def get_summary_page(ticker, directory):
     m = c.T
     m = m.convert_dtypes()
 
-<<<<<<< HEAD
-=======
-
->>>>>>> d3b4d81c1b903220f8f8a6ae964a5c9767820674
     # Fix some odd issues if they exist
     d = [i for i in m.columns if i.startswith('Depreciation')]
     a = [i for i in m.columns if i.startswith('Amortization')]
@@ -797,14 +775,11 @@ def get_summary_page(ticker, directory):
 
     # Drop "other items" which often appears many times in Canalyst page
     m = m.drop(columns = ['other_items'])
-<<<<<<< HEAD
 
     # This is only way i know to drop duplicate column names
     duplicate_column_names = m.columns.duplicated()
     m = m.loc[:,~duplicate_column_names]
 
-=======
->>>>>>> d3b4d81c1b903220f8f8a6ae964a5c9767820674
     m.to_excel('debug.xlsx')
 
     # Split into two dataframes, one for quarters and one for fiscal years
@@ -841,10 +816,7 @@ def get_summary_page(ticker, directory):
     q['revenue_growth_3'] = (q.revenue_ltm / q.revenue_ltm.shift(12)) ** (1 / 3) - 1
     f['revenue_growth_3'] = (f.revenue_ltm / f.revenue_ltm.shift(3)) ** (1 / 3) - 1
     q['revenue_growth_max'] = q.revenue_growth_3.rolling(20).max()
-<<<<<<< HEAD
     f['revenue_growth_max'] = f.revenue_growth_3.rolling(3).max()
-=======
->>>>>>> d3b4d81c1b903220f8f8a6ae964a5c9767820674
     q['ebitda_growth_3'] = (q.ebitda_ltm / q.ebitda_ltm.shift(12)) ** (1 / 3) - 1
     f['ebitda_growth_3'] = (f.ebitda_ltm / f.ebitda_ltm.shift(3)) ** (1 / 3) - 1
     q['ebitda_margin_ltm'] = q.ebitda_ltm / q.revenue_ltm
@@ -976,15 +948,9 @@ def get_summary_page(ticker, directory):
     q['ep_market_cap'] = q.ep_ltm * 10 - q.net_debt_ltm
     f['ep_market_cap'] = f.ep_ltm * 10 - f.net_debt_ltm
 
-<<<<<<< HEAD
     ## 3-year fcfe estimate of market value; 5-year hold period cumulative fcfe
     q['ep_value_from_fcfe'] = q.fcfe_avg_3 * 5
     f['ep_value_from_fcfe'] = f.fcfe_avg_3 * 5
-=======
-    ## 3-year fcfe estimate of market value
-    q['ep_value_from_fcfe'] = q.fcfe_avg_3 * 10
-    f['ep_value_from_fcfe'] = f.fcfe_avg_3 * 10
->>>>>>> d3b4d81c1b903220f8f8a6ae964a5c9767820674
 
     ## return to peak EBITDA estimate of market value
     q['ep_value_from_ebitda'] = ((q.ebitda_margin_high_5 - q.ebitda_margin_ltm) * q.revenue_ltm
@@ -1006,13 +972,8 @@ def get_summary_page(ticker, directory):
     f['ep_delta_3'] = f.ep_ltm - f.ep_ltm.shift(3)
     q['ep_ic_delta_3'] = q.ep_delta_3 / q.ic_delta_3
     f['ep_ic_delta_3'] = f.ep_delta_3 / f.ic_delta_3
-<<<<<<< HEAD
     q['ep_value_from_ic'] = (q.ic_delta_3 / 3 * 5 * q.roic_high_5)
     f['ep_value_from_ic'] = (f.ic_delta_3 / 3 * 5 * f.roic_high_5)
-=======
-    q['ep_value_from_ic'] = q.ic_delta_3 * q.roic_high_5 * 10 - q.ic_delta_3
-    f['ep_value_from_ic'] = f.ic_delta_3 * f.roic_high_5 * 10 - f.ic_delta_3
->>>>>>> d3b4d81c1b903220f8f8a6ae964a5c9767820674
 
     ## Total value added from all sources
     q['ep_total_est_value'] = q.ep_market_cap + q.ep_value_from_fcfe + q.ep_value_from_ebitda + q.ep_value_from_ic
@@ -1024,11 +985,7 @@ def get_summary_page(ticker, directory):
     except:
         print(f'Model has date {mrfp} and so can not drop 2020')
 
-<<<<<<< HEAD
     # Note if this line fails due to "reindex" error; probably one item has been added to one df and not the other
-=======
-
->>>>>>> d3b4d81c1b903220f8f8a6ae964a5c9767820674
     f = f.append(q.loc[mrfp])
 
     # Add an mrfp field for tracking in fscores
@@ -1087,26 +1044,12 @@ def get_mb_report(tickerdf):
     print(q[display_value_summary])
     print('\n')
     print('The estimated value from each source:')
-<<<<<<< HEAD
     print('current ep:\t{0:.1f}x'.format(q.ep_market_cap/market_cap))
     print('avg fcfe:\t{0:.1f}x'.format(q.ep_value_from_fcfe/market_cap))
     print('margin:\t\t{0:.1f}x'.format(q.ep_value_from_ebitda/market_cap))
     print('growth:\t\t{0:.1f}x'.format(q.ep_value_from_ic/market_cap))
     print('-----------\t----')
     print('total:\t\t{0:.1f}x'.format(q.ep_total_est_value/market_cap))
-=======
-    print('current ep:\t{0:.1f}x'.format(
-        q.ep_market_cap/market_cap))
-    print('avg fcfe:\t{0:.1f}x'.format(
-        q.ep_value_from_fcfe/market_cap))
-    print('margin:\t\t{0:.1f}x'.format(
-        q.ep_value_from_ebitda/market_cap))
-    print('growth:\t\t{0:.1f}x'.format(q.ep_value_from_ic/market_cap))
-    print('-----------\t----')
-    print('total:\t\t{0:.1f}x'.format(
-        q.ep_total_est_value/market_cap))
->>>>>>> d3b4d81c1b903220f8f8a6ae964a5c9767820674
-
     return
 
 def print_mb_report(ticker, directory):
@@ -1157,25 +1100,12 @@ def print_mb_report(ticker, directory):
     print(q.loc[mrfp][display_value_summary])
     print('\n')
     print('The estimated value from each source:')
-<<<<<<< HEAD
     print('current ep:\t{0:.1f}x'.format(q.ep_market_cap[mrfp]/market_cap))
     print('avg fcfe:\t{0:.1f}x'.format(q.ep_value_from_fcfe[mrfp]/market_cap))
     print('margin:\t\t{0:.1f}x'.format(q.ep_value_from_ebitda[mrfp]/market_cap))
     print('growth:\t\t{0:.1f}x'.format(q.ep_value_from_ic[mrfp]/market_cap))
     print('-----------\t----')
     print('total:\t\t{0:.1f}x'.format(q.ep_total_est_value[mrfp]/market_cap))
-=======
-    print('current ep:\t{0:.1f}x'.format(
-        q.market_cap[mrfp]/market_cap))
-    print('avg fcfe:\t{0:.1f}x'.format(
-        q.ep_value_from_fcfe[mrfp]/market_cap))
-    print('margin:\t\t{0:.1f}x'.format(
-        q.ep_value_from_ebitda[mrfp]/market_cap))
-    print('growth:\t\t{0:.1f}x'.format(q.ep_value_from_ic[mrfp]/market_cap))
-    print('-----------\t----')
-    print('total:\t\t{0:.1f}x'.format(
-        q.ep_total_est_value[mrfp]/market_cap))
->>>>>>> d3b4d81c1b903220f8f8a6ae964a5c9767820674
 
     return q
 
@@ -1202,10 +1132,6 @@ def update_fscores_with_canalyst(ticker, directory):
 
     # For any columns in cq, update this_ticker. (Note: tried pd.update and errors)
     shared_columns = [i for i in this_ticker.columns if i in cq.columns]
-<<<<<<< HEAD
-    breakpoint()
-=======
->>>>>>> d3b4d81c1b903220f8f8a6ae964a5c9767820674
     for col in shared_columns:
         this_ticker[col] = cq.loc[mrfp, col]
 

@@ -24,13 +24,8 @@ axes.spines.top: False
 figure.facecolor: white
 figure.figsize: 8.0, 5.5
 
-<<<<<<< HEAD
-font.family: IBM Plex Sans, sans-serif
-font.sans-serif: IBM Plex Sans,Arial, Liberation Sans, DejaVu Sans, Bitstream Vera Sans, sans-serif
-=======
 font.family: IBMPlex Sans, sans-serif
 font.sans-serif: IBMPlex Sans,Arial, Liberation Sans, DejaVu Sans, Bitstream Vera Sans, sans-serif
->>>>>>> d3b4d81c1b903220f8f8a6ae964a5c9767820674
 font.size: 7.0
 font.weight: 200
 
