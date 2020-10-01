@@ -25,8 +25,13 @@ plt.style.use('325.mplstyle')
 
 # Which ticker you want the score for
 # Get the fidelity data
-filenames = ['../sc1.xls', '../sc2.xls',
-             '../sc3.xls', '../sc4.xls', '../sc5.xls']
+# filenames = ['../sc1.xls', '../sc2.xls',
+filenames = [
+            '../sc1.xls',
+            '../sc2.xls',
+            '../sc3.xls',
+            '../sc4.xls',
+            '../sc5.xls']
 for filen in filenames:
 
     f = []

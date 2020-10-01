@@ -8,6 +8,7 @@
 # Get the required packages
 import pandas as pd
 import numpy as np
+import logging
 
 # Set up some convenience settings
 pd.set_option('display.max_rows', 200)
@@ -28,7 +29,14 @@ def get_fscore(tickers):
     import  pandas as pd
     import  datetime as dt
     import logging
-    logging.basicConfig(level  = logging.INFO, filename = 'fscores.log', filemode = 'w')
+
+    # Set up logger
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    log_file_handler = logging.FileHandler('fscores.log')
+    log_formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s:%(message)s')
+    log_file_handler.setFormatter(log_formatter)
+    logger.addHandler(log_file_handler)
 
     # Set up Fundamental Analysis Package
     api_key = "c350f6f5a4396d349ee4bbacde3d5999"
@@ -39,14 +47,6 @@ def get_fscore(tickers):
     # ttf is 't'hree 't'wenty 'f'ive
     ttfdf = pd.read_excel('fscores.xlsx')
     ttfdf = ttfdf.set_index('symbol')
-
-    # Get a names translation from Yahoo to database_titles
-    filenames = ["yahoo_to_database_titles.xlsx"]
-    sheets = {"Sheet1": [0, "A:B", 71] }
-    names = getasheet(filenames, sheets,'yahoo_name')
-
-    # Create a dictionary of new name mappings for Yahoo columns and rename them
-    new_names = dict(zip(names.index,names['database_name']))
 
     # Create a return df
     returndf = pd.DataFrame()
@@ -63,156 +63,121 @@ def get_fscore(tickers):
 
         try:
             # Get Yahoo insider stats
-            tgt = 'https://finance.yahoo.com/quote/{}/insider-transactions?p={}'.format(ticker, ticker)
+            tgt = f'https://finance.yahoo.com/quote/{ticker}/insider-transactions?p={ticker}'
             try:
                 inside = pd.read_html(tgt)[0]
+                logger.info(f'Got insider transactions for {ticker}')
             except:
-                logging.warning('get yahoo stats failed: {}'.format(ticker))
+                logger.error(f'Get insider stats from yahoo failed for {ticker}. Setting inside to empty dataframe')
                 inside = pd.DataFrame()
 
             # get the other main stock indicators from Yahoo
             try:
                 key_stats = get_key_stats(ticker)
-                key_stats.rename(columns = new_names, inplace = True)
+                logger.info(f'Got yahoo key stats for {ticker}')
             except:
-                logging.warning('get key stats failed: {}'.format(ticker))
+                logger.warning(f'Get key stats failed for {ticker}')
                 continue
 
             # Get the historical price data
             hist = get_historic_prices(ticker)
 
             # Get the Fundamental Analysis data fields (check if each one loaded or not)
-            profile = fa.profile(ticker, api_key)
-            if profile.empty:
-                logging.warning('get profile failed: {}'.format(ticker))
-                continue
-            companyName = profile.T.companyName
+            try:
+                profile = fa.profile(ticker, api_key).T
 
-            inc = fa.income_statement(ticker, api_key, period='annual').T
-            if inc.empty:
-                logging.warning('get inc failed: {}'.format(ticker))
-                continue
-            inc.index = pd.to_datetime(inc.index)
-            inc.sort_index(inplace = True)
+                inc = fa.income_statement(ticker, api_key, period='annual').T.convert_dtypes()
+                bs = fa.balance_sheet_statement(ticker, api_key, period='annual').T.convert_dtypes()
+                km = fa.key_metrics(ticker, api_key, period='annual').convert_dtypes().T.convert_dtypes()
+                cf = fa.cash_flow_statement(ticker, api_key, period='annual').T.convert_dtypes()
+                fr = fa.financial_ratios(ticker, api_key, period='annual').T.convert_dtypes()
+                fg = fa.financial_statement_growth(ticker, api_key, period='annual').T.convert_dtypes()
+                ev = fa.enterprise(ticker,api_key,period= 'annual').T.convert_dtypes()
 
-            # Create an LTM column for latest
-            # First get quarterly data
-            inc_quarters = fa.income_statement(ticker, api_key, period = 'quarter').T
-            if inc_quarters.empty:
-                logging.warning('get inc quarters failed: {}'.format(ticker))
-                continue
-            inc_quarters.index = pd.to_datetime(inc_quarters.index)
-            inc_quarters.sort_index(inplace = True)
+                inc.index = pd.to_datetime(inc.index)
+                inc.sort_index(inplace = True)
 
-            cf_quarters = fa.cash_flow_statement(ticker, api_key, period = 'quarter').T
-            if cf_quarters.empty:
-                logging.warning('get cf quarters failed: {}'.format(ticker))
-                continue
-            cf_quarters.index = pd.to_datetime(cf_quarters.index)
-            cf_quarters.sort_index(inplace = True)
+                bs.index = pd.to_datetime(bs.index)
+                bs.sort_index(inplace = True)
+
+                km.index = pd.to_datetime(km.index)
+                km.sort_index(inplace = True)
+
+                cf.index = pd.to_datetime(cf.index)
+                cf.sort_index(inplace = True)
 
 
-            km_quarters = fa.key_metrics(ticker, api_key, period = 'quarter').T
-            if km_quarters.empty:
-                logging.warning('get key metrics km failed: {}'.format(ticker))
-                continue
-            km_quarters.index = pd.to_datetime(km_quarters.index)
-            km_quarters.sort_index(inplace = True)
+                fr.index = pd.to_datetime(fr.index)
+                fr.sort_index(inplace = True)
 
-            ev_quarters = fa.enterprise(ticker, api_key, period = 'quarter').T
-            if ev_quarters.empty:
-                logging.warning('get ev quarters failed: {}'.format(ticker))
-                continue
-            ev_quarters.index = pd.to_datetime(ev_quarters.index)
-            ev_quarters.sort_index(inplace = True)
+                fg.index = pd.to_datetime(fg.index)
+                fg.sort_index(inplace = True)
 
-            # Create an ltm mask and get the sums of the income statement into LTM column
-            ltm = (inc_quarters.index > '2019-03-01') & (inc_quarters.index <= '2020-03-01')
-            ratios = ['grossProfitRatio', 'ebitdaratio', 'operatingIncomeRatio', 'netIncomeRatio']
-            inct = inc.T
-            inct[pd.to_datetime('2020-03-01')] = inc_quarters[ltm].sum()
-            for ratio in ratios:
-                inct.loc[ratio,'2020-03-01'] = inc_quarters.loc[inc_quarters.last('2Q').index[0], ratio]
-            inc = inct.T
-            inc.drop(columns = ['depreciationAndAmortization'], inplace = True)
+                ev.index = pd.to_datetime(ev.index)
+                ev.sort_index(inplace = True)
 
-            bs = fa.balance_sheet_statement(ticker, api_key, period='annual').T
-            if bs.empty:
-                logging.warning('get bs failed: {}'.format(ticker))
-                continue
-            bs.index = pd.to_datetime(bs.index)
-            bs.sort_index(inplace = True)
-            # Set BS ltm to last BS
-            bs_quarters = fa.balance_sheet_statement(ticker, api_key, period = 'quarter').T
-            if bs_quarters.empty:
-                logging.warning('get bs_quarters failed: {}'.format(ticker))
-                continue
-            bs_quarters.index = pd.to_datetime(bs_quarters.index)
-            bs_quarters.sort_index(inplace = True)
-            bsltm = bs_quarters.last('1Q')
-            bsltm.index = [pd.to_datetime('2020-03-01')]
-            bs = bs.append(bsltm)
+                logger.info(f'Got FA annauals for {ticker}')
 
-            km = fa.key_metrics(ticker, api_key, period='annual').T
-            if km.empty:
-                logging.warning('get km failed: {}'.format(ticker))
+            except:
+                logger.warning(f'Could not get FA annuals for {ticker}')
                 continue
-            km.index = pd.to_datetime(km.index)
-            km.sort_index(inplace = True)
-            kmt = km.T
-            kmt[pd.to_datetime('2020-03-01')] = km_quarters.iloc[-1]
-            km = kmt.T
-            # km comes with enterprise value which we get with ev later
-            km.drop(columns = ['enterpriseValue'], inplace = True)
-
-            cf = fa.cash_flow_statement(ticker, api_key, period='annual').T
-            if cf.empty:
-                logging.warning('get cf failed: {}'.format(ticker))
-                continue
-            cf.index = pd.to_datetime(cf.index)
-            cf.sort_index(inplace = True)
-            cft = cf.T
 
             try:
-                cft[pd.to_datetime('2020-03-01')] = cf_quarters[ltm].sum()
+                inc_quarters = fa.income_statement(ticker, api_key, period = 'quarter').T.convert_dtypes()
+                cf_quarters = fa.cash_flow_statement(ticker, api_key, period = 'quarter').T.convert_dtypes()
+                km_quarters = fa.key_metrics(ticker, api_key, period = 'quarter').T.convert_dtypes()
+                ev_quarters = fa.enterprise(ticker, api_key, period = 'quarter').T.convert_dtypes()
+                bs_quarters = fa.balance_sheet_statement(ticker, api_key, period = 'quarter').T.convert_dtypes()
+
+                inc_quarters.index = pd.to_datetime(inc_quarters.index)
+                inc_quarters.sort_index(inplace = True)
+
+                cf_quarters.index = pd.to_datetime(cf_quarters.index)
+                cf_quarters.sort_index(inplace = True)
+
+                km_quarters.index = pd.to_datetime(km_quarters.index)
+                km_quarters.sort_index(inplace = True)
+
+                ev_quarters.index = pd.to_datetime(ev_quarters.index)
+                ev_quarters.sort_index(inplace = True)
+
+                bs_quarters.index = pd.to_datetime(bs_quarters.index)
+                bs_quarters.sort_index(inplace = True)
+
+                logger.info(f'Got FA quarterlies for {ticker}')
+
             except:
-                logging.warning('get cft failed: {}'.format(ticker))
-                cft[pd.to_datetime('2020-03-01')] = np.nan
-            cf = cft.T
-
-            fr = fa.financial_ratios(ticker, api_key, period='annual').T
-            if fr.empty:
-                logging.warning('get fr failed: {}'.format(ticker))
-                continue
-            fr.index = pd.to_datetime(fr.index)
-            fr.sort_index(inplace = True)
-
-            fg = fa.financial_statement_growth(ticker, api_key, period='annual').T
-            fg.index = pd.to_datetime(fg.index)
-            fg.sort_index(inplace = True)
-            if fg.empty:
-                logging.warning('get fg failed: {}'.format(ticker))
+                logger.warning(f'Could not get FA quarters for {ticker}')
                 continue
 
-            ev = fa.enterprise(ticker,api_key,period= 'annual').T
-            if ev.empty:
-                logging.warning('get ev failed: {}'.format(ticker))
-                continue
-            ev.index = pd.to_datetime(ev.index)
-            ev.sort_index(inplace = True)
-            evt = ev.T
-            evt[pd.to_datetime('2020-03-01')] = ev_quarters.iloc[-1]
-            ev = evt.T
+            # drop double counted columns that come in other databases so no duplicates later
+            km.drop(columns = ['enterpriseValue'], inplace = True)
 
-            profile = fa.profile(ticker, api_key).T
+            # Create an ltm mask and get the sums of the income statement into LTM column
+            incltm = inc_quarters.rolling(4).sum()
+            ratios = ['grossProfitRatio', 'ebitdaratio', 'operatingIncomeRatio', 'netIncomeRatio']
+            incltm[ratios] = inc[ratios]
+            inc = inc.append(incltm.last('1Q'))
+
+            # drop double counted da with cf
+            inc.drop(columns = ['depreciationAndAmortization'], inplace = True)
+
+            cfltm = cf_quarters.rolling(4).sum()
+            cf = cf.append(cfltm.last('1Q'))
+
+            bs = bs.append(bs_quarters.last('1Q'))
+            ev = ev.append(ev_quarters.last('1Q'))
+
+            logger.info(f'created ltm for {ticker}')
 
             # Put all the data in one-place
             all = pd.concat([inc, bs, km, cf, fr, fg, ev], axis = 'columns')
+            logger.info(f'Created the all database for {ticker}')
 
             # Set up a mask to caluclate averages for the last five years
             # Note that with ltm, the last five years is 6 periods that includes the LTM
-            five = (all.index > (pd.to_datetime('2020-03-01') - pd.Timedelta('5Y')))
-            three = (all.index > (pd.to_datetime('2020-03-01') - pd.Timedelta('3Y')))
+            five = (all.index > (pd.Timestamp.today() - pd.Timedelta('5Y')))
+            three = (all.index > (pd.Timestamp.today() - pd.Timedelta('3Y')))
             now = all.index[-1]
 
             # Prepare all with a few fields that will be used often
@@ -223,58 +188,62 @@ def get_fscore(tickers):
             all.grossProfitMargin = all.grossProfit / all. revenue
             all.interestExpense = all.interestExpense.replace(0, np.nan).interpolate() # inc
             all.investedCapital = all.totalDebt + all.totalStockholdersEquity  - all.cashAndShortTermInvestments # bs 062720 changed to remove cash from invested capital
-            all.investedCapital = all.investedCapital.replace(0, np.nan).interpolate() # inc
+            all.investedCapital = all.investedCapital.replace(0, np.nan).interpolate('bfill') # inc
             all.incomeBeforeTax = all.incomeBeforeTax.replace(0, np.nan).interpolate() # inc
             all.totalAssets = all.totalAssets.replace(0, np.nan) # bs
             all['fcfe'] = all.netCashProvidedByOperatingActivities + all.capitalExpenditure # cf
             all['fcfe_to_marketcap'] = all.fcfe / all.marketCapitalization # cf, bs
-
-            # convert the dataframe to correct dtypes (let pandas infer correct conversion)
+            all['revenue_growth_3'] = all.revenue / all.revenue.shift(3) ** (1 / 3) - 1
+            all['ebitda_growth_3'] = all.ebitda / all.ebitda.shift(3) ** (1 / 3) - 1
             all = all.convert_dtypes()
+            logger.info(f'Cleaned up all for {ticker}')
 
             benchmarks = {
                     'debt_to_ebitda_ltm_benchmark' : 3,
                     }
 
-            breakpoint()
+            # Create some variables to use for ep calcualtions
+            ep_multiple = 10
+            tax_rate = 0.30
+            all['ep'] = ((all.ebitda + all.capitalExpenditure) * ep_multiple - (all.totalDebt - all.cashAndShortTermInvestments)) / 1e6
 
             # Create the score for ticker
             # favor yahoo stats when in doubt
             # First some basic data about the ticker; note first item sets the index as well
             # key_stats from Yahoo key statistcs
+            logger.info(f'Starting to create fcsore for {ticker}')
             df.loc[0,'symbol'] = ticker
-            df['name'] = companyName
+            df['name'] = profile.companyName
             df['date_of_data'] = pd.to_datetime(dt.datetime.today())
             df['price'] =  hist.last('1D')['Close'][0]
             df['revenue_ltm'] = pd.to_numeric(key_stats.revenue_ltm[ticker]) # 062720 Use Yahoo revenue - more comfrotable than FA
-            df['revenue_growth_3'] = (1 + all.revenue.pct_change(periods = 4)[five].last('1Y')[0]) ** (1 / 3) - 1 # inc
-            df['revenue_growth_max'] = (1 + all.revenue.pct_change(periods = 4)[five].max()) ** ( 1 / 3) - 1 # inc
-            # Changed this to use fundamental analysis instead of yahoo finance after finding issues
-            # on August 06, 2020
+            df['revenue_growth_3'] = all.revenue_growth_3[now]
+            df['revenue_growth_max'] = all.revenue_growth_3[five].max()
             df['ebitda_ltm'] = all.ebitda[now] / 1e6
             df['ebitda_avg_3'] = all.ebitda[three].mean() / 1e6
             df['ebitda_avg_5'] = all.ebitda[five].mean() / 1e6
             df['ebitda_ago_5'] = all.ebitda.last('5Y')[0] / 1e6
 
-            df['ev'] = pd.to_numeric(key_stats.ev[ticker])
+            df['ev'] = key_stats.ev[ticker]
             df['ev_to_ebitda_ltm'] = df.ev / df.ebitda_ltm
             df['total_debt_ltm'] = all.totalDebt[now] / 1e6
-            df['cash_ltm'] = pd.to_numeric(key_stats.cash_mrq[ticker])
-            df['market_cap'] = pd.to_numeric(key_stats.market_cap[ticker])
-            df['so'] = pd.to_numeric(key_stats.so[ticker])
+            df['cash_ltm'] = key_stats.cash_mrq[ticker]
+            df['market_cap'] = key_stats.market_cap[ticker]
+            df['so'] = key_stats.so[ticker]
             df['net_debt_ltm'] = df.total_debt_ltm - df.cash_ltm
             df['fcfe_ltm'] = all.fcfe[now] / 1e6
+            df['fcfe_avg_3'] = all.fcfe[three].mean() / 1e6
             df['fcfe_to_marketcap'] = all.fcfe[now] / all.marketCapitalization[now]
             df['low_fcfe_to_historical'] = df.fcfe_to_marketcap / all[five].fcfe_to_marketcap.max()
-            df['ebitda_cagr_to_evx'] = all.ebitda.pct_change(periods = 3)[five].max() / df.ev_to_ebitda_ltm # inc
+            df['ebitda_cagr_to_evx'] = all.ebitda_growth_3[now] / df.ev_to_ebitda_ltm # inc
 
             try:
                 df['net_insider_purchase_6'] = pd.to_numeric(inside.loc[inside.index[-1], 'Shares'].replace('%', ''))
             except:
-                logging.warning('get insider purchase failed: {}'.format(ticker))
+                logger.warning(f'get insider purchase failed for {ticker}')
                 df['net_insider_purchase_6'] = np.NAN
 
-            df['price_change_52'] = pd.to_numeric(key_stats.price_change_52[ticker]) # TODO from hist?
+            df['price_change_52'] = key_stats.price_change_52[ticker] # TODO from hist?
             df['price_change_ytd'] = df.price / hist.last('1Y')['Close'][0] - 1 # choose a relative time period that is comparable eg. three months, LTM, or something
             df['price_change_last_Q'] = df.price / hist.last('1Q')['Close'][0] -1 # Added to put in a relatve lagging period
             df['book_value'] = all.totalStockholdersEquity[now] / 1e6 - all.othertotalStockholdersEquity[now] / 1e6 # bs TODO https://www.investopedia.com/terms/b/bookvalue.asp
@@ -282,6 +251,7 @@ def get_fscore(tickers):
             df['pe_mid_cycle'] = all.priceEarningsRatio[five].median() # fr could use peRatio from km
             df['pe'] = pd.to_numeric(key_stats.pe_ltm[ticker])
             df['pe_to_mid_cycle_ratio'] = df.pe / df.pe_mid_cycle
+            logger.info(f'Finished basic metrics in df for {ticker}')
 
             # Margin related
             df['gm_ltm'] = key_stats.gross_profit_ltm[0] / df.revenue_ltm
@@ -315,6 +285,8 @@ def get_fscore(tickers):
                                         / df.so
                                         / df.price
                                         )
+            logger.info(f'Finsihed margin related info for {ticker}')
+
             # ROIC section
             df['tax_rate'] = all.incomeTaxExpense[now] / all.incomeBeforeTax[now] # inc
             all.roic = all.operatingIncome * (1 - df.tax_rate[0]) / all.investedCapital # inc, bs 062720 Changed to after tax
@@ -339,6 +311,8 @@ def get_fscore(tickers):
             df['ebit'] = all.operatingIncome[now] / 1e6 # inc
             df['ebit_ago_5'] = all.operatingIncome.last('5Y')[0] / 1e6# inc
             df['ic_ago_5'] = all.investedCapital.last('5Y')[0] / 1e6 # inc
+            df['ic_ago_3'] = all.investedCapital.last('3Y')[0] / 1e6 # inc
+            df['ic_delta_3'] = df.ic - df.ic_ago_3
             change_in_r =  df.ebit - df.ebit_ago_5
             change_in_ic_inverse = 1 / df.ic - 1 / df.ic_ago_5
             roic_change_from_r = change_in_r * (1 / df.ic_ago_5)
@@ -355,6 +329,8 @@ def get_fscore(tickers):
                                         / total_roic_change
                                         * df.roic_ltm_minus_roic_high
                                         )
+            logger.info(f'Finished capital ratio info for {ticker}')
+
             # Balance sheet metrics (including debt metrics)
             df['asset_growth'] = all.totalAssets[now] / all.totalAssets.last('5Y')[0] - 1 # bs
             df['surplus_cash_as_percent_of_price'] = (df.cash_ltm - df.total_debt_ltm)/ df.so / df.price
@@ -364,6 +340,7 @@ def get_fscore(tickers):
             df['interest_expense_ltm'] = all.interestExpense[now] / 1e6
             df['ebitda_to_interest_coverage'] = df.ebitda_ltm / df.interest_expense_ltm
             df['net_debt_to_ebitda_ltm'] = df.net_debt_ltm / df.ebitda_ltm
+            logger.info(f'Finished balance sheet items for {ticker}')
 
             # Cash flow metrics
             df['capex_ltm'] = all.capitalExpenditure[now] / 1e6 # cf
@@ -377,12 +354,34 @@ def get_fscore(tickers):
             df['capex_to_ocf'] = df.capex_ltm / df.ocf_ltm
             df['equity_sold'] = all.commonStockIssued[now] / 1e6 # cf
             df['financing_acquired'] = all.otherFinancingActivites[now] / 1e6 # cf
-            df['ep_ltm'] = (df.ebitda_ltm - df.capex_ltm) * .7
-            df['ep_avg_3'] = (df.ebitda_avg_3 - df.capex_avg_3) * .7
-            df['ep_avg_5'] = (df.ebitda_avg_5 - df.capex_avg_5) * .7
-            df['ep_ago_5'] = (df.ebitda_ago_5 - df.capex_ago_5) * .7
+            logger.info(f'Finished cash flow items for {ticker}')
 
             short_columns = [i for i in key_stats.columns if 'Short' in i] # find the short interest columns in key_stats
+
+            # Basic (MB shortcut) EPs
+            df['ep_ltm'] = (df.ebitda_ltm - df.capex_ltm) * (1 - tax_rate)
+            df['ep_avg_3'] = (df.ebitda_avg_3 - df.capex_avg_3) * (1 - tax_rate)
+            df['ep_avg_5'] = (df.ebitda_avg_5 - df.capex_avg_5) * (1 - tax_rate)
+            df['ep_ago_5'] = (df.ebitda_ago_5 - df.capex_ago_5) * (1 - tax_rate)
+            df['ep_market_cap'] = df.ep_ltm * ep_multiple - df.net_debt_ltm
+            df['ep_value_from_fcfe'] = df.fcfe_avg_3 * ep_multiple
+            df['ep_value_from_ebitda'] = (
+                            (df.ebitda_margin_high_5 - df.ebitda_margin_ltm) * df.revenue_ltm
+                            * ep_multiple
+                            * (1 - tax_rate)
+                            )
+            df['ep_roic'] = df.ep_ltm / df.ic
+            df['ep_delta_3'] = all.ep - all.ep.shift(3)
+            df['ep_ic_delta_3'] = df.ep_delta_3 / df.ic_delta_3
+            df['ep_value_from_ic'] = df.ic_delta_3 * df.roic_high_5 * ep_multiple - df.ic_delta_3
+            df['ep_total_est_value'] = (
+                    df.ep_market_cap
+                    + df.ep_value_from_fcfe
+                    + df.ep_value_from_ebitda
+                    + df.ep_value_from_ic
+                    )
+            logger.info(f'Finished ep related items for {ticker}')
+
             # Trade Metrics
             try:
                 df['short_interest_ratio'] = pd.to_numeric(key_stats.loc[ticker,short_columns[0]])
@@ -415,13 +414,18 @@ def get_fscore(tickers):
                 df['tamale_status'] = ttfdf.tamale_status[ticker]
                 df['last_work'] = ttfdf.last_work[ticker]
                 df['sagard_peers'] = pd.to_numeric(ttfdf.sagard_peers[ticker])
+                df['market_leader'] = pd.to_numeric(ttfdf.market_leader[ticker])
+                df['triggers'] = ttfdf.triggers[ticker]
             except:
                 df['sector'] = profile.sector[0]
                 df['business'] = profile.industry[0]
                 df['short_sector'] = profile.sector[0]
-                df['tamale_status'] = 'N/A'
-                df['last_work'] =  'N/A'
+                df['tamale_status'] = pd.NA
+                df['last_work'] = pd.NA
                 df['sagard_peers'] = 0
+                df['market_leader'] = 0
+                df['triggers'] = pd.NA
+            logger.info(f'Finished basic status info for {ticker}')
 
             df.set_index('symbol', inplace = True)
 
@@ -430,16 +434,18 @@ def get_fscore(tickers):
             #    one record
             tests = set_tests()['tests']
             df = run_tests(df)
+            logger.info(f'Got and put in tests for {ticker}')
 
             # Get earnings power elements
             df = run_eps(df, inc = inc, bs = bs, cf = cf)
+            logger.info(f'Got and ran eps for {ticker}')
 
             returndf = returndf.append(df)
             print('Got and appended {}'.format(ticker))
 
         except:
-            print('overall failure')
-            logging.warning('overall failure to load: {}'.format(ticker))
+            print(f'overall failure for {ticker}')
+            logging.warning(f'overall failure to load: {ticker}')
             continue
 
     return returndf
@@ -450,6 +456,7 @@ def get_ep(*, ticker, inc = pd.DataFrame(), bs = pd.DataFrame(), cf = pd.DataFra
 # ticker is a string ticker (e.g. 'GPX'), inc is fa.income_statement, bs is balance sheet, cf is
 # cash flow. revenue_scenario is a iterable of 5 growth rates for years 1 through 5 to use
 # ebitda_scenario is a list that is multiplied by the ebitda margin to push scenario up or down in total
+
 
     from sklearn.linear_model import LinearRegression
     import FundamentalAnalysis as fa
@@ -475,18 +482,24 @@ def get_ep(*, ticker, inc = pd.DataFrame(), bs = pd.DataFrame(), cf = pd.DataFra
             cf.index = pd.to_datetime(cf.index)
             cf.sort_index(inplace = True)
 
+        # Ensure we have numberical datatypes whenever we can
+        inc = inc.convert_dtypes()
+        bs = bs.convert_dtypes()
+        cf = cf.convert_dtypes()
+
         # Find the fixed and variable components of costs at the GM level and then at EBITDA
         # Get the data with the X = revenues and Y first COGS and then Y as SG&A
         # Fill in missing values in revenues if required
-        inc.revenue  = inc.revenue.replace(0, np.nan).interpolate()
-        inc.grossProfit  = inc.grossProfit.replace(0, np.nan).interpolate()
-        inc.ebitda  = inc.ebitda.replace(0, np.nan).interpolate()
-        inc.costOfRevenue  = inc.costOfRevenue.replace(0, np.nan).interpolate()
-        inc.incomeBeforeTax  = inc.incomeBeforeTax.replace(0, np.nan).interpolate()
-        bs.totalDebt  = bs.totalDebt.replace(0, np.nan).interpolate()
-        revenues = inc.revenue.fillna(0).values.reshape(-1,1)
-        cogs = (inc.revenue - inc.grossProfit).fillna(0).values.reshape(-1,1)
-        sga = (inc.revenue - inc.ebitda - inc.costOfRevenue).fillna(0).values.reshape(-1,1)
+        inc.revenue  = inc.revenue.replace(0, np.nan)
+        inc.grossProfit  = inc.grossProfit.replace(0, np.nan)
+        inc.ebitda  = inc.ebitda.replace(0, np.nan)
+        inc.costOfRevenue  = inc.costOfRevenue.replace(0, np.nan)
+        inc.incomeBeforeTax  = inc.incomeBeforeTax.replace(0, np.nan)
+        inc['revenue_growth_3'] = (inc.revenue / inc.revenue.shift(3)) ** (1 / 3) - 1
+        bs.totalDebt  = bs.totalDebt.replace(0, np.nan)
+        revenues = np.array(inc.revenue.fillna(0).values).reshape(-1,1)
+        cogs = np.array((inc.revenue - inc.grossProfit).fillna(0).values).reshape(-1,1)
+        sga = np.array((inc.revenue - inc.ebitda - inc.costOfRevenue).fillna(0).values).reshape(-1,1)
 
         cogsreg = LinearRegression()
         cogsreg.fit(revenues, cogs)
@@ -629,7 +642,7 @@ def get_ep(*, ticker, inc = pd.DataFrame(), bs = pd.DataFrame(), cf = pd.DataFra
 def run_eps(d_in, inc = pd.DataFrame(), bs = pd.DataFrame(), cf = pd.DataFrame(), ebitda_scenario = []):
     # This function takes an fscore dataframe and adds the ep scores to it
     # used to update a dataframe with new scores on the fly
-    # Assumes dataframe has a) tickers as its index
+    # Assumes dataframe has tickers as its index
     # It will get the forecasts and return an updated dataframe
     # Also takes and optional ebitda_scenario 1 or 10 multipler list for scenarios
 
@@ -920,21 +933,21 @@ def run_tests(df_in = pd.DataFrame(), tests = []):
     # And returns the updated dataframe with new tests run
     # It assumes the input dataframe has all the right data in it already
 
-    from getdata_325 import get_master_screen_sheets
-
     if df_in.empty:
-        print ('Cant run tests - datafrme is empty')
+        print ('Cant run tests - dataframe is empty')
         return None
 
     df = df_in.copy()
+
+    if isinstance(df, pd.Series):
+        df = pd.DataFrame(df).T
+
 
     # tests
     # Get the tests to use from set_tests. Don't send in a dataframe for live tests
     #   Note: set_tests returns a dict with 'tests' key as the main tests list
     if len(tests) == 0:
         tests = set_tests()['tests']
-
-    ttfdf = get_master_screen_sheets('Screen Mar 2020')
 
     for i in df.index:
         try:
@@ -947,7 +960,7 @@ def run_tests(df_in = pd.DataFrame(), tests = []):
                     'ev_to_ebitda_ltm_test',
                     'price_change_52_test'
                     ]
-            # When getting average, fill NAs with 0
+            # When getting average, fill NAs with 0 and replace True False with 0, 1
             df.loc[i,'VALUATION_test'] = sum(df.loc[i,valuation_tests].fillna(0)) / len(valuation_tests)
 
             # superior business model tests
@@ -958,12 +971,7 @@ def run_tests(df_in = pd.DataFrame(), tests = []):
             df.loc[i,'sgam_ltm_test'] = df.loc[i,'sgam_ltm'] <= tests['sgam_ltm_test']
             df.loc[i,'revenue_growth_3_test'] = df.loc[i,'revenue_growth_3'] > tests['revenue_growth_3_test']
             df.loc[i,'revenue_growth_max_test'] = df.loc[i,'revenue_growth_3'] > tests['revenue_growth_max_test']
-            try:
-                df.loc[i,'market_leader_test'] = ttfdf.market_leader_test[i] >= tests['market_leader_test']
-                df.loc[i,'market_leader'] = 1
-            except:
-                df.loc[i,'market_leader_test'] = False
-                df.loc[i,'market_leader'] = 0
+            df.loc[i,'market_leader_test'] = df.loc[i, 'market_leader'] >= tests['market_leader_test']
 
             sbm_tests = [
                 'roic_high_5_test',
@@ -1042,7 +1050,8 @@ def run_tests(df_in = pd.DataFrame(), tests = []):
                 ]
             df.loc[i,'PI_test'] = sum(df.loc[i,pi_tests].fillna(0)) / len(pi_tests)
         except:
-            print('Cant run tests on input dataframe, check the dataframe and try again')
+            print('Error running tests. For diagnostic purposes, printing df_in and tests')
+            print (df, tests)
             return None
 
     return df

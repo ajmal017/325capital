@@ -1,0 +1,4609 @@
+openapi: 3.0.3
+servers:
+  - url: /api
+info:
+  title: Canalyst API Documentation
+  version: ''
+  x-logo:
+    url: 'https://s3.amazonaws.com/canalyst-images/logo.png'
+    backgroundColor: '#F1F1F1'
+    altText: Canalyst Logo
+  description: >
+    # Introduction
+      The Canalyst API is documented in [**OpenAPI format**](http://spec.openapis.org/oas/v3.0.3).
+
+    # Authentication
+      API tokens are used to authenticate with the Canalyst API. When making
+      requests, include the token in the Authorization header using the Bearer
+      scheme: `Authorization: Bearer {token}`.
+
+    # Paging
+      The default page size is 50 and the default maximum page size is 200. The
+      following have custom page sizes and maximum page sizes:
+      * Equity Model Historical Data Points: max page size is 500
+
+    Page sizes can be customized per request (up to the maximum page size). Use
+
+    the `page_size` query parameter to set the page size for a request.
+
+
+    # Throttling
+      The default throttling limit is 300 requests per minute. The following
+      endpoints have custom throttling limits:
+      * Drivers: 45 requests per minute
+      * Scenario Forecast Data Points: 16 requests per minute
+      * Scenario Period Data Points: 16 requests per minute
+      * Scenarios: 4 requests per minute for POST requests
+
+    Upon exceeding the throttling limit, a `429 Too Many Requests` response
+
+    will be returned. The response includes a `Retry-After` header that
+
+    indicates the number of seconds until requests can be submitted again.
+
+
+    # Client SDK
+      There are just a few simple steps to generate a client software development kit
+      (SDK) for the Canalyst API that supports the language of your choice:
+
+    1. Download and save a copy of the [OpenAPI schema
+    file](/api/schema/?format=json).
+
+    2. Navigate to the [Swagger Editor](https://editor.swagger.io/) web app.
+
+    3. Open Swagger Editor's **File** menu then **Import file** and select the
+    schema
+
+    file you downloaded.
+
+    4. Open Swagger Editor's **Generate Client** menu then select the language
+    for which
+
+    you'd like to download a client SDK.
+
+    5. Unzip the downloaded client SDK file.
+
+
+    # Glossary
+      **Company**: traded on stock exchanges. A Company may have more than one
+        CSIN associated with it, which in turn means that a Company may have
+        more than one Equity Model Series associated with it.
+
+      **Company ID**: an identifier for a Company. It's also the first 6
+        characters of the CSIN.
+
+      **CSIN**: the Canalyst Security
+        Identification Number uniquely identifies Equity Model Series.
+
+      **Data Point**: an entry for a Period in a Time Series. Analogous to a
+        single data cell from a Model worksheet.
+
+      **Driver**: a Data Point whose value directly or indirectly influences
+        other Data Point values.
+
+      **Equity Model**: a representation of a company's financials, key
+        performance indicators and operating statistics. Primarily consists of
+        a matrix of Data Points from all Time Series and Periods for a single
+        Model Version.
+
+      **Equity Model Series**: the collection of all Equity Models for a
+        specific CSIN, ordered by Model Version.
+
+      **Forecast**: later than, but not including, the most recent fiscal
+        period. Analogous to everything to the right of the vertical black
+        line in a Model worksheet.
+
+      **Historical**: earlier than and including the most recent fiscal
+        period. Analogous to everything to the left of the black line
+        in a Model worksheet.
+
+      **Historical Data Point Revision**: changes to a Data Point across Model
+        Versions in an Equity Model Series, specifically an Historical Data
+        Point.
+
+      **Label**: additional information to provide more context around other
+        resources. E.g. a Company may have a sector label, and a Time Series
+        may have a financial label.
+
+      **Label association**: a mapping between a Label and something else, e.g.
+        a Time Series.
+
+      **Last price**: the last price the Equity Model was traded at. Note that
+        this value may be out of date with the Equity Model's Company's
+        current last price. Analogous to the last price cell in the Model
+        worksheet.
+
+      **Model Version**: a string that identifies a single Equity Model in an
+        Equity Model Series. Consists of the reporting period for which the
+        Equity Model was prepared and a monotonically-increasing integer
+        revision (e.g. \"FY2017.23\").
+
+      **Model Version revision**: the revision number for a specific reporting
+        period of an Equity Model in an Equity Model Series. Increments
+        monotonically.
+
+      **Model worksheet**: the Model worksheet from a Canalyst model in Excel.
+
+      **Most recent fiscal period**: the latest Period in the Equity Model that
+        has reported data. Analogous to the column immediately to the left of
+        the black vertical line in the Equity Model's Model worksheet.
+
+      **Period**: a reporting period for a Time Series. Analogous to a period
+        column from a Model worksheet.
+
+      **Scenario**: a what-if situation where provided Data Point changes are
+        percolated throughout the Equity Model.
+
+      **Sector**: a Label associated with a Company to provide additional
+        context about which economic segment the Company belongs to.
+
+      **Standalone Driver**: a type of Driver. Specifically, a Standalone
+        Driver does not belong to a Time Series. E.g. Last Price.
+
+      **Time Series**: an ordered collection of Data Points across a sequence
+        of Periods. Analogous to a data row from a Model worksheet.
+
+      **Time Series Category**: additional context for each associated Time
+        Series. Roughly analogous to a section in a Model worksheet.
+
+      **Time Series Driver**: a type of Driver. Specifically, a Time Series
+        Driver belongs to a Time Series and is at the intersection of a Time
+        Series and a Period.
+
+      **Unit**: a measurement associated with a Time Series's values.
+paths:
+  /companies/:
+    get:
+      operationId: list-company
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PageSize'
+        - name: company_id
+          required: false
+          in: query
+          description: Company ID
+          schema:
+            type: string
+        - name: name
+          required: false
+          in: query
+          description: Name
+          schema:
+            type: string
+        - name: name_contains
+          required: false
+          in: query
+          description: Name contains
+          schema:
+            type: string
+        - name: country_code
+          required: false
+          in: query
+          description: Country code
+          schema:
+            type: string
+        - name: country_name
+          required: false
+          in: query
+          description: Country name
+          schema:
+            type: string
+        - name: country_name_contains
+          required: false
+          in: query
+          description: Country name contains
+          schema:
+            type: string
+        - name: sector
+          required: false
+          in: query
+          description: Sector name
+          schema:
+            type: string
+        - name: sector_path_contains
+          required: false
+          in: query
+          description: Sector path contains
+          schema:
+            type: string
+        - name: ticker_capiq
+          required: false
+          in: query
+          description: CapIQ ticker
+          schema:
+            type: string
+        - name: ticker_factset
+          required: false
+          in: query
+          description: FactSet ticker
+          schema:
+            type: string
+        - name: ticker_thomson
+          required: false
+          in: query
+          description: Thomson ticker
+          schema:
+            type: string
+        - name: ticker_bloomberg
+          required: false
+          in: query
+          description: Bloomberg ticker
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyListEndpoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+      summary: List Companies
+      tags:
+        - Companies
+  '/companies/{company_id}/':
+    get:
+      operationId: retrieve-company
+      parameters:
+        - $ref: '#/components/parameters/CompanyID'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: Retrieve Company
+      tags:
+        - Companies
+  '/equity-model-series/{csin}/equity-models/{model_version}/time-series/{ts_id_or_name}/forecast-data-points/{period_name}/drivers/':
+    get:
+      operationId: list-drivers
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/TSIDOrName'
+        - $ref: '#/components/parameters/PeriodName'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PageSize'
+        - name: format
+          required: false
+          in: query
+          description: The requested format of the response
+          schema:
+            type: string
+            enum:
+              - json
+              - dot
+        - name: time_series_name
+          required: false
+          in: query
+          description: Time series name
+          schema:
+            type: string
+        - name: time_series_category_slug
+          required: false
+          in: query
+          description: Time series category (slug)
+          schema:
+            type: string
+        - name: time_series_category_type_slug
+          required: false
+          in: query
+          description: Time series category type (slug)
+          schema:
+            type: string
+        - name: time_series_description
+          required: false
+          in: query
+          description: Time series description
+          schema:
+            type: string
+        - name: time_series_description_contains
+          required: false
+          in: query
+          description: Time series description contains
+          schema:
+            type: string
+        - name: period_name
+          required: false
+          in: query
+          description: Period name (e.g. Q3-2018)
+          schema:
+            type: string
+        - name: period_duration_type
+          required: false
+          in: query
+          description: Period type
+          schema:
+            type: string
+        - name: period_includes_date
+          required: false
+          in: query
+          description: Period includes date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_start_date
+          required: false
+          in: query
+          description: Period start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_end_date
+          required: false
+          in: query
+          description: Period end date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_min_start_date
+          required: false
+          in: query
+          description: Minimum period start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_max_start_date
+          required: false
+          in: query
+          description: Maximum period start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_min_end_date
+          required: false
+          in: query
+          description: Minimum period end date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_max_end_date
+          required: false
+          in: query
+          description: Maximum period end date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: context_type
+          required: false
+          in: query
+          description: Context type
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverListEndpoint'
+            text/vnd.graphviz:
+              schema:
+                type: string
+                format: dot
+                description: The driver graph in Graphviz DOT format
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: List Drivers
+      tags:
+        - Drivers
+  '/equity-model-series/{csin}/equity-models/':
+    get:
+      operationId: list-equity-models
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PageSize'
+        - name: model_version_name
+          required: false
+          in: query
+          description: Model version name (e.g. Q2-2018.20)
+          schema:
+            type: string
+        - name: most_recent_period_name
+          required: false
+          in: query
+          description: Most recent period name (e.g. Q2-2018)
+          schema:
+            type: string
+        - name: most_recent_period_min_start_date
+          required: false
+          in: query
+          description: Most recent period minimum start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: most_recent_period_max_start_date
+          required: false
+          in: query
+          description: Most recent period maximum start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: most_recent_period_min_end_date
+          required: false
+          in: query
+          description: Most recent period minimum end date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: most_recent_period_max_end_date
+          required: false
+          in: query
+          description: Most recent period maximum end date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: earnings_update_type
+          required: false
+          in: query
+          description: Earnings update type (e.g. regular or partial)
+          schema:
+            $ref: '#/components/schemas/EarningsUpdateType'
+        - name: published_at_min_date
+          required: false
+          in: query
+          description: 'Published at minimum datetime (e.g. 2018-11-18 22:53:0)'
+          schema:
+            type: string
+        - name: published_at_max_date
+          required: false
+          in: query
+          description: 'Published at maximum datetime (e.g. 2018-11-18 22:53:0)'
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EquityModelListEndpoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: List Equity Models
+      tags:
+        - Equity Models
+  '/equity-model-series/{csin}/equity-models/{model_version}/':
+    get:
+      operationId: retrieve-equity-models
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EquityModel'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: Retrieve Equity Models
+      tags:
+        - Equity Models
+  '/equity-model-series/{csin}/equity-models/{model_version}/historical-data-points/':
+    get:
+      operationId: list-equity-model-historical-data-points
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PageSize'
+        - name: time_series_name
+          required: false
+          in: query
+          description: Time series name (e.g. MO_RIS_REV)
+          schema:
+            type: string
+        - name: time_series_description
+          required: false
+          in: query
+          description: Time series description
+          schema:
+            type: string
+        - name: time_series_description_contains
+          required: false
+          in: query
+          description: Time series description contains
+          schema:
+            type: string
+        - name: time_series_category_slug
+          required: false
+          in: query
+          description: Time series category (slug)
+          schema:
+            type: string
+        - name: time_series_category_type_slug
+          required: false
+          in: query
+          description: Time series category type (slug)
+          schema:
+            type: string
+        - name: time_series_unit_description
+          required: false
+          in: query
+          description: Time series unit description
+          schema:
+            type: string
+        - name: time_series_unit_description_contains
+          required: false
+          in: query
+          description: Time series unit description contains
+          schema:
+            type: string
+        - name: time_series_unit_type
+          required: false
+          in: query
+          description: Time series unit type
+          schema:
+            type: string
+        - name: time_series_unit_symbol
+          required: false
+          in: query
+          description: Time series unit symbol
+          schema:
+            type: string
+        - name: time_series_associated_label
+          required: false
+          in: query
+          description: Time series associated labels
+          schema:
+            type: string
+        - name: period_name
+          required: false
+          in: query
+          description: Period name (e.g. Q2-2018)
+          schema:
+            type: string
+        - name: period_includes_date
+          required: false
+          in: query
+          description: Period includes date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_start_date
+          required: false
+          in: query
+          description: Period start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_min_start_date
+          required: false
+          in: query
+          description: Minimum period start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_max_start_date
+          required: false
+          in: query
+          description: Maximum period start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_end_date
+          required: false
+          in: query
+          description: Period end date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_min_end_date
+          required: false
+          in: query
+          description: Minimum period end date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_max_end_date
+          required: false
+          in: query
+          description: Maximum period end date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_duration_type
+          required: false
+          in: query
+          description: Period duration type
+          schema:
+            type: string
+        - name: period_has_restated_data_points
+          required: false
+          in: query
+          description: Period contains restated data points
+          schema:
+            type: string
+        - name: period_has_unrestated_data_points
+          required: false
+          in: query
+          description: Period contains unrestated data points
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoricalDataPointListEndpoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: List Equity Model Historical Data Points
+      tags:
+        - Equity Model Historical Data Points
+  /equity-model-series/:
+    get:
+      operationId: list-equity-model-series
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PageSize'
+        - name: csin
+          required: false
+          in: query
+          description: CSIN
+          schema:
+            type: string
+        - name: company_id
+          required: false
+          in: query
+          description: Company ID
+          schema:
+            type: string
+        - name: company_name_contains
+          required: false
+          in: query
+          description: Company name contains
+          schema:
+            type: string
+        - name: company_sector
+          required: false
+          in: query
+          description: Company sector name
+          schema:
+            type: string
+        - name: company_sector_path_contains
+          required: false
+          in: query
+          description: Company sector path contains
+          schema:
+            type: string
+        - name: company_ticker_capiq
+          required: false
+          in: query
+          description: Company CapIQ ticker
+          schema:
+            type: string
+        - name: company_ticker_factset
+          required: false
+          in: query
+          description: Company FactSet ticker
+          schema:
+            type: string
+        - name: company_ticker_thomson
+          required: false
+          in: query
+          description: Company Thomson ticker
+          schema:
+            type: string
+        - name: company_ticker_bloomberg
+          required: false
+          in: query
+          description: Company Bloomberg ticker
+          schema:
+            type: string
+        - name: published_at_min_date
+          required: false
+          in: query
+          description: 'Published at minimum datetime (e.g. 2018-11-18 22:53:0)'
+          schema:
+            type: string
+        - name: published_at_max_date
+          required: false
+          in: query
+          description: 'Published at maximum datetime (e.g. 2018-11-18 22:53:0)'
+          schema:
+            type: string
+        - name: ordering
+          required: false
+          in: query
+          description: Order Equity Model Series by
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EquityModelSeriesListEndpoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+      summary: List Equity Model Series
+      tags:
+        - Equity Model Series
+  '/equity-model-series/{csin}/':
+    get:
+      operationId: retrieve-equity-model-series
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EquityModelSeries'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: Retrieve Equity Model Series
+      tags:
+        - Equity Model Series
+  '/equity-model-series/{csin}/equity-models/{model_version}/time-series/{ts_id_or_name}/forecast-data-points/':
+    get:
+      operationId: list-forecast-data-points
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/TSIDOrName'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PageSize'
+        - name: period_name
+          required: false
+          in: query
+          description: Period name (e.g. Q2-2018)
+          schema:
+            type: string
+        - name: period_includes_date
+          required: false
+          in: query
+          description: Period includes date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_start_date
+          required: false
+          in: query
+          description: Period start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_min_start_date
+          required: false
+          in: query
+          description: Minimum period start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_max_start_date
+          required: false
+          in: query
+          description: Maximum period start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_end_date
+          required: false
+          in: query
+          description: Period end date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_min_end_date
+          required: false
+          in: query
+          description: Minimum period end date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_max_end_date
+          required: false
+          in: query
+          description: Maximum period end date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_duration_type
+          required: false
+          in: query
+          description: Period duration type
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForecastDataPointListEndpoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: List Forecast Data Points
+      tags:
+        - Forecast Data Points
+  '/equity-model-series/{csin}/equity-models/{model_version}/time-series/{ts_id_or_name}/forecast-data-points/{period_name}/':
+    get:
+      operationId: retrieve-forecast-data-points
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/TSIDOrName'
+        - $ref: '#/components/parameters/PeriodName'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForecastDataPoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: Retrieve Forecast Data Points
+      tags:
+        - Forecast Data Points
+  '/equity-model-series/{csin}/equity-models/{model_version}/forecast-periods/':
+    get:
+      operationId: list-forecast-periods
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PageSize'
+        - name: period_duration_type
+          required: false
+          in: query
+          description: period_duration_type
+          schema:
+            type: string
+        - name: name
+          required: false
+          in: query
+          description: Name
+          schema:
+            type: string
+        - name: name_contains
+          required: false
+          in: query
+          description: Name contains
+          schema:
+            type: string
+        - name: includes_date
+          required: false
+          in: query
+          description: Includes date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: start_date
+          required: false
+          in: query
+          description: Start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: min_start_date
+          required: false
+          in: query
+          description: Minimum start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: max_start_date
+          required: false
+          in: query
+          description: Maximum start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: end_date
+          required: false
+          in: query
+          description: End date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: min_end_date
+          required: false
+          in: query
+          description: Minimum end date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: max_end_date
+          required: false
+          in: query
+          description: Maximum end date (e.g. 2018-11-18)
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForecastPeriodListEndpoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: List Forecast Periods
+      tags:
+        - Forecast Periods
+  '/equity-model-series/{csin}/equity-models/{model_version}/forecast-periods/{name}/':
+    get:
+      operationId: retrieve-forecast-periods
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/Name'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForecastPeriod'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: Retrieve Forecast Periods
+      tags:
+        - Forecast Periods
+  '/equity-model-series/{csin}/equity-models/{model_version}/forecast-periods/{period_name}/data-points/':
+    get:
+      operationId: list-forecast-period-data-points
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/PeriodName'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PageSize'
+        - name: time_series_name
+          required: false
+          in: query
+          description: Time series name (e.g. MO_RIS_REV)
+          schema:
+            type: string
+        - name: time_series_description
+          required: false
+          in: query
+          description: Time series description
+          schema:
+            type: string
+        - name: time_series_description_contains
+          required: false
+          in: query
+          description: Time series description contains
+          schema:
+            type: string
+        - name: time_series_category_slug
+          required: false
+          in: query
+          description: Time series category (slug)
+          schema:
+            type: string
+        - name: time_series_category_type_slug
+          required: false
+          in: query
+          description: Time series category type (slug)
+          schema:
+            type: string
+        - name: time_series_unit_description
+          required: false
+          in: query
+          description: Time series unit description
+          schema:
+            type: string
+        - name: time_series_unit_description_contains
+          required: false
+          in: query
+          description: Time series unit description contains
+          schema:
+            type: string
+        - name: time_series_unit_type
+          required: false
+          in: query
+          description: Time series unit type
+          schema:
+            type: string
+        - name: time_series_unit_symbol
+          required: false
+          in: query
+          description: Time series unit symbol
+          schema:
+            type: string
+        - name: time_series_associated_label
+          required: false
+          in: query
+          description: Time series associated labels
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForecastDataPointListEndpoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: List Forecast Period Data Points
+      tags:
+        - Forecast Period Data Points
+  '/equity-model-series/{csin}/equity-models/{model_version}/time-series/{ts_id_or_name}/historical-data-points/':
+    get:
+      operationId: list-historical-data-points
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/TSIDOrName'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PageSize'
+        - name: period_name
+          required: false
+          in: query
+          description: Period name (e.g. Q2-2018)
+          schema:
+            type: string
+        - name: period_includes_date
+          required: false
+          in: query
+          description: Period includes date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_start_date
+          required: false
+          in: query
+          description: Period start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_min_start_date
+          required: false
+          in: query
+          description: Minimum period start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_max_start_date
+          required: false
+          in: query
+          description: Maximum period start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_end_date
+          required: false
+          in: query
+          description: Period end date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_min_end_date
+          required: false
+          in: query
+          description: Minimum period end date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_max_end_date
+          required: false
+          in: query
+          description: Maximum period end date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_duration_type
+          required: false
+          in: query
+          description: Period duration type
+          schema:
+            type: string
+        - name: period_has_restated_data_points
+          required: false
+          in: query
+          description: Period contains restated data points
+          schema:
+            type: string
+        - name: period_has_unrestated_data_points
+          required: false
+          in: query
+          description: Period contains unrestated data points
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoricalDataPointListEndpoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: List Historical Data Points
+      tags:
+        - Historical Data Points
+  '/equity-model-series/{csin}/equity-models/{model_version}/time-series/{ts_id_or_name}/historical-data-points/{period_name}/':
+    get:
+      operationId: retrieve-historical-data-points
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/TSIDOrName'
+        - $ref: '#/components/parameters/PeriodName'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoricalDataPoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: Retrieve Historical Data Points
+      tags:
+        - Historical Data Points
+  '/equity-model-series/{csin}/equity-models/{model_version}/time-series/{ts_id_or_name}/historical-data-points/{period_name}/revisions/':
+    get:
+      operationId: list-historical-data-point-revisions
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/TSIDOrName'
+        - $ref: '#/components/parameters/PeriodName'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoricalDataPointRevisionListEndpoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: List Historical Data Point Revisions
+      tags:
+        - Historical Data Point Revisions
+  '/equity-model-series/{csin}/equity-models/{model_version}/historical-periods/':
+    get:
+      operationId: list-historical-periods
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PageSize'
+        - name: period_duration_type
+          required: false
+          in: query
+          description: Period duration type
+          schema:
+            type: string
+        - name: fiscal_period_variant
+          required: false
+          in: query
+          description: Fiscal period variant
+          schema:
+            type: string
+        - name: has_restated_data_points
+          required: false
+          in: query
+          description: Has restated data points
+          schema:
+            type: string
+        - name: has_unrestated_data_points
+          required: false
+          in: query
+          description: Has unrestated data points
+          schema:
+            type: string
+        - name: name
+          required: false
+          in: query
+          description: Name
+          schema:
+            type: string
+        - name: name_contains
+          required: false
+          in: query
+          description: Name contains
+          schema:
+            type: string
+        - name: includes_date
+          required: false
+          in: query
+          description: Includes date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: start_date
+          required: false
+          in: query
+          description: Start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: min_start_date
+          required: false
+          in: query
+          description: Minimum start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: max_start_date
+          required: false
+          in: query
+          description: Maximum start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: end_date
+          required: false
+          in: query
+          description: End date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: min_end_date
+          required: false
+          in: query
+          description: Minimum end date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: max_end_date
+          required: false
+          in: query
+          description: Maximum end date (e.g. 2018-11-18)
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoricalPeriodListEndpoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: List Historical Periods
+      tags:
+        - Historical Periods
+  '/equity-model-series/{csin}/equity-models/{model_version}/historical-periods/{name}/':
+    get:
+      operationId: retrieve-historical-periods
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/Name'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoricalPeriod'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: Retrieve Historical Periods
+      tags:
+        - Historical Periods
+  '/equity-model-series/{csin}/equity-models/{model_version}/historical-periods/{period_name}/data-points/':
+    get:
+      operationId: list-historical-period-data-points
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/PeriodName'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PageSize'
+        - name: time_series_name
+          required: false
+          in: query
+          description: Time series name (e.g. MO_RIS_REV)
+          schema:
+            type: string
+        - name: time_series_description
+          required: false
+          in: query
+          description: Time series description
+          schema:
+            type: string
+        - name: time_series_description_contains
+          required: false
+          in: query
+          description: Time series description contains
+          schema:
+            type: string
+        - name: time_series_category_slug
+          required: false
+          in: query
+          description: Time series category (slug)
+          schema:
+            type: string
+        - name: time_series_category_type_slug
+          required: false
+          in: query
+          description: Time series category type (slug)
+          schema:
+            type: string
+        - name: time_series_unit_description
+          required: false
+          in: query
+          description: Time series unit description
+          schema:
+            type: string
+        - name: time_series_unit_description_contains
+          required: false
+          in: query
+          description: Time series unit description contains
+          schema:
+            type: string
+        - name: time_series_unit_type
+          required: false
+          in: query
+          description: Time series unit type
+          schema:
+            type: string
+        - name: time_series_unit_symbol
+          required: false
+          in: query
+          description: Time series unit symbol
+          schema:
+            type: string
+        - name: time_series_associated_label
+          required: false
+          in: query
+          description: Time series associated labels
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoricalDataPointListEndpoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: List Historical Period Data Points
+      tags:
+        - Historical Period Data Points
+  /scenarios/:
+    get:
+      operationId: list-all-scenarios
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PageSize'
+        - name: name
+          required: false
+          in: query
+          description: Name
+          schema:
+            type: string
+        - name: name_contains
+          required: false
+          in: query
+          description: Name contains
+          schema:
+            type: string
+        - name: price
+          required: false
+          in: query
+          description: Price
+          schema:
+            type: string
+            format: number
+        - name: min_price
+          required: false
+          in: query
+          description: Minimum price
+          schema:
+            type: string
+            format: number
+        - name: max_price
+          required: false
+          in: query
+          description: Maximum price
+          schema:
+            type: string
+            format: number
+        - name: min_created_at
+          required: false
+          in: query
+          description: 'Minimum created date/time (e.g. 2020-03-05 11:25:48)'
+          schema:
+            type: string
+            format: date-time
+        - name: max_created_at
+          required: false
+          in: query
+          description: 'Maximum created date/time (e.g. 2020-03-05 11:25:48)'
+          schema:
+            type: string
+            format: date-time
+        - name: equity_model_series_csin
+          required: false
+          in: query
+          description: Equity model series CSIN
+          schema:
+            type: string
+        - name: equity_model_series_company_id
+          required: false
+          in: query
+          description: Equity model series company ID
+          schema:
+            type: string
+        - name: equity_model_series_company_name
+          required: false
+          in: query
+          description: Equity model series company name
+          schema:
+            type: string
+        - name: equity_model_series_company_name_contains
+          required: false
+          in: query
+          description: Equity model series company name contains
+          schema:
+            type: string
+        - name: equity_model_version_name
+          required: false
+          in: query
+          description: Equity model version name (e.g. Q2-2020.20)
+          schema:
+            type: string
+        - name: equity_model_most_recent_period_name
+          required: false
+          in: query
+          description: Equity model most recent period name (e.g. Q2-2020)
+          schema:
+            type: string
+        - name: equity_model_most_recent_period_min_start_date
+          required: false
+          in: query
+          description: Equity model most recent period minimum start date (e.g. 2020-03-05)
+          schema:
+            type: string
+            format: date
+        - name: equity_model_most_recent_period_max_start_date
+          required: false
+          in: query
+          description: Equity model most recent period maximum start date (e.g. 2020-03-05)
+          schema:
+            type: string
+            format: date
+        - name: equity_model_most_recent_period_min_end_date
+          required: false
+          in: query
+          description: Equity model most recent period minimum end date (e.g. 2020-03-05)
+          schema:
+            type: string
+            format: date
+        - name: equity_model_most_recent_period_max_end_date
+          required: false
+          in: query
+          description: Equity model most recent period maximum end date (e.g. 2020-03-05)
+          schema:
+            type: string
+            format: date
+        - name: equity_model_earnings_update_type
+          required: false
+          in: query
+          description: Equity model earnings update type (e.g. regular or partial)
+          schema:
+            $ref: '#/components/schemas/EarningsUpdateType'
+        - name: equity_model_published_at_min_date
+          required: false
+          in: query
+          description: >-
+            Equity model published at minimum date/time (e.g. 2020-03-05
+            22:53:00)
+          schema:
+            type: string
+            format: date-time
+        - name: equity_model_published_at_max_date
+          required: false
+          in: query
+          description: >-
+            Equity model published at maximum date/time (e.g. 2020-03-05
+            22:53:00)
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioListEndpoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+      summary: List Scenarios
+      tags:
+        - Consolidated Scenarios
+  /labels/:
+    get:
+      operationId: list-label
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PageSize'
+        - name: name
+          required: false
+          in: query
+          description: Name
+          schema:
+            type: string
+        - name: path
+          required: false
+          in: query
+          description: Path
+          schema:
+            type: string
+        - name: path_starts_with
+          required: false
+          in: query
+          description: Path starts with
+          schema:
+            type: string
+        - name: description
+          required: false
+          in: query
+          description: Description
+          schema:
+            type: string
+        - name: description_contains
+          required: false
+          in: query
+          description: Description contains
+          schema:
+            type: string
+        - name: parent_slug
+          required: false
+          in: query
+          description: Parent slug
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabelListEndpoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+      summary: List Labels
+      tags:
+        - Labels
+  '/labels/{slug}/':
+    get:
+      operationId: retrieve-label
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Label'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: Retrieve Label
+      tags:
+        - Labels
+  '/model-versions/{csin}/periods/{period}/revisions/':
+    get:
+      operationId: list-model-versions
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/Period'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelVersionListEndpoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: List Model Versions
+      tags:
+        - Model Versions
+  '/model-versions/{csin}/periods/{period}/revisions/{revision}/':
+    get:
+      operationId: retrieve-model-versions
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/Period'
+        - $ref: '#/components/parameters/Revision'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelVersion'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: Retrieve Model Versions
+      tags:
+        - Model Versions
+  '/equity-model-series/{csin}/equity-models/{model_version}/scenarios/':
+    get:
+      operationId: list-scenarios
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PageSize'
+        - name: name
+          required: false
+          in: query
+          description: Name
+          schema:
+            type: string
+        - name: name_contains
+          required: false
+          in: query
+          description: Name contains
+          schema:
+            type: string
+        - name: price
+          required: false
+          in: query
+          description: Price
+          schema:
+            type: string
+        - name: min_price
+          required: false
+          in: query
+          description: Minimum price
+          schema:
+            type: string
+        - name: max_price
+          required: false
+          in: query
+          description: Maximum price
+          schema:
+            type: string
+        - name: min_created_at
+          required: false
+          in: query
+          description: 'Minimum created date/time (e.g. 2018-11-18 11:25:48)'
+          schema:
+            type: string
+        - name: max_created_at
+          required: false
+          in: query
+          description: 'Maximum created date/time (e.g. 2018-11-18 11:25:48)'
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioListEndpoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: List Scenarios
+      tags:
+        - Scenarios
+    post:
+      operationId: create-scenarios
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScenarioPostRequest'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioPostResponse'
+          description: Created
+          headers:
+            Location:
+              schema:
+                $ref: '#/components/schemas/Location'
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    description: Errors in the name input field
+                    type: array
+                    items:
+                      type: string
+                  changes:
+                    description: Errors in the changes input field
+                    type: array
+                    items:
+                      type: string
+                  price:
+                    description: Errors in the price input field
+                    type: array
+                    items:
+                      type: string
+          description: Bad Request
+        '403':
+          $ref: '#/components/responses/403Response'
+      summary: Create Scenarios
+      tags:
+        - Scenarios
+  '/equity-model-series/{csin}/equity-models/{model_version}/scenarios/{change_scenario_id}/':
+    get:
+      operationId: retrieve-scenarios
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/ChangeScenarioID'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scenario'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: Retrieve Scenarios
+      tags:
+        - Scenarios
+  '/equity-model-series/{csin}/equity-models/{model_version}/scenarios/{scenario_id}/time-series/{ts_id_or_name}/forecast-data-points/':
+    get:
+      operationId: list-scenario-forecast-data-points
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/ScenarioID'
+        - $ref: '#/components/parameters/TSIDOrName'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: period_name
+          required: false
+          in: query
+          description: Period name (e.g. Q2-2018)
+          schema:
+            type: string
+        - name: period_includes_date
+          required: false
+          in: query
+          description: Period includes date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_start_date
+          required: false
+          in: query
+          description: Period start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_min_start_date
+          required: false
+          in: query
+          description: Minimum period start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_max_start_date
+          required: false
+          in: query
+          description: Maximum period start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_end_date
+          required: false
+          in: query
+          description: Period end date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_min_end_date
+          required: false
+          in: query
+          description: Minimum period end date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_max_end_date
+          required: false
+          in: query
+          description: Maximum period end date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: period_duration_type
+          required: false
+          in: query
+          description: Period duration type
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioForecastDataPointListEndpoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: List Scenario Forecast Data Points
+      tags:
+        - Scenario Forecast Data Points
+  '/equity-model-series/{csin}/equity-models/{model_version}/scenarios/{scenario_id}/time-series/{ts_id_or_name}/forecast-data-points/{period_name}/':
+    get:
+      operationId: retrieve-scenario-forecast-data-points
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/ScenarioID'
+        - $ref: '#/components/parameters/TSIDOrName'
+        - $ref: '#/components/parameters/PeriodName'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioForecastDataPoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: Retrieve Scenario Forecast Data Points
+      tags:
+        - Scenario Forecast Data Points
+  '/equity-model-series/{csin}/equity-models/{model_version}/scenarios/{scenario_id}/forecast-periods/':
+    get:
+      operationId: list-scenario-forecast-periods
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/ScenarioID'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PageSize'
+        - name: period_duration_type
+          required: false
+          in: query
+          description: period_duration_type
+          schema:
+            type: string
+        - name: name
+          required: false
+          in: query
+          description: Name
+          schema:
+            type: string
+        - name: name_contains
+          required: false
+          in: query
+          description: Name contains
+          schema:
+            type: string
+        - name: includes_date
+          required: false
+          in: query
+          description: Includes date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: start_date
+          required: false
+          in: query
+          description: Start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: min_start_date
+          required: false
+          in: query
+          description: Minimum start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: max_start_date
+          required: false
+          in: query
+          description: Maximum start date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: end_date
+          required: false
+          in: query
+          description: End date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: min_end_date
+          required: false
+          in: query
+          description: Minimum end date (e.g. 2018-11-18)
+          schema:
+            type: string
+        - name: max_end_date
+          required: false
+          in: query
+          description: Maximum end date (e.g. 2018-11-18)
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioForecastPeriodListEndpoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: List Scenario Forecast Periods
+      tags:
+        - Scenario Forecast Periods
+  '/equity-model-series/{csin}/equity-models/{model_version}/scenarios/{scenario_id}/forecast-periods/{period_name}/':
+    get:
+      operationId: retrieve-scenario-forecast-periods
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/ScenarioID'
+        - $ref: '#/components/parameters/PeriodName'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioForecastPeriod'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: Retrieve Scenario Forecast Periods
+      tags:
+        - Scenario Forecast Periods
+  '/equity-model-series/{csin}/equity-models/{model_version}/scenarios/{scenario_id}/forecast-periods/{period_name}/data-points/':
+    get:
+      operationId: list-scenario-period-data-points
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/ScenarioID'
+        - $ref: '#/components/parameters/PeriodName'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: time_series_name
+          required: false
+          in: query
+          description: Time series name (e.g. MO_RIS_REV)
+          schema:
+            type: string
+        - name: time_series_description
+          required: false
+          in: query
+          description: Time series description
+          schema:
+            type: string
+        - name: time_series_description_contains
+          required: false
+          in: query
+          description: Time series description contains
+          schema:
+            type: string
+        - name: time_series_category_slug
+          required: false
+          in: query
+          description: Time series category (slug)
+          schema:
+            type: string
+        - name: time_series_category_type_slug
+          required: false
+          in: query
+          description: Time series category type (slug)
+          schema:
+            type: string
+        - name: time_series_unit_description
+          required: false
+          in: query
+          description: Time series unit description
+          schema:
+            type: string
+        - name: time_series_unit_description_contains
+          required: false
+          in: query
+          description: Time series unit description contains
+          schema:
+            type: string
+        - name: time_series_unit_type
+          required: false
+          in: query
+          description: Time series unit type
+          schema:
+            type: string
+        - name: time_series_unit_symbol
+          required: false
+          in: query
+          description: Time series unit symbol
+          schema:
+            type: string
+        - name: time_series_associated_label
+          required: false
+          in: query
+          description: Time series associated labels
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioForecastDataPointListEndpoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: List Scenario Period Data Points
+      tags:
+        - Scenario Period Data Points
+  '/equity-model-series/{csin}/equity-models/{model_version}/scenarios/{scenario_id}/time-series/':
+    get:
+      operationId: list-scenario-time-series
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/ScenarioID'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PageSize'
+        - name: name
+          required: false
+          in: query
+          description: Name
+          schema:
+            type: string
+        - name: category_slug
+          required: false
+          in: query
+          description: Category (slug)
+          schema:
+            type: string
+        - name: category_type_slug
+          required: false
+          in: query
+          description: Category type (slug)
+          schema:
+            type: string
+        - name: description
+          required: false
+          in: query
+          description: Description
+          schema:
+            type: string
+        - name: description_contains
+          required: false
+          in: query
+          description: Description contains
+          schema:
+            type: string
+        - name: unit_description
+          required: false
+          in: query
+          description: Unit description
+          schema:
+            type: string
+        - name: unit_description_contains
+          required: false
+          in: query
+          description: Unit description contains
+          schema:
+            type: string
+        - name: unit_symbol
+          required: false
+          in: query
+          description: Unit symbol
+          schema:
+            type: string
+        - name: unit_type
+          required: false
+          in: query
+          description: Unit type
+          schema:
+            type: string
+        - name: associated_label
+          required: false
+          in: query
+          description: Associated labels
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioTimeSeriesListEndpoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: List Scenario Time Series
+      tags:
+        - Scenario Time Series
+  '/equity-model-series/{csin}/equity-models/{model_version}/scenarios/{scenario_id}/time-series/{ts_id_or_name}/':
+    get:
+      operationId: retrieve-scenario-time-series
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/ScenarioID'
+        - $ref: '#/components/parameters/TSIDOrName'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioTimeSeries'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: Retrieve Scenario Time Series
+      tags:
+        - Scenario Time Series
+  '/equity-model-series/{csin}/equity-models/{model_version}/scenarios/{scenario_id}/time-series-categories/':
+    get:
+      operationId: list-scenario-time-series-categories
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/ScenarioID'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PageSize'
+        - name: slug
+          required: false
+          in: query
+          description: Slug
+          schema:
+            type: string
+        - name: type_slug
+          required: false
+          in: query
+          description: Type (slug)
+          schema:
+            type: string
+        - name: description
+          required: false
+          in: query
+          description: Description
+          schema:
+            type: string
+        - name: description_contains
+          required: false
+          in: query
+          description: Description contains
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioTimeSeriesCategoryListEndpoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: List Scenario Time Series Categories
+      tags:
+        - Scenario Time Series Categories
+  '/equity-model-series/{csin}/equity-models/{model_version}/scenarios/{scenario_id}/time-series-categories/{slug}/':
+    get:
+      operationId: retrieve-scenario-time-series-categories
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/ScenarioID'
+        - $ref: '#/components/parameters/Slug'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioTimeSeriesCategory'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: Retrieve Scenario Time Series Categories
+      tags:
+        - Scenario Time Series Categories
+  '/equity-model-series/{csin}/equity-models/{model_version}/time-series/':
+    get:
+      operationId: list-time-series
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PageSize'
+        - name: name
+          required: false
+          in: query
+          description: Name
+          schema:
+            type: string
+        - name: category_slug
+          required: false
+          in: query
+          description: Category (slug)
+          schema:
+            type: string
+        - name: category_type_slug
+          required: false
+          in: query
+          description: Category type (slug)
+          schema:
+            type: string
+        - name: description
+          required: false
+          in: query
+          description: Description
+          schema:
+            type: string
+        - name: description_contains
+          required: false
+          in: query
+          description: Description contains
+          schema:
+            type: string
+        - name: unit_description
+          required: false
+          in: query
+          description: Unit description
+          schema:
+            type: string
+        - name: unit_description_contains
+          required: false
+          in: query
+          description: Unit description contains
+          schema:
+            type: string
+        - name: unit_symbol
+          required: false
+          in: query
+          description: Unit symbol
+          schema:
+            type: string
+        - name: unit_type
+          required: false
+          in: query
+          description: Unit type
+          schema:
+            type: string
+        - name: associated_label
+          required: false
+          in: query
+          description: Associated labels
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeSeriesListEndpoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: List Time Series
+      tags:
+        - Time Series
+  '/equity-model-series/{csin}/equity-models/{model_version}/time-series/{ts_id_or_name}/':
+    get:
+      operationId: retrieve-time-series
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/TSIDOrName'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeSeries'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: Retrieve Time Series
+      tags:
+        - Time Series
+  '/equity-model-series/{csin}/equity-models/{model_version}/time-series-categories/':
+    get:
+      operationId: list-time-series-categories
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PageSize'
+        - name: slug
+          required: false
+          in: query
+          description: Slug
+          schema:
+            type: string
+        - name: type_slug
+          required: false
+          in: query
+          description: Type (slug)
+          schema:
+            type: string
+        - name: description
+          required: false
+          in: query
+          description: Description
+          schema:
+            type: string
+        - name: description_contains
+          required: false
+          in: query
+          description: Description contains
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeSeriesCategoryListEndpoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: List Time Series Categories
+      tags:
+        - Time Series Categories
+  '/equity-model-series/{csin}/equity-models/{model_version}/time-series-categories/{slug}/':
+    get:
+      operationId: retrieve-time-series-categories
+      parameters:
+        - $ref: '#/components/parameters/CSIN'
+        - $ref: '#/components/parameters/ModelVersion'
+        - $ref: '#/components/parameters/Slug'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeSeriesCategory'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: Retrieve Time Series Categories
+      tags:
+        - Time Series Categories
+  /units/:
+    get:
+      operationId: list-unit
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/PageSize'
+        - name: group
+          required: false
+          in: query
+          description: group
+          schema:
+            type: string
+        - name: symbol
+          required: false
+          in: query
+          description: symbol
+          schema:
+            type: string
+        - name: inexact
+          required: false
+          in: query
+          description: inexact
+          schema:
+            type: string
+        - name: deprecated
+          required: false
+          in: query
+          description: deprecated
+          schema:
+            type: string
+        - name: unit_type
+          required: false
+          in: query
+          description: unit_type
+          schema:
+            type: string
+        - name: description
+          required: false
+          in: query
+          description: Description
+          schema:
+            type: string
+        - name: description_contains
+          required: false
+          in: query
+          description: Description contains
+          schema:
+            type: string
+        - name: numerator
+          required: false
+          in: query
+          description: Numerator unit
+          schema:
+            type: string
+        - name: denominator
+          required: false
+          in: query
+          description: Denominator unit
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnitListEndpoint'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+      summary: List Units
+      tags:
+        - Units
+  '/units/{unit_id}/':
+    get:
+      operationId: retrieve-unit
+      parameters:
+        - $ref: '#/components/parameters/UnitID'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unit'
+          description: OK
+        '403':
+          $ref: '#/components/responses/403Response'
+        '404':
+          $ref: '#/components/responses/404Response'
+      summary: Retrieve Unit
+      tags:
+        - Units
+components:
+  parameters:
+    Cursor:
+      name: cursor
+      required: false
+      in: query
+      description: >-
+        An opaque cursor string indicating position within the paginated result
+        set.
+      schema:
+        type: string
+    Page:
+      name: page
+      required: false
+      in: query
+      description: A page number within the paginated result set.
+      schema:
+        type: integer
+    PageSize:
+      name: page_size
+      required: false
+      in: query
+      description: Number of results to return per page.
+      schema:
+        type: integer
+    ChangeScenarioID:
+      name: change_scenario_id
+      in: path
+      required: true
+      description: ''
+      schema:
+        type: string
+    CompanyID:
+      name: company_id
+      in: path
+      required: true
+      description: ''
+      schema:
+        type: string
+    CSIN:
+      name: csin
+      in: path
+      required: true
+      description: ''
+      schema:
+        type: string
+    ID:
+      name: id
+      in: path
+      required: true
+      description: ''
+      schema:
+        type: string
+    ModelVersion:
+      name: model_version
+      in: path
+      required: true
+      description: ''
+      schema:
+        type: string
+    Name:
+      name: name
+      in: path
+      required: true
+      description: ''
+      schema:
+        type: string
+    Period:
+      name: period
+      in: path
+      required: true
+      description: ''
+      schema:
+        type: string
+    PeriodName:
+      name: period_name
+      in: path
+      required: true
+      description: ''
+      schema:
+        type: string
+    Revision:
+      name: revision
+      in: path
+      required: true
+      description: ''
+      schema:
+        type: string
+    ScenarioID:
+      name: scenario_id
+      in: path
+      required: true
+      description: ''
+      schema:
+        type: string
+    Slug:
+      name: slug
+      in: path
+      required: true
+      description: ''
+      schema:
+        type: string
+    TSIDOrName:
+      name: ts_id_or_name
+      in: path
+      required: true
+      description: ''
+      schema:
+        type: string
+    UnitID:
+      name: unit_id
+      in: path
+      required: true
+      description: ''
+      schema:
+        type: string
+  schemas:
+    ResourceListEndpointBase:
+      type: object
+      required:
+        - count
+        - results
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+    Company:
+      type: object
+      required:
+        - company_id
+        - name
+        - tickers
+        - sector
+        - country_code
+        - equity_model_series_set
+        - self
+      properties:
+        company_id:
+          type: string
+        name:
+          type: string
+        tickers:
+          type: object
+          properties:
+            Bloomberg:
+              type: string
+              nullable: true
+            CapIQ:
+              type: string
+              nullable: true
+            FactSet:
+              type: string
+              nullable: true
+            Thomson:
+              type: string
+              nullable: true
+        sector:
+          $ref: '#/components/schemas/NullableLabelSubset'
+        country_code:
+          type: string
+          nullable: true
+        equity_model_series_set:
+          type: string
+          format: uri
+          readOnly: true
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    CompanyListEndpoint:
+      allOf:
+        - $ref: '#/components/schemas/ResourceListEndpointBase'
+        - properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/Company'
+    CompanySubset:
+      type: object
+      required:
+        - name
+        - self
+      properties:
+        name:
+          type: string
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    CSIN:
+      type: string
+      readOnly: true
+      description: The Canalyst Security Identification Number of the series
+    DriverReference:
+      oneOf:
+        - $ref: '#/components/schemas/TimeSeriesDataPointDriverReference'
+        - $ref: '#/components/schemas/StandaloneDataPointDriverReference'
+      discriminator:
+        propertyName: context_type
+    Driver:
+      oneOf:
+        - $ref: '#/components/schemas/TimeSeriesDataPointDriver'
+        - $ref: '#/components/schemas/StandaloneDataPointDriver'
+      discriminator:
+        propertyName: context_type
+    StandaloneDataPointDriverReference:
+      type: object
+      required:
+        - context_type
+        - data_point
+      properties:
+        context_type:
+          type: string
+          readOnly: true
+          enum:
+            - standalone
+        data_point:
+          type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+    StandaloneDataPointDriver:
+      type: object
+      required:
+        - context_type
+        - data_point
+        - direct_drivers
+      properties:
+        context_type:
+          type: string
+          enum:
+            - standalone
+        data_point:
+          $ref: '#/components/schemas/StandaloneDataPoint'
+        direct_drivers:
+          type: array
+          description: >
+            A list of the current data point's direct drivers (i.e. the
+            precedents that
+
+            directly influence its value). Can be used to construct the root
+            data
+
+            point's full driver graph.
+          items:
+            $ref: '#/components/schemas/DriverReference'
+    TimeSeriesDataPointDriverReference:
+      type: object
+      required:
+        - context_type
+        - data_point
+      properties:
+        context_type:
+          type: string
+          enum:
+            - time_series
+        data_point:
+          type: object
+          required:
+            - self
+          properties:
+            self:
+              type: string
+              format: uri
+    TimeSeriesDataPointDriver:
+      type: object
+      required:
+        - context_type
+        - data_point
+        - direct_drivers
+      properties:
+        context_type:
+          type: string
+          readOnly: true
+          enum:
+            - time_series
+        data_point:
+          $ref: '#/components/schemas/ForecastDataPointSubset'
+        direct_drivers:
+          type: array
+          description: >
+            A list of the current data point's direct drivers (i.e. the
+            precedents that
+
+            directly influence its value). Can be used to construct the root
+            data
+
+            point's full driver graph.
+          items:
+            $ref: '#/components/schemas/DriverReference'
+    DriverListEndpoint:
+      allOf:
+        - $ref: '#/components/schemas/ResourceListEndpointBase'
+        - properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/Driver'
+    StandaloneDataPoint:
+      required:
+        - name
+        - description
+        - unit
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          readOnly: true
+        unit:
+          $ref: '#/components/schemas/UnitSubset'
+    EquityModel:
+      type: object
+      required:
+        - equity_model_series
+        - model_version
+        - most_recent_period
+        - trading_currency
+        - earnings_update_type
+        - published_at
+        - time_series_categories
+        - time_series_set
+        - historical_periods
+        - forecast_periods
+        - scenarios
+        - historical_data_points
+        - self
+      properties:
+        equity_model_series:
+          $ref: '#/components/schemas/EquityModelSeriesSubset'
+        model_version:
+          $ref: '#/components/schemas/ModelVersionSubset'
+        most_recent_period:
+          $ref: '#/components/schemas/HistoricalPeriodSubset'
+        trading_currency:
+          $ref: '#/components/schemas/UnitSubset'
+        earnings_update_type:
+          $ref: '#/components/schemas/EarningsUpdateType'
+        published_at:
+          type: string
+          format: date-time
+        time_series_categories:
+          type: string
+          format: uri
+          readOnly: true
+        time_series_set:
+          type: string
+          format: uri
+          readOnly: true
+        historical_periods:
+          type: string
+          format: uri
+          readOnly: true
+        forecast_periods:
+          type: string
+          format: uri
+          readOnly: true
+        scenarios:
+          type: string
+          format: uri
+          readOnly: true
+        historical_data_points:
+          type: string
+          format: uri
+          readOnly: true
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    EquityModelListEndpoint:
+      allOf:
+        - $ref: '#/components/schemas/ResourceListEndpointBase'
+        - properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/EquityModelSubset'
+    EquityModelSubset:
+      type: object
+      required:
+        - equity_model_series
+        - model_version
+        - earnings_update_type
+        - published_at
+        - self
+      properties:
+        equity_model_series:
+          $ref: '#/components/schemas/EquityModelSeriesSubset'
+        model_version:
+          $ref: '#/components/schemas/ModelVersionSubset'
+        earnings_update_type:
+          $ref: '#/components/schemas/EarningsUpdateType'
+        published_at:
+          type: string
+          format: date-time
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    NullableEquityModelSubset:
+      allOf:
+        - $ref: '#/components/schemas/EquityModelSubset'
+        - nullable: true
+    EarningsUpdateType:
+      type: string
+      description: >
+        The equity model earnings update type. A value of "regular" indicates
+        that
+
+        it was constructed from a full earnings report; whereas, "partial"
+        indicates
+
+        that it was constructed from a press release. A value of "unknown"
+        indicates
+
+        that the information is not available.
+      enum:
+        - partial
+        - regular
+        - unknown
+    EquityModelSeries:
+      type: object
+      required:
+        - csin
+        - company
+        - latest_equity_model
+        - equity_models
+        - self
+      properties:
+        csin:
+          $ref: '#/components/schemas/CSIN'
+        company:
+          $ref: '#/components/schemas/CompanySubset'
+        latest_equity_model:
+          $ref: '#/components/schemas/EquityModelSubset'
+        equity_models:
+          type: string
+          format: uri
+          readOnly: true
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    EquityModelSeriesListEndpoint:
+      allOf:
+        - $ref: '#/components/schemas/ResourceListEndpointBase'
+        - properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/EquityModelSeries'
+    EquityModelSeriesSubset:
+      type: object
+      required:
+        - csin
+        - self
+      properties:
+        csin:
+          $ref: '#/components/schemas/CSIN'
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    ForecastDataPoint:
+      type: object
+      required:
+        - time_series
+        - period
+        - value
+        - comment
+        - drivers
+        - self
+      properties:
+        time_series:
+          $ref: '#/components/schemas/TimeSeriesSubset'
+        period:
+          $ref: '#/components/schemas/ForecastPeriodSubset'
+        value:
+          type: string
+          format: number
+          nullable: true
+          readOnly: true
+        comment:
+          type: string
+          nullable: true
+        drivers:
+          type: string
+          format: uri
+          readOnly: true
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    ForecastDataPointListEndpoint:
+      allOf:
+        - $ref: '#/components/schemas/ResourceListEndpointBase'
+        - properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/ForecastDataPointSubset'
+    ForecastDataPointSubset:
+      type: object
+      required:
+        - time_series
+        - period
+        - value
+        - self
+      properties:
+        time_series:
+          $ref: '#/components/schemas/TimeSeriesSubset'
+        period:
+          $ref: '#/components/schemas/ForecastPeriodSubset'
+        value:
+          type: string
+          format: number
+          nullable: true
+          readOnly: true
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    ForecastPeriod:
+      type: object
+      required:
+        - equity_model
+        - name
+        - period_duration_type
+        - start_date
+        - end_date
+        - data_points
+        - self
+      properties:
+        equity_model:
+          $ref: '#/components/schemas/EquityModelSubset'
+        name:
+          type: string
+          readOnly: true
+          description: 'The period name, for example Q2-2018 or FY2017'
+        period_duration_type:
+          type: string
+          readOnly: true
+          description: The type of period
+          enum:
+            - fiscal_quarter
+            - fiscal_half_year
+            - fiscal_year
+        start_date:
+          type: string
+          format: date
+          readOnly: true
+          description: The first date this period includes data for
+        end_date:
+          type: string
+          format: date
+          readOnly: true
+          description: The last date this period includes data for
+        data_points:
+          type: string
+          format: uri
+          readOnly: true
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    ForecastPeriodListEndpoint:
+      allOf:
+        - $ref: '#/components/schemas/ResourceListEndpointBase'
+        - properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/ForecastPeriodSubset'
+    ForecastPeriodSubset:
+      type: object
+      required:
+        - name
+        - period_duration_type
+        - start_date
+        - end_date
+        - self
+      properties:
+        name:
+          type: string
+          readOnly: true
+          description: 'The period name, for example Q2-2018 or FY2017'
+        period_duration_type:
+          type: string
+          readOnly: true
+          description: The type of period
+          enum:
+            - fiscal_quarter
+            - fiscal_half_year
+            - fiscal_year
+        start_date:
+          type: string
+          format: date
+          readOnly: true
+          description: The first date this period includes data for
+        end_date:
+          type: string
+          format: date
+          readOnly: true
+          description: The last date this period includes data for
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    HistoricalDataPoint:
+      type: object
+      required:
+        - time_series
+        - period
+        - value
+        - comment
+        - revisions
+        - self
+      properties:
+        time_series:
+          $ref: '#/components/schemas/TimeSeriesSubset'
+        period:
+          $ref: '#/components/schemas/HistoricalPeriodSubset'
+        value:
+          type: string
+          format: number
+          nullable: true
+          readOnly: true
+        comment:
+          type: string
+          nullable: true
+        revisions:
+          type: string
+          format: uri
+          readOnly: true
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    HistoricalDataPointListEndpoint:
+      allOf:
+        - $ref: '#/components/schemas/ResourceListEndpointBase'
+        - properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/HistoricalDataPointSubset'
+    HistoricalDataPointSubset:
+      type: object
+      required:
+        - time_series
+        - period
+        - value
+        - self
+      properties:
+        time_series:
+          $ref: '#/components/schemas/TimeSeriesSubset'
+        period:
+          $ref: '#/components/schemas/HistoricalPeriodSubset'
+        value:
+          type: string
+          format: number
+          nullable: true
+          readOnly: true
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    HistoricalDataPointRevision:
+      type: object
+      required:
+        - data_point
+        - equity_model
+      properties:
+        data_point:
+          $ref: '#/components/schemas/HistoricalDataPointSubset'
+        equity_model:
+          $ref: '#/components/schemas/EquityModelSubset'
+    HistoricalDataPointRevisionListEndpoint:
+      allOf:
+        - $ref: '#/components/schemas/ResourceListEndpointBase'
+        - properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/HistoricalDataPointRevision'
+    HistoricalPeriod:
+      type: object
+      required:
+        - equity_model
+        - name
+        - period_duration_type
+        - start_date
+        - end_date
+        - fiscal_period_variant
+        - has_restated_data_points
+        - has_unrestated_data_points
+        - data_points
+        - self
+      properties:
+        equity_model:
+          $ref: '#/components/schemas/EquityModelSubset'
+        name:
+          type: string
+          readOnly: true
+          description: 'The period name, for example Q2-2018 or FY2017'
+        period_duration_type:
+          type: string
+          readOnly: true
+          description: The type of period
+          enum:
+            - fiscal_quarter
+            - fiscal_half_year
+            - fiscal_year
+        start_date:
+          type: string
+          format: date
+          readOnly: true
+          description: The first date this period includes data for
+        end_date:
+          type: string
+          format: date
+          readOnly: true
+          description: The last date this period includes data for
+        fiscal_period_variant:
+          type: string
+          readOnly: true
+          description: The variety of fiscal period
+          enum:
+            - default
+            - comparable
+            - special
+            - transition
+            - not_applicable
+        has_restated_data_points:
+          type: boolean
+          readOnly: true
+          description: >-
+            If at least some of data for this period has been rebuilt using
+            restated data, as reported by the company
+        has_unrestated_data_points:
+          type: boolean
+          readOnly: true
+          description: >-
+            If at least some of the data for this period has restated values
+            available that are NOT being used
+        data_points:
+          type: string
+          format: uri
+          readOnly: true
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    HistoricalPeriodListEndpoint:
+      allOf:
+        - $ref: '#/components/schemas/ResourceListEndpointBase'
+        - properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/HistoricalPeriodSubset'
+    HistoricalPeriodSubset:
+      type: object
+      required:
+        - name
+        - period_duration_type
+        - start_date
+        - end_date
+        - self
+      properties:
+        name:
+          type: string
+          readOnly: true
+          description: 'The period name, for example Q2-2018 or FY2017'
+        period_duration_type:
+          type: string
+          readOnly: true
+          description: The type of period
+          enum:
+            - fiscal_quarter
+            - fiscal_half_year
+            - fiscal_year
+        start_date:
+          type: string
+          format: date
+          readOnly: true
+          description: The first date this period includes data for
+        end_date:
+          type: string
+          format: date
+          readOnly: true
+          description: The last date this period includes data for
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    LabelAssociation:
+      type: object
+      required:
+        - label
+        - association_type
+      properties:
+        label:
+          $ref: '#/components/schemas/LabelSubset'
+        association_type:
+          type: string
+          enum:
+            - positive
+            - negative
+    Label:
+      type: object
+      required:
+        - slug
+        - name
+        - description
+        - path
+        - parent
+        - sub_labels
+        - self
+      properties:
+        slug:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        path:
+          type: string
+          readOnly: true
+        parent:
+          $ref: '#/components/schemas/NullableLabelSubset'
+        sub_labels:
+          type: string
+          format: uri
+          readOnly: true
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    LabelListEndpoint:
+      allOf:
+        - $ref: '#/components/schemas/ResourceListEndpointBase'
+        - properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/Label'
+    LabelSubset:
+      type: object
+      required:
+        - slug
+        - path
+        - self
+      properties:
+        slug:
+          type: string
+          readOnly: true
+        path:
+          type: string
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    NullableLabelSubset:
+      allOf:
+        - $ref: '#/components/schemas/LabelSubset'
+        - nullable: true
+    Location:
+      type: string
+      description: A url pointing to the location of the created or updated resource
+    ModelVersion:
+      type: object
+      required:
+        - name
+        - csin
+        - period
+        - revision
+        - equity_model
+        - self
+      properties:
+        name:
+          type: string
+          readOnly: true
+        csin:
+          type: string
+          readOnly: true
+          description: The CSIN to which the model version applies
+        period:
+          type: string
+          readOnly: true
+          description: >-
+            The most recent period of the equity model to which the model
+            version applies
+        revision:
+          type: integer
+          readOnly: true
+          description: The unique revision for the combination of CSIN and period
+        equity_model:
+          $ref: '#/components/schemas/NullableEquityModelSubset'
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    ModelVersionListEndpoint:
+      allOf:
+        - $ref: '#/components/schemas/ResourceListEndpointBase'
+        - properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/ModelVersion'
+    ModelVersionSubset:
+      type: object
+      required:
+        - name
+        - self
+      properties:
+        name:
+          type: string
+          readOnly: true
+        self:
+          type: string
+          format: uri
+          readOnly: true
+      readOnly: true
+    Scenario:
+      type: object
+      required:
+        - name
+        - equity_model
+        - changes
+        - price
+        - price_currency
+        - created_at
+        - time_series_categories
+        - time_series_set
+        - forecast_periods
+        - self
+      properties:
+        name:
+          type: string
+          readOnly: true
+          description: The name of the scenario
+        equity_model:
+          $ref: '#/components/schemas/EquityModelSubset'
+        changes:
+          type: array
+          description: The changes to apply to the equity model in the scenario
+          items:
+            $ref: '#/components/schemas/ScenarioChange'
+        price:
+          type: string
+          format: number
+        price_currency:
+          $ref: '#/components/schemas/UnitSubset'
+        created_at:
+          type: string
+          format: date-time
+        time_series_categories:
+          type: string
+          format: uri
+          readOnly: true
+        time_series_set:
+          type: string
+          format: uri
+          readOnly: true
+        forecast_periods:
+          type: string
+          format: uri
+          readOnly: true
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    ScenarioListEndpoint:
+      allOf:
+        - $ref: '#/components/schemas/ResourceListEndpointBase'
+        - properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/ScenarioSubset'
+    ScenarioSubset:
+      type: object
+      required:
+        - name
+        - equity_model
+        - created_at
+        - self
+      properties:
+        name:
+          type: string
+          readOnly: true
+          description: The name of the scenario
+        equity_model:
+          $ref: '#/components/schemas/EquityModelSubset'
+        created_at:
+          type: string
+          format: date-time
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    ScenarioChange:
+      type: object
+      required:
+        - time_series
+        - period
+        - value_expression
+      properties:
+        time_series:
+          type: string
+          description: name or slug of the data point's time series
+        period:
+          type: string
+          description: name of the data point's period
+        value_expression:
+          $ref: '#/components/schemas/ValueExpression'
+    ValueExpression:
+      type: object
+      description: expression describing the new value
+      oneOf:
+        - $ref: '#/components/schemas/BinaryOperatorExpression'
+        - $ref: '#/components/schemas/DataPointExpression'
+        - $ref: '#/components/schemas/LiteralExpression'
+        - $ref: '#/components/schemas/PriceExpression'
+        - $ref: '#/components/schemas/UnaryOperatorExpression'
+      discriminator:
+        propertyName: type
+    BinaryOperatorExpression:
+      required:
+        - type
+        - left_operand
+        - operator
+        - right_operand
+      properties:
+        type:
+          type: string
+          enum:
+            - binary
+        left_operand:
+          $ref: '#/components/schemas/ValueExpression'
+        operator:
+          type: string
+          enum:
+            - +
+            - '-'
+            - '*'
+            - /
+            - ^
+        right_operand:
+          $ref: '#/components/schemas/ValueExpression'
+    DataPointExpression:
+      required:
+        - type
+        - time_series
+        - period
+      properties:
+        type:
+          type: string
+          enum:
+            - data_point
+        time_series:
+          type: string
+        period:
+          type: string
+    LiteralExpression:
+      required:
+        - type
+        - value
+      properties:
+        type:
+          type: string
+          enum:
+            - literal
+        value:
+          type: string
+          format: number
+          description: A literal value to apply (real number as a string)
+    PriceExpression:
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum:
+            - price
+    UnaryOperatorExpression:
+      required:
+        - type
+        - operator
+        - operand
+      properties:
+        type:
+          type: string
+          enum:
+            - unary
+        operator:
+          type: string
+          enum:
+            - abs
+            - '-'
+        operand:
+          $ref: '#/components/schemas/ValueExpression'
+    ScenarioPostRequest:
+      type: object
+      required:
+        - name
+        - changes
+      properties:
+        name:
+          type: string
+          description: A unique name for the scenario
+        changes:
+          type: array
+          description: The changes to apply to the equity model in the scenario
+          items:
+            $ref: '#/components/schemas/ScenarioChange'
+        price:
+          type: string
+          format: number
+          nullable: true
+          description: The company stock price to apply in the scenario
+    ScenarioPostResponse:
+      type: object
+      required:
+        - name
+        - changes
+        - price
+      properties:
+        name:
+          type: string
+          description: A unique name for the scenario
+        changes:
+          type: array
+          description: The changes to apply to the equity model in the scenario
+          items:
+            $ref: '#/components/schemas/ScenarioChange'
+            type: object
+        price:
+          type: string
+          format: number
+          description: The company stock price to apply in the scenario
+    ScenarioForecastDataPoint:
+      type: object
+      required:
+        - time_series
+        - period
+        - value
+        - self
+      properties:
+        time_series:
+          $ref: '#/components/schemas/ScenarioTimeSeriesSubset'
+        period:
+          $ref: '#/components/schemas/ScenarioForecastPeriodSubset'
+        value:
+          type: string
+          format: number
+          nullable: true
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    ScenarioForecastDataPointListEndpoint:
+      allOf:
+        - $ref: '#/components/schemas/ResourceListEndpointBase'
+        - properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/ScenarioForecastDataPointSubset'
+    ScenarioForecastDataPointSubset:
+      allOf:
+        - $ref: '#/components/schemas/ScenarioForecastDataPoint'
+    ScenarioForecastPeriod:
+      type: object
+      required:
+        - scenario
+        - name
+        - period_duration_type
+        - start_date
+        - end_date
+        - data_points
+        - self
+      properties:
+        scenario:
+          $ref: '#/components/schemas/ScenarioSubset'
+        name:
+          type: string
+        period_duration_type:
+          type: string
+          enum:
+            - fiscal_quarter
+            - fiscal_half_year
+            - fiscal_year
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        data_points:
+          type: string
+          format: uri
+          readOnly: true
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    ScenarioForecastPeriodListEndpoint:
+      allOf:
+        - $ref: '#/components/schemas/ResourceListEndpointBase'
+        - properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/ScenarioForecastPeriodSubset'
+    ScenarioForecastPeriodSubset:
+      type: object
+      required:
+        - name
+        - period_duration_type
+        - start_date
+        - end_date
+        - self
+      properties:
+        name:
+          type: string
+        period_duration_type:
+          type: string
+          enum:
+            - fiscal_quarter
+            - fiscal_half_year
+            - fiscal_year
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    ScenarioTimeSeriesCategory:
+      type: object
+      required:
+        - slug
+        - description
+        - type
+        - time_series_set
+        - self
+      properties:
+        slug:
+          type: string
+        description:
+          type: string
+        type:
+          type: object
+          required:
+            - slug
+            - name
+          properties:
+            slug:
+              type: string
+            name:
+              type: string
+          readOnly: true
+        time_series_set:
+          type: string
+          format: uri
+          readOnly: true
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    ScenarioTimeSeriesCategoryListEndpoint:
+      allOf:
+        - $ref: '#/components/schemas/ResourceListEndpointBase'
+        - properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/ScenarioTimeSeriesCategory'
+    ScenarioTimeSeriesCategorySubset:
+      type: object
+      required:
+        - slug
+        - description
+        - type
+        - self
+      properties:
+        slug:
+          type: string
+        description:
+          type: string
+        type:
+          type: object
+          required:
+            - slug
+            - name
+          properties:
+            slug:
+              type: string
+            name:
+              type: string
+          readOnly: true
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    ScenarioTimeSeries:
+      type: object
+      required:
+        - scenario
+        - slug
+        - names
+        - description
+        - category
+        - unit
+        - label_associations
+        - forecast_data_points
+        - self
+      properties:
+        scenario:
+          $ref: '#/components/schemas/ScenarioSubset'
+        slug:
+          type: string
+        names:
+          type: array
+          items:
+            type: string
+        description:
+          type: string
+        category:
+          $ref: '#/components/schemas/ScenarioTimeSeriesCategorySubset'
+        unit:
+          $ref: '#/components/schemas/UnitSubset'
+        label_associations:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabelAssociation'
+          readOnly: true
+        forecast_data_points:
+          type: string
+          format: uri
+          readOnly: true
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    ScenarioTimeSeriesListEndpoint:
+      allOf:
+        - $ref: '#/components/schemas/ResourceListEndpointBase'
+        - properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/ScenarioTimeSeriesSubset'
+    ScenarioTimeSeriesSubset:
+      type: object
+      required:
+        - slug
+        - names
+        - description
+        - category
+        - unit
+        - self
+      properties:
+        slug:
+          type: string
+        names:
+          type: array
+          items:
+            type: string
+        description:
+          type: string
+        category:
+          $ref: '#/components/schemas/ScenarioTimeSeriesCategorySubset'
+        unit:
+          $ref: '#/components/schemas/UnitSubset'
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    TimeSeriesCategory:
+      type: object
+      required:
+        - slug
+        - description
+        - type
+        - time_series_set
+        - self
+      properties:
+        slug:
+          type: string
+          description: The URL slug for the time series category
+        description:
+          type: string
+          description: A brief description of the time series category
+        type:
+          type: object
+          required:
+            - slug
+            - name
+          properties:
+            slug:
+              type: string
+            name:
+              type: string
+          readOnly: true
+        time_series_set:
+          type: string
+          format: uri
+          readOnly: true
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    TimeSeriesCategoryListEndpoint:
+      allOf:
+        - $ref: '#/components/schemas/ResourceListEndpointBase'
+        - properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/TimeSeriesCategory'
+    TimeSeriesCategorySubset:
+      type: object
+      required:
+        - slug
+        - description
+        - type
+        - self
+      properties:
+        slug:
+          type: string
+          description: The URL slug for the time series category
+        description:
+          type: string
+          description: A brief description of the time series category
+        type:
+          type: object
+          required:
+            - slug
+            - name
+          properties:
+            slug:
+              type: string
+            name:
+              type: string
+          readOnly: true
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    TimeSeries:
+      type: object
+      required:
+        - slug
+        - names
+        - description
+        - equity_model
+        - category
+        - unit
+        - label_associations
+        - historical_data_points
+        - forecast_data_points
+        - self
+      properties:
+        slug:
+          type: string
+          readOnly: true
+          description: The URL slug for the time series
+        names:
+          type: array
+          items:
+            type: string
+          readOnly: true
+          description: All of the time series's names
+        description:
+          type: string
+          readOnly: true
+          description: The plain text description of the time series
+        equity_model:
+          $ref: '#/components/schemas/EquityModelSubset'
+        category:
+          $ref: '#/components/schemas/TimeSeriesCategorySubset'
+        unit:
+          $ref: '#/components/schemas/UnitSubset'
+        label_associations:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabelAssociation'
+        historical_data_points:
+          type: string
+          format: uri
+          readOnly: true
+        forecast_data_points:
+          type: string
+          format: uri
+          readOnly: true
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    TimeSeriesListEndpoint:
+      allOf:
+        - $ref: '#/components/schemas/ResourceListEndpointBase'
+        - properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/TimeSeries'
+    TimeSeriesSubset:
+      type: object
+      required:
+        - slug
+        - names
+        - description
+        - category
+        - unit
+        - self
+      properties:
+        slug:
+          type: string
+          readOnly: true
+          description: The URL slug for the time series
+        names:
+          type: array
+          items:
+            type: string
+          readOnly: true
+          description: All of the time series's names
+        description:
+          type: string
+          readOnly: true
+          description: The plain text description of the time series
+        category:
+          $ref: '#/components/schemas/TimeSeriesCategorySubset'
+        unit:
+          $ref: '#/components/schemas/UnitSubset'
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    Unit:
+      type: object
+      required:
+        - unit_type
+        - description
+        - group
+        - symbol
+        - numerator
+        - denominator
+        - inexact
+        - deprecated
+        - self
+      properties:
+        unit_type:
+          type: string
+          enum:
+            - count
+            - currency
+            - percentage
+            - ratio
+            - time
+        description:
+          type: string
+          readOnly: true
+          description: The unit description (e.g. USD)
+        group:
+          type: string
+          description: The unit group (e.g. Area)
+          enum:
+            - area
+            - digital_storage
+            - distance
+            - energy
+            - mass
+            - power
+            - specific_count
+            - volume
+        symbol:
+          type: string
+          readOnly: true
+          description: The unit symbol (e.g. $) (optional)
+        numerator:
+          $ref: '#/components/schemas/NullableUnit'
+        denominator:
+          $ref: '#/components/schemas/NullableUnit'
+        inexact:
+          type: boolean
+          readOnly: true
+          description: |
+            If true, the unit is a currency but it has not been
+            specified
+        deprecated:
+          type: boolean
+          readOnly: true
+          description: 'If true, the unit is not used'
+        self:
+          type: string
+          format: uri
+          readOnly: true
+    NullableUnit:
+      allOf:
+        - $ref: '#/components/schemas/Unit'
+        - nullable: true
+    UnitListEndpoint:
+      allOf:
+        - $ref: '#/components/schemas/ResourceListEndpointBase'
+        - properties:
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/Unit'
+    UnitSubset:
+      type: object
+      required:
+        - description
+        - symbol
+        - self
+      properties:
+        description:
+          type: string
+          readOnly: true
+          description: The unit description (e.g. USD)
+        symbol:
+          type: string
+          readOnly: true
+          description: The unit symbol (e.g. $) (optional)
+        self:
+          type: string
+          format: uri
+          readOnly: true
+  responses:
+    403Response:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+                description: Description of the error
+      description: Forbidden
+    404Response:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+                description: Description of the error
+      description: Not Found
+  securitySchemes:
+    API Token:
+      type: http
+      scheme: bearer
+      description: Use a provided API token to authenticate with the Canalyst API.
+x-tagGroups:
+  - name: Endpoints
+    description: Endpoint documentation
+    tags:
+      - Companies
+      - Consolidated Scenarios
+      - Drivers
+      - Equity Models
+      - Equity Model Historical Data Points
+      - Equity Model Series
+      - Forecast Data Points
+      - Forecast Periods
+      - Forecast Period Data Points
+      - Historical Data Points
+      - Historical Data Point Revisions
+      - Historical Periods
+      - Historical Period Data Points
+      - Labels
+      - Model Versions
+      - Scenarios
+      - Scenario Forecast Data Points
+      - Scenario Forecast Periods
+      - Scenario Period Data Points
+      - Scenario Time Series
+      - Scenario Time Series Categories
+      - Time Series
+      - Time Series Categories
+      - Units
+tags:
+  - name: Companies
+    description: Retrieve company information
+  - name: Consolidated Scenarios
+    description: >
+      Retrieve all of the current user's scenarios for all equity models
+
+
+      A scenario is used to simulate the effects of one or more changes to an
+      equity
+
+      model's forecast data points.
+  - name: Drivers
+    description: >
+      Retrieve driver information for a forecast data point
+
+
+      A driver is any data point whose value either directly or indirectly
+
+      influences the value of a target data point. Each entry has a
+
+      `context_type` of either "standalone" or "time_series".
+
+
+      This endpoint can return its results as either JSON (`application/json`)
+      or in
+
+      [Graphviz DOT format](https://www.graphviz.org/doc/info/lang.html)
+
+      (`text/vnd.graphviz`) according to the `format` query parameter. See
+      Graphviz's
+
+      [Resources page](https://graphviz.org/resources/) for a number of viewers
+      that are
+
+      compatible with the format. Of particular note may be
+
+      [Sketchviz](https://sketchviz.com/new), which does not require any
+      download or
+
+      installation to use.
+
+
+      **Standalone drivers**
+
+
+      A standalone driver is a data point that does not belong to a time series.
+
+      For example, the company\'s most recent stock price.
+
+
+      **Time series drivers**
+
+
+      A time series driver is a data point that is at the intersection of a time
+
+      series and period.
+
+
+      **JSON Example**
+
+          [
+
+              {
+                  "context_type": "standalone",
+                  "data_point": {
+                      "name": "MO.LastPrice",
+                      "description": "The company\'s most recent stock price",
+                      "unit": {
+                          "description": "USD",
+                          "self": "https://mds.canalyst.com/api/units/337/"
+                      }
+                  },
+                  "direct_drivers": []
+              },
+              {
+                  "context_type": "time_series",
+                  "data_point": {
+                      "time_series": {
+                          "slug": "net-revenue",
+                          "names": [
+                              "MO_RIS_GROSS_REV",
+                              "z_U07N2S0124_MO_RIS_NetRevenue"
+                          ],
+                          "description": "Gross Revenue",
+                          "category": {
+                              "slug": "revised-income-statement",
+                              "description": "Revised Income Statement",
+                              "type": {
+                                  "slug": "financial-analysis-category-type",
+                                  "name": "Financial Analysis"
+                              },
+                              "self": "https://mds.canalyst.com/api/equity-model-series/U07N2S0124/equity-models/Q1-2020.28/time-series-categories/revised-income-statement/"
+                          },
+                          "unit": {
+                              "description": "USD",
+                              "symbol": "$",
+                              "self": "https://mds.canalyst.com/api/units/0w4VjmAaWr-j2aZcniqNQA/"
+                          },
+                          "self": "https://mds.canalyst.com/api/equity-model-series/U07N2S0124/equity-models/Q1-2020.28/time-series/net-revenue/"
+                      },
+                      "period": {
+                          "name": "Q2-2020",
+                          "period_duration_type": "fiscal_quarter",
+                          "start_date": "2020-04-01",
+                          "end_date": "2020-06-30",
+                          "self": "https://mds.canalyst.com/api/equity-model-series/U07N2S0124/equity-models/Q1-2020.28/forecast-periods/Q2-2020/"
+                      },
+                      "value": "45278199999.999997",
+                      "self": "https://mds.canalyst.com/api/equity-model-series/U07N2S0124/equity-models/Q1-2020.28/time-series/net-revenue/forecast-data-points/Q2-2020/"
+                  },
+                  "direct_drivers": [
+                      {
+                          "context_type": "time_series",
+                          "data_point": {
+                              "self": "https://mds.canalyst.com/api/equity-model-series/U07N2S0124/equity-models/Q1-2020.28/time-series/total-revenues/forecast-data-points/Q2-2020/"
+                          }
+                      }
+                  ]
+              }
+          ]
+
+      **DOT Example**
+
+          digraph Drivers {
+              "adjusted-shares-outstandi|Q1-2020" [label="Adjusted Shares Outstanding - WAD\n(Revised Income Statement)\nQ1-2020"]
+              "MO.LastPrice" [label="MO.LastPrice"]
+              "adjusted-shares-outstandi|Q4-2019" [label="Adjusted Shares Outstanding - WAD\n(Revised Income Statement)\nQ4-2019"]
+              "purchases-of-common-stock-1|Q1-2020" [label="Purchases of common stock\n(Cash Flow Statement)\nQ1-2020"]
+              "purchases-of-common-stock-1|Q4-2019" [label="Purchases of common stock\n(Cash Flow Statement)\nQ4-2019"]
+              "adjusted-shares-outstandi|Q1-2020" -> "MO.LastPrice"
+              "adjusted-shares-outstandi|Q1-2020" -> "adjusted-shares-outstandi|Q4-2019"
+              "adjusted-shares-outstandi|Q1-2020" -> "purchases-of-common-stock-1|Q1-2020"
+              "adjusted-shares-outstandi|Q4-2019" -> "MO.LastPrice"
+              "adjusted-shares-outstandi|Q4-2019" -> "purchases-of-common-stock-1|Q4-2019"
+          }
+  - name: Equity Models
+    description: >
+      Retrieve equity model information
+
+
+      An equity model corresponds to a single entry in an equity model series,
+      as
+
+      identified by its model version.
+  - name: Equity Model Historical Data Points
+    description: >
+      Retrieve historical data point information for an entire equity
+
+      model
+
+
+      Each entry is a data point that exists at the intersection of a time
+      series
+
+      and an historical period of the equity model. Useful for bulk download of
+
+      historical data points.
+  - name: Equity Model Series
+    description: |
+      Retrieve equity model series information
+
+      An equity model series is an ordered sequence of model versions for a
+      particular CSIN. In other words, each entry in an equity model series
+      represents the equity model with the corresponding CSIN as of a
+      particular fiscal period.
+  - name: Forecast Data Points
+    description: |
+      Retrieve forecast data point information for a time series
+
+      A forecast data point exists at the intersection of the time series and a
+      forecast period of the equity model.
+  - name: Forecast Periods
+    description: |
+      Retrieve forecast period information for an equity model
+
+      A forecast period is a time period whose start date is later than the end
+      date of the most recent period of the equity model.
+  - name: Forecast Period Data Points
+    description: Retrieve data points for a forecast period
+  - name: Historical Data Points
+    description: |
+      Retrieve historical data point information for a time series
+
+      An historical data point exists at the intersection of the time series and
+      an historical period of the equity model.
+  - name: Historical Periods
+    description: |
+      Retrieve historical period information for an equity model
+
+      An historical period is a time period whose end date is earlier than or
+      the same as the end date of the most recent period of the equity model.
+  - name: Historical Data Point Revisions
+    description: Retrieve data point revisions for an historical data point
+  - name: Historical Period Data Points
+    description: Retrieve data points for an historical period
+  - name: Labels
+    description: |
+      Retrieve label information
+
+      Labels provide additional context to other resources in the API. For
+      example, sector labels are typically applied to companies and financial
+      item labels are typically applied to time series.
+  - name: Model Versions
+    description: |
+      Retrieve model version information
+
+      A model version corresponds to a reported fiscal period of an equity model
+      and includes a revision number to differentiate between published versions
+      of an equity model for a given fiscal period. If a model version's
+      `equity_model` field is `null`, that indicates that the corresponding
+      equity model has not been published (e.g. because its changes did not pass
+      quality control checks or it is an intermediate representation that is not
+      suitable for production use).
+  - name: Scenarios
+    description: |
+      Create and retrieve scenarios for an equity model
+
+      The list endpoint allows the creation of a _scenario_, which is used to
+      simulate the effects of one or more changes to an equity model's forecast
+      data points.
+
+      **POST Request**
+
+      Scenarios are created via POST requests containing a single scenario. A
+      scenario is described as JSON data with the following structure:
+
+          {
+              "name": <unique name (string)>,
+              "price": <stock price (real number as a string, optional)>,
+              "changes": <changes to apply to data points (array of objects)>
+          }
+
+      **Changes**
+
+      Each change has the following structure:
+
+          {
+              "time_series": <name or slug of the data point's time series (string)>,
+              "period": <name of the data point's period (string)>,
+              "value_expression": <expression describing the new value (object)>
+          }
+
+      Note that only data points from forecast periods (i.e. where the period's
+      `is_forecast` field is `true`) may be changed. Also, each scenario may
+      include no more than 50 changes.
+
+      **Value Expressions**
+
+      Value expressions allow clients to describe complex (or simple) types of
+      values relating to an equity model. The different types of value
+      expressions are described below.
+
+      Note that, when a value expression is evaluated for an equity model, it
+      results in a real number that is then assigned to the data point in the
+      scenario.
+
+      **Binary operator**
+
+      A binary arithmetic operator (e.g. addition, division, exponent) to apply
+      to a pair of operand sub-expressions
+
+          {
+              "type": "binary",
+              "left_operand": <a value expression (object)>,
+              "operator": "<a binary operator (string)>",
+              "right_operand": <a value expression (object)>
+          }
+
+      Valid binary `"operator"` values are:
+
+      * `"+"` (addition)
+      * `"-"` (subtraction)
+      * `"*"` (multiplication)
+      * `"/"` (division)
+      * `"^"` (exponent)
+
+      **Data point**
+
+      The value of a time series data point
+
+          {
+              "type": "data_point",
+              "time_series": <a time series name or slug (string)>,
+              "period": "<a forecast or historical period name (string)>"
+          }
+
+      **Literal**
+
+      A literal value
+
+          {
+              "type": "literal",
+              "value": <literal value to apply (real number as a string)>
+          }
+
+      **Price**
+
+      The company's stock price
+
+          {
+              "type": "price"
+          }
+
+      **Unary operator**
+
+      A unary arithmetic operator (e.g. negation, absolute value) to apply to an
+      operand sub-expression
+
+          {
+              "type": "unary",
+              "operator": "<a unary operator (string)>",
+              "operand": <a value expression (object)>
+          }
+
+      Valid unary `"operator"` values are:
+
+      * `"abs"` (absolute value)
+      * `"-"` (negation)
+
+      **Example POST Request**
+
+          {
+              "name": "Example Scenario",
+              "price": "42.57",
+              "changes": [
+                  {
+                      "time_series": "MO_CFSum_Dividend",
+                      "period": "FY2021",
+                      "value_expression": {
+                          "type": "binary",
+                          "left_operand": {
+                              "type": "unary",
+                              "operator": "-",
+                              "operand": {
+                                  "type": "data_point",
+                                  "time_series": "MO_CFSum_DPS",
+                                  "period": "FY2021"
+                              }
+                          },
+                          "operator": "*",
+                          "right_operand": {
+                              "type": "data_point",
+                              "time_series": "MO_RIS_ShareCount_WAB",
+                              "period": "FY2021"
+                          }
+                      }
+                  },
+                  {
+                      "time_series": "MO_RIS_EPS_WAD",
+                      "period": "FY2021",
+                      "value_expression": {
+                          "type": "binary",
+                          "left_operand": {
+                              "type": "literal",
+                              "value": "465203"
+                          },
+                          "operator": "*",
+                          "right_operand": {
+                              "type": "price"
+                          }
+                      }
+                  }
+              ]
+          }
+  - name: Scenario Forecast Data Points
+    description: |
+      Retrieve forecast data point information for a time series in a
+      scenario
+  - name: Scenario Forecast Periods
+    description: Retrieve forecast period information for a scenario
+  - name: Scenario Period Data Points
+    description: |
+      Retrieve data point information for a forecast period in a scenario
+  - name: Scenario Time Series
+    description: Retrieve time series information for a scenario
+  - name: Scenario Time Series Categories
+    description: Retrieve time series category information for a scenario
+  - name: Time Series
+    description: >
+      Retrieve time series information for an equity model
+
+
+      Note that an individual time series can also be retrieved by supplying one
+
+      of its names in the URL. For example, if a time series for equity model
+
+      series "AV0OK70133" at version "FY2018.22" has a `names` field that
+
+      contains "MO_RIS_REV", then it can be retrieved at
+
+      <a
+      href="/api/equity-model-series/AV0OK70133/equity-models/FY2018.22/time-series/MO_RIS_REV/">
+
+      `/api/equity-model-series/AV0OK70133/equity-models/FY2018.22/time-series/MO_RIS_REV/`
+
+      </a>.
+  - name: Time Series Categories
+    description: >
+      Retrieve time series category information for an equity model
+
+
+      A time series category provides context to each of the time series that
+      are
+
+      associated with it. Note that the list of available categories and which
+
+      time series are associated with them may change from one model version to
+
+      the next without warning as the equity model series evolves over time.
+  - name: Units
+    description: Retrieve unit of measurement information
+

@@ -1,0 +1,1 @@
+{'GPX': 'GP Strategies GPX US', 'KBAL': 'Kimball International KBAL US', 'SCS': 'Steelcase SCS US', 'MTSC': 'MTS Systems MTSC US', 'CMCO': 'Columbus McKinnon CMCO US', 'LDL': 'Lydall LDL US'}

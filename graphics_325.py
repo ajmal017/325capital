@@ -170,7 +170,8 @@ def compare_series_bar(ax, data_labels, value_list, title, percent):
     for j, values in enumerate(value_list):
         for i, v in enumerate(values):
             if(not isinstance(v, float)) & (not isinstance(v, int)):
-                values[i] = 0
+                if v == True : values[i] = 1
+                else : values[i] = 0
 
         x_locations = xlocs + (j * width)
         g = ax.bar(x_locations, values, width=0.45, align='center')
@@ -247,8 +248,11 @@ def series_bar(ax, data_labels, values, title, percent):
 
 
 def series_line(*, ax, data_label, values, title, percent):
-    # This function creates a line graph with the values
-    # plotted along each line
+    """
+    This function takes an axis to plot on, data_label to label what the line is
+    values for the values to graph, a title for the whole graph, and percent true
+    or false to present the y-axis in percent format or not
+    """
 
     for i, v in enumerate(values):
         if (not isinstance(v, float)):
@@ -262,7 +266,7 @@ def series_line(*, ax, data_label, values, title, percent):
 
     for i, x in enumerate(xlocs):
 
-        label_fix = abs(high-low) / 30
+        label_fix = 5
         if v < 0:
             label_fix = -label_fix
 
