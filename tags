@@ -1,127 +1,603 @@
 !_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
 !_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
-!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
-!_TAG_PROGRAM_NAME	Exuberant Ctags	//
-!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
-!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
-al	sc.py	/^al = (-5, 8, 0, 15)$/;"	v
-al	screen0.py	/^al = (-2, 3, 0, 10)$/;"	v
-aplots	screen1.py	/^def aplots(df, name, x, y, z, t, al, xlabel, ylabel, l):$/;"	f
-bars	score.py	/^bars = [df1.loc[ticker, x] for x in data]$/;"	v
-bubb	screen0.py	/^def bubb(df, x, y, h, al):$/;"	f
-bubb	screen1.py	/^def bubb(df, x, y, h, al):$/;"	f
-c	screen0.py	/^            c=palette325[experience],$/;"	v
-c	screen0.py	/^        c=palette325[experience],$/;"	v
-chart	screen0.py	/^chart = sns.scatterplot(data=df4, x=x, y=y, hue='325', legend=False)$/;"	v
-chart	screen0.py	/^chart = sns.scatterplot(data=df4, x=x, y=y, hue='325',$/;"	v
-chart	screen0.py	/^chart = sns.stripplot($/;"	v
-color	sc.py	/^            color='grey',$/;"	v
-color	score.py	/^                 color = 'grey',$/;"	v
-contscat	screen0.py	/^def contscat(df, x, y, h, al):$/;"	f
-contscat	screen1.py	/^def contscat(df, x, y, h, al):$/;"	f
-data	score.py	/^data = ['debt_total_mrq', 'cash_mrq']$/;"	v
-data	screen0.py	/^    data=df4,$/;"	v
-decimals	screen0.py	/^        decimals=0,$/;"	v
-df	newsc.py	/^df = getcombinedsheet(sheets)$/;"	v
-df1	sc.py	/^df1 = getasheet(filenames, sheets)$/;"	v
-df1	score.py	/^df1 = getasheet(filenames, sheets)$/;"	v
-df12	screen0.py	/^df12 = getsheets(sheet_name)$/;"	v
-df2	sc.py	/^df2 = df1[include_mask & pipeline_mask & industry_mask]$/;"	v
-df4	screen0.py	/^df4 = df4.join(df12[['last_price', 'ev_to_ebitda_ltm']], rsuffix='_12')$/;"	v
-df4	screen0.py	/^df4 = getsheets(sheet_name)$/;"	v
-dftemp	screen0.py	/^dftemp = df4[xmask]$/;"	v
-dftemp	screen0.py	/^dftemp = dftemp[ymask]$/;"	v
-dpi	screen0.py	/^    dpi=600)$/;"	v
-ebitda	score.py	/^ebitda = df1.loc[ticker, 'ebitda_ltm']$/;"	v
-ebitdaadj	score.py	/^ebitdaadj = ebitda * 1.30$/;"	v
-filenames	sc.py	/^filenames = ["with325.xlsx"]$/;"	v
-filenames	score.py	/^filenames = ["with325.xlsx"]$/;"	v
-fontsize	sc.py	/^            fontsize=5,$/;"	v
-fontweight	screen0.py	/^    fontweight="light")$/;"	v
-fontweight	screen0.py	/^    fontweight="light",$/;"	v
-g	sc.py	/^    g =ax1.scatter(x = df2[x], y = df2[y], c = df2[z].map(huepalette), s = df2[t] * 100)$/;"	v
-g1	score.py	/^    g1 = ax1.bar(x = 1, height = bar, bottom = y_offset, width = width)$/;"	v
-get_key_stats	screen0.py	/^def get_key_stats(tgt):$/;"	f
-get_key_stats	screen1.py	/^def get_key_stats(tgt):$/;"	f
-getasheet	screen0.py	/^def getasheet(filenames,sheets):$/;"	f
-getasheet	screen1.py	/^def getasheet(filenames, sheets):$/;"	f
-getcombinedsheet	screen0.py	/^def getcombinedsheet(filenames):$/;"	f
-getcombinedsheet	screen1.py	/^def getcombinedsheet(filenames):$/;"	f
-getfidelitysheets	screen0.py	/^def getfidelitysheets(filenames):$/;"	f
-getfidelitysheets	screen1.py	/^def getfidelitysheets(filenames):$/;"	f
-getsheets	screen0.py	/^def getsheets(name):$/;"	f
-getsheets	screen1.py	/^def getsheets(name):$/;"	f
-getyahoosheet	screen0.py	/^def getyahoosheet(filenames):$/;"	f
-getyahoosheet	screen1.py	/^def getyahoosheet(filenames):$/;"	f
-ha	score.py	/^                 ha = 'center',$/;"	v
-ha	screen0.py	/^    ha="left")$/;"	v
-height	score.py	/^    height = rect.get_height()$/;"	v
-huepalette	sc.py	/^huepalette = dict(zip(set(df2[z]), itertools.cycle(palette325)))$/;"	v
-industries	sc.py	/^industries = ['IT']$/;"	v
-industry_facets	screen1.py	/^def industry_facets():$/;"	f
-industry_mask	sc.py	/^industry_mask = df1['short_industry'].isin(industries)$/;"	v
-inplace	screen0.py	/^    inplace=True)$/;"	v
-l	sc.py	/^l = True$/;"	v
-legend2	screen0.py	/^legend2 = ax2.legend($/;"	v
-loc	screen0.py	/^    loc="upper right",$/;"	v
-name	sc.py	/^name = 'test'$/;"	v
-new_categories	screen0.py	/^    new_categories=['Reengage', 'Recent', 'Current'],$/;"	v
-palette	screen0.py	/^    palette=[$/;"	v
-palette325	screen0.py	/^palette325 = [$/;"	v
-palette325	screen1.py	/^palette325 = [$/;"	v
-pipeline_mask	sc.py	/^pipeline_mask = df1['325'] > 0$/;"	v
-position	screen0.py	/^    position=($/;"	v
-pri	screen0.py	/^pri = df4[df4['325_experience'].isin(['Current', 'Recent'])]$/;"	v
-pri	screen0.py	/^pri = pri[screen_columns]$/;"	v
-removals	screen0.py	/^    removals=[$/;"	v
-rotation	screen0.py	/^    rotation="horizontal",$/;"	v
-s	screen0.py	/^            s=dftemp.index[i],$/;"	v
-s	screen0.py	/^        s=dftemp.index[i],$/;"	v
-scat	screen0.py	/^def scat(df, x, y, h, al):$/;"	f
-scat	screen1.py	/^def scat(df, x, y, h, al):$/;"	f
-scatter1	screen0.py	/^    scatter1 = ax1.scatter($/;"	v
-scatter2	screen0.py	/^        scatter2 = ax2.scatter($/;"	v
-screen_columns	screen0.py	/^screen_columns = [$/;"	v
-sec	screen0.py	/^sec = pd.concat([sec4, sec12])$/;"	v
-sec12	screen0.py	/^sec12 = df12[['short_sector', 'ev', 'ebitda_ltm',$/;"	v
-sec4	screen0.py	/^sec4 = df4[['short_sector', 'ev', 'ebitda_ltm', 'revenue_ltm',$/;"	v
-sheet_name	screen0.py	/^sheet_name = "Screen Dec 2019"$/;"	v
-sheet_name	screen0.py	/^sheet_name = "Screen Mar 2020"$/;"	v
-sheets	newsc.py	/^sheets = ["combined yahoo and fidelity.xlsx"]$/;"	v
-sheets	sc.py	/^sheets = {"Sheet1": [0, "A:CR", 2179]}$/;"	v
-sheets	score.py	/^sheets = {"Sheet1": [0, "A:CR", 2179]}$/;"	v
-symbol	screen0.py	/^        symbol="%"))$/;"	v
-t	sc.py	/^t = 'revenue_growth_yoy'$/;"	v
-ticker	score.py	/^ticker = 'SSYS'$/;"	v
-title	screen0.py	/^    title="Rev. Growth (LTM)")$/;"	v
-twoplots	screen1.py	/^def twoplots(df, name, x, y, z, t, al, xlabel, ylabel, l):$/;"	f
-va	score.py	/^                 va = 'bottom')$/;"	v
-weight	sc.py	/^            weight='light')$/;"	v
-weight	screen0.py	/^            weight='light')$/;"	v
-width	score.py	/^width = 0.55$/;"	v
-x	newsc.py	/^x = 'net_debt_to_ebtida_ltm'$/;"	v
-x	sc.py	/^x = 'net_debt_to_ebitda_ltm'$/;"	v
-x	screen0.py	/^    x=x,$/;"	v
-x	screen0.py	/^x = '325_experience'$/;"	v
-x	screen0.py	/^x = 'ev_to_ebitda_ltm'$/;"	v
-x	screen0.py	/^x = 'net_debt_to_ebitda_ltm'$/;"	v
-xlabel	sc.py	/^xlabel = 'Net Debt to EBITDA (LTM)'$/;"	v
-xmask	screen0.py	/^xmask = (df4[x] > al[0]) & (df4[x] < al[1])$/;"	v
-xmax	screen0.py	/^        xmax=1,$/;"	v
-xoffset	screen0.py	/^    xoffset = 0$/;"	v
-xy	score.py	/^                 xy = (rect.get_x() + rect.get_width() \/ 2, height \/ 2),$/;"	v
-xy	screen0.py	/^            xy=(dftemp[x][i] + xoffset, dftemp[y][i]),$/;"	v
-xy	screen0.py	/^        xy=(dftemp[x][i] + xoffset, dftemp[y][i]),$/;"	v
-xytext	score.py	/^                 xytext = (0,3), textcoords = "offset points",$/;"	v
-y	newsc.py	/^y = 'ev_to_ebitda_ltm'$/;"	v
-y	sc.py	/^y = 'ev_to_ebitda_ltm'$/;"	v
-y	screen0.py	/^    y=y,$/;"	v
-y	screen0.py	/^y = 'ev_to_ebitda_ltm'$/;"	v
-y	screen0.py	/^y = 'net_debt_to_ebitda_ltm'$/;"	v
-y	screen0.py	/^y = 'ocf_ltm_to_ebitda_ltm'$/;"	v
-y	screen0.py	/^y = 'revenue_growth_ltm'$/;"	v
-y	screen0.py	/^y = 'sgm_ltm_minus_sgm_low'$/;"	v
-y_offset	score.py	/^y_offset = np.zeros(1)$/;"	v
-ylabel	sc.py	/^ylabel = 'EV to EBITDA (LTM)'$/;"	v
-ymask	screen0.py	/^ymask = (dftemp[y] > al[2]) & (dftemp[y] < al[3])$/;"	v
-z	sc.py	/^z = 'short_industry'$/;"	v
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	//
+2) If quality is high	mb_screen_note.md	/^## 2) If quality is high$/;"	s
+3) If requires more EP	mb_screen_note.md	/^## 3) If requires more EP$/;"	s
+3) if 2a	mb_screen_note.md	/^## 3) if 2a$/;"	s
+4) if requires growth	mb_screen_note.md	/^## 4) if requires growth$/;"	s
+5) if 4a)	mb_screen_note.md	/^## 5) if 4a)$/;"	s
+6) if 5a)	mb_screen_note.md	/^## 6) if 5a)$/;"	s
+7) if 6b)	mb_screen_note.md	/^## 7) if 6b)$/;"	s
+A) Quality of business (High, Med, Low)	mb_screen_note.md	/^# A) Quality of business (High, Med, Low)$/;"	c
+Agr	old_python/sector_forecast.py	/^Agr = [-.15, .05, .035, .035, .035]$/;"	v
+B) Sub par ROIC	mb_screen_note.md	/^# B) Sub par ROIC$/;"	c
+Basicr	old_python/sector_forecast.py	/^Basicr = [-.15, .05, .035, .035, .035]$/;"	v
+C) ROIC okay, but margins declining	mb_screen_note.md	/^# C) ROIC okay, but margins declining$/;"	c
+CASS	200810mbscreennotes.md	/^# CASS$/;"	c
+CCr	old_python/sector_forecast.py	/^CCr = [-.15, -.05, .10, .05, .035]$/;"	v
+CIK	edgartest.py	/^CIK = "gpx"$/;"	v
+ComSvcr	old_python/sector_forecast.py	/^ComSvcr = [-.15, .08, .04, .04, .04]$/;"	v
+Commr	old_python/sector_forecast.py	/^Commr = [-.05, .05, .05, .05, .05]$/;"	v
+ConsDr	old_python/sector_forecast.py	/^ConsDr = [-.035, .05, .035,.035,.035]$/;"	v
+ConsPr	old_python/sector_forecast.py	/^ConsPr = [-.05, .04, .035, .035, .035]$/;"	v
+Consr	old_python/sector_forecast.py	/^Consr = [-.05, .04, .035, .035, .035]$/;"	v
+D) Both ROIC and GM sub par	mb_screen_note.md	/^# D) Both ROIC and GM sub par$/;"	c
+EBF	200810mbscreennotes.md	/^# EBF$/;"	c
+EBIX	200810mbscreennotes.md	/^# EBIX$/;"	c
+ET	edgartest.py	/^import xml.etree.ElementTree as ET$/;"	I
+Enerr	old_python/sector_forecast.py	/^Enerr = [-.035, .05, .035,.035,.035]$/;"	v
+Finr	old_python/sector_forecast.py	/^Finr = [-.1, .08, .065, .04, .035]$/;"	v
+Healthr	old_python/sector_forecast.py	/^Healthr = [-.08, .06, .05, .05, .035]$/;"	v
+I	screen_tree.py	/^I = b[rlrr & wasrh & too_much_ic]$/;"	v
+IC	mb_screen_note.md	/^## IC$/;"	s
+Indusr	old_python/sector_forecast.py	/^Indusr = [-.2, -.07, .08, .035, .035]$/;"	v
+Is the company a leader	anil_screen_note.md	/^## Is the company a leader$/;"	s
+Is the company top quartile ROIC?	anil_screen_note.md	/^## Is the company top quartile ROIC? $/;"	s
+J	screen_tree.py	/^J = b[rlrr & wasrh & ~too_much_ic]$/;"	v
+K	screen_tree.py	/^K = b[rlrf & wasrh & too_much_ic]$/;"	v
+KBAL	200810mbscreennotes.md	/^# KBAL$/;"	c
+L	screen_tree.py	/^L = b[rlrf & wasrh & ~too_much_ic]$/;"	v
+MRFP	canimport.py	/^MRFP = eval(file_mrfp.read())$/;"	v
+RCII	200810mbscreennotes.md	/^# RCII$/;"	c
+REPH	200810mbscreennotes.md	/^# REPH$/;"	c
+REr	old_python/sector_forecast.py	/^REr = [-.15, .05, .035, .035, .035]$/;"	v
+Retailr	old_python/sector_forecast.py	/^Retailr = [-.3, .08, .05, .035, .035]$/;"	v
+SCS	200810mbscreennotes.md	/^# SCS$/;"	c
+Screen tree attempt	anil_screen_note.md	/^# Screen tree attempt$/;"	c
+TESTS	playf.py	/^TESTS = ['VALUATION_test', 'SBM_test',$/;"	v
+TMTr	old_python/sector_forecast.py	/^TMTr = [-.1, .1, .065, .05, .035]$/;"	v
+Techr	old_python/sector_forecast.py	/^Techr = [-.05, .05, .05, .05, .05]$/;"	v
+TickerData	canimport.py	/^class TickerData():$/;"	c
+Utilr	old_python/sector_forecast.py	/^Utilr = [-.035, .05, .035,.035,.035]$/;"	v
+a	s1.py	/^a = a.astype(np.float)$/;"	v
+a	s1.py	/^a = pd.DataFrame()$/;"	v
+action	edgartest.py	/^action = "getcompany"$/;"	v
+actives	ep.py	/^actives = b[b.last_work == 'Active']$/;"	v
+actives	playf.py	/^actives = b[b.last_work == 'Active'].copy()$/;"	v
+actives	s2.py	/^actives = b[b.last_work == 'Active']$/;"	v
+actives	screen_tree.py	/^actives = b[b.last_work == 'Active']$/;"	v
+actual_data	gsc.py	/^actual_data = testdict['bs_risks']$/;"	v
+actual_data	gsc.py	/^actual_data = testdict['experience']$/;"	v
+actual_data	gsc.py	/^actual_data = testdict['puoc']$/;"	v
+actual_data	gsc.py	/^actual_data = testdict['sbm']$/;"	v
+actual_data	gsc.py	/^actual_data = testdict['trade']$/;"	v
+actual_data	gsc.py	/^actual_data = testdict['valuation']$/;"	v
+adv	gs.py	/^adv = df1.loc[ticker, 'adv_avg_months_3']$/;"	v
+al	old_python/industry_score_xy.py	/^al = (-5, 8, 0, 15)$/;"	v
+api_key	direct_fmp.py	/^api_key = "c350f6f5a4396d349ee4bbacde3d5999"$/;"	v
+api_key	ep.py	/^api_key = "c350f6f5a4396d349ee4bbacde3d5999"$/;"	v
+api_key	old_python/sector_forecast.py	/^api_key = "c350f6f5a4396d349ee4bbacde3d5999"$/;"	v
+api_key	playf.py	/^api_key = "c350f6f5a4396d349ee4bbacde3d5999"$/;"	v
+api_key	s1.py	/^api_key = "c350f6f5a4396d349ee4bbacde3d5999"$/;"	v
+api_key	s2.py	/^api_key = "c350f6f5a4396d349ee4bbacde3d5999"$/;"	v
+aplots	graphics_325.py	/^def aplots(df, name, x, y, z, t, al, xlabel, ylabel, l):$/;"	f
+auto_parts	s1.py	/^auto_parts = ['MPAA', 'THRM', 'DORM', 'SMP']$/;"	v
+auto_retailers	s1.py	/^auto_retailers = ['AAP', 'GPC', 'AZO', 'ORLY']$/;"	v
+ax	gs.py	/^ax = fig.add_subplot(gs[0, 0])$/;"	v
+ax	gs.py	/^ax = fig.add_subplot(gs[0, 1])$/;"	v
+ax	gs.py	/^ax = fig.add_subplot(gs[0, 2])$/;"	v
+ax	gs.py	/^ax = fig.add_subplot(gs[1, 0])$/;"	v
+ax	gs.py	/^ax = fig.add_subplot(gs[1, 1])$/;"	v
+ax	gs.py	/^ax = fig.add_subplot(gs[1, 2])$/;"	v
+ax	gs.py	/^ax = fig.add_subplot(gs[2, 0:2])$/;"	v
+ax	gs.py	/^ax = fig.add_subplot(gs[2, 2])$/;"	v
+ax	gsc.py	/^ax = fig.add_subplot(gs[0, 0])$/;"	v
+ax	gsc.py	/^ax = fig.add_subplot(gs[0, 1:])$/;"	v
+ax	gsc.py	/^ax = fig.add_subplot(gs[1, :])$/;"	v
+ax	gsc.py	/^ax = fig.add_subplot(gs[2, 0])$/;"	v
+ax	gsc.py	/^ax = fig.add_subplot(gs[2, 1])$/;"	v
+ax	gsc.py	/^ax = fig.add_subplot(gs[2, 2])$/;"	v
+ax1	old_python/industry_forecasts.py	/^fig, ax1 = subplots()$/;"	v
+ax1	old_python/industry_score_xy.py	/^fig, ax1 = plt.subplots()$/;"	v
+ax1	s2.py	/^ax1 = fig.add_subplot(gs[0,0:2])$/;"	v
+ax2	s2.py	/^ax2 = fig.add_subplot(gs[1,0])$/;"	v
+ax3	s2.py	/^ax3 = fig.add_subplot(gs[1,1])$/;"	v
+axs	old_python/sagard_returns.py	/^fig, axs  = plt.subplots(nrows = 1, ncols = 2)$/;"	v
+b	ep.py	/^b = b[~b.sector.isin(sector_not_wanted)]$/;"	v
+b	ep.py	/^b = d[d.short_sector.isin(short_sector_wanted)]$/;"	v
+b	playf.py	/^b = b[b.ev <= 2000]$/;"	v
+b	playf.py	/^b = b[~b.business.isin(business_not_wanted)].copy()$/;"	v
+b	playf.py	/^b = b[~b.sector.isin(sector_not_wanted)].copy()$/;"	v
+b	playf.py	/^b = d[d.short_sector.isin(short_sector_wanted)].copy()$/;"	v
+b	s2.py	/^b = b[~b.sector.isin(sector_not_wanted)]$/;"	v
+b	s2.py	/^b = d[d.short_sector.isin(short_sector_wanted)]$/;"	v
+b	screen_tree.py	/^b = b[b.ev <= 2000]$/;"	v
+b	screen_tree.py	/^b = b[~b.business.isin(business_not_wanted)]$/;"	v
+b	screen_tree.py	/^b = b[~b.sector.isin(sector_not_wanted)].copy()$/;"	v
+b	screen_tree.py	/^b = d[d.short_sector.isin(short_sector_wanted)].copy()$/;"	v
+base0	mbepscreen.py	/^base0 = (irlist.BaseReturn < .1) & (irlist.BaseReturn >= 0r)$/;"	v
+base10	mbepscreen.py	/^base10 = (irlist.BaseReturn >= .1)$/;"	v
+base10	screen_tree.py	/^base10 = (d.base_return >= .1)$/;"	v
+benchmark_test_values	gsc.py	/^benchmark_test_values = [testdict['tests'][i] for i in test_data]$/;"	v
+bs	ep.py	/^bs = fa.balance_sheet_statement(ticker, api_key, 'annual').T$/;"	v
+bs	s2.py	/^bs = fa.balance_sheet_statement(ticker, api_key, 'annual').T$/;"	v
+bs_risks_tests	playf.py	/^bs_risks_tests = [$/;"	v
+bsrisks	screen_tree.py	/^bsrisks = (b.BS_risks_test >= b.BS_risks_test.quantile(q=.75))$/;"	v
+bubb	graphics_325.py	/^def bubb(df, x, y, h, al):$/;"	f
+business_not_wanted	playf.py	/^business_not_wanted = [$/;"	v
+buy_price_ten_percent	s2.py	/^buy_price_ten_percent = sell_price \/ ((1 + .1) ** 5)$/;"	v
+c	s2.py	/^c = c.append(forecast.cogs[1:])$/;"	v
+c	s2.py	/^c = inc.costOfRevenue \/ 1e6$/;"	v
+can_borrow_enough	screen_tree.py	/^can_borrow_enough = (b.net_debt_to_ebitda_ltm < 3)$/;"	v
+can_model	modelimport.py	/^can_model = pd.read_excel(path, sheet_name='Model', header=4, index_col=0)$/;"	v
+can_model	testscript.py	/^can_model = pd.read_excel(path, sheet_name='Model', header=4, index_col=0)$/;"	v
+categories	gs.py	/^categories = ['sector', 'business',$/;"	v
+categories	gsc.py	/^categories = ['sector', 'business',$/;"	v
+category_bar	graphics_325.py	/^def category_bar(ax, data_labels, values, title):$/;"	f
+cd	old_python/sagard_returns.py	/^cd = cd.infer_objects()$/;"	v
+cd	old_python/sagard_returns.py	/^cd = pd.concat([cf, names], axis = 0).T$/;"	v
+cells	edgartest.py	/^        cells = row.find_all('td')$/;"	v
+cells	edgartest.py	/^    cells = row.find_all('td')$/;"	v
+cf	ep.py	/^cf = fa.cash_flow_statement(ticker, api_key, 'annual').T$/;"	v
+cf	old_python/sagard_returns.py	/^cf = getasheet(filenames, sheets, 'Date in Month')$/;"	v
+cf	s2.py	/^cf = fa.cash_flow_statement(ticker, api_key, 'annual').T$/;"	v
+checklist	testscript.py	/^checklist = list(std_names.values())$/;"	v
+cogs	ep.py	/^cogs = (inc.revenue - inc.grossProfit).fillna(0).values.reshape(-1, 1)$/;"	v
+cogsreg	ep.py	/^cogsreg = LinearRegression()$/;"	v
+colname	modelimport.py	/^    colname = model_q.columns[model_q.columns.str.startswith('ris_adjusted_ebitda')].values.toli/;"	v
+colnum	modelimport.py	/^    colnum = [model_q.columns.get_loc(c) for c in cols]$/;"	v
+cols	canimport.py	/^cols = pd.Series(df.columns) #create list of column names in preparation for renaming duplicates$/;"	v
+cols	canimport.py	/^cols = pd.Series(df.columns)$/;"	v
+cols	modelimport.py	/^    cols = model_q.columns[model_q.columns.str.startswith('cf_borrowings') | model_q.columns.str/;"	v
+cols	testscript.py	/^cols = pd.Series(clean_model.columns) #create list of indexed column names in preparation for re/;"	v
+colsum	modelimport.py	/^    colsum = pd.Series(dtype='float')$/;"	v
+compare_series_bar	graphics_325.py	/^def compare_series_bar(ax, data_labels, value_list, title, percent):$/;"	f
+contbubb	graphics_325.py	/^def contbubb(df, x, y, h, al):$/;"	f
+core_ep	screen_tree.py	/^core_ep = (b.ep_irr_sector >= .2)$/;"	v
+core_investments	old_python/sagard_returns.py	/^core_investments = statusdf.loc[statusdf['Core'] <= 0,'Core'].sum()$/;"	v
+core_receipts	old_python/sagard_returns.py	/^core_receipts = statusdf.loc[statusdf['Core'] > 0, 'Core'].sum()$/;"	v
+cores	old_python/sagard_returns.py	/^cores = cd['Status'] == 'Core'$/;"	v
+could_be_good_roic	screen_tree.py	/^could_be_good_roic = (b.roic_high_5 >= roic_test_hurdle)$/;"	v
+count	edgartest.py	/^count = 1$/;"	v
+current_section	modelimport.py	/^        current_section = section_names[field]$/;"	v
+current_section	modelimport.py	/^current_section = 'misc'$/;"	v
+current_section	testscript.py	/^        current_section = section_names[field]$/;"	v
+current_section	testscript.py	/^current_section = 'misc'$/;"	v
+curruniv	mbepscreen.py	/^curruniv = pd.read_csv('mbtemp.csv', index_col = 'symbol')$/;"	v
+d	ep.py	/^d = d.set_index('symbol')$/;"	v
+d	ep.py	/^d = pd.read_excel('fscores.xlsx')$/;"	v
+d	gs.py	/^d = d.set_index('symbol')$/;"	v
+d	gs.py	/^d = pd.read_excel('fscores.xlsx')$/;"	v
+d	gsc.py	/^d = d.set_index('symbol')$/;"	v
+d	gsc.py	/^d = pd.read_excel('fscores.xlsx')$/;"	v
+d	playf.py	/^d = d.set_index('symbol')$/;"	v
+d	playf.py	/^d = pd.read_excel('fscores.xlsx')$/;"	v
+d	s1.py	/^d = d.set_index('symbol')$/;"	v
+d	s1.py	/^d = pd.read_excel('fscores.xlsx')$/;"	v
+d	s2.py	/^d = d.set_index('symbol')$/;"	v
+d	s2.py	/^d = pd.read_excel('fscores.xlsx')$/;"	v
+d	screen_tree.py	/^d = d.set_index('symbol')$/;"	v
+d	screen_tree.py	/^d = pd.read_excel('fscores.xlsx')$/;"	v
+data	gs.py	/^data = ['VALUATION_test', 'SBM_test', 'PI_test', 'BS_risks_test',$/;"	v
+data	gs.py	/^data = ['ep_today_sector', 'buy_price_ten_percent',$/;"	v
+data	gs.py	/^data = ['ev_to_ebitda_ltm', 'fcfe_to_marketcap', 'net_debt_to_ebitda_ltm']$/;"	v
+data	gs.py	/^data = ['revenue_growth_3', 'gm_ltm', 'gm_high_5', 'ebitda_margin_ltm',$/;"	v
+data	gs.py	/^data = ['revenue_ltm', 'ebitda_ltm', 'ocf_ltm',$/;"	v
+data	gs.py	/^data = ['roic', 'roic_high_5', 'roic_avg_5',$/;"	v
+data_labels	gs.py	/^data_labels = ['ADV(3mo)K', '% Traded Daily',$/;"	v
+data_labels	old_python/sagard_returns.py	/^data_labels = ["Cores", "Entries"]$/;"	v
+data_request	edgartest.py	/^data_request = "us-gaap:Revenues"$/;"	v
+dateb	edgartest.py	/^dateb = today.strftime("%Y%m%d")$/;"	v
+day_one	playf.py	/^day_one = ['GPX', 'NVEE', 'MPAA', 'CMCO', 'LDL', 'NXGN',$/;"	v
+debug_model1	modelimport.py	/^debug_model1 = temp_model.copy()$/;"	v
+df	build_fscores_excel.py	/^    df = get_fscore(fidelity.index)$/;"	v
+df	canimport.py	/^df = df.append(pd.Series(name='section'))$/;"	v
+df	canimport.py	/^df = df.loc[:,df.columns.notnull()] #drop columns with NULL header$/;"	v
+df	canimport.py	/^df = df.loc[:,df.columns.notnull()]$/;"	v
+df1	gs.py	/^    df1 = get_fscore(ticker)$/;"	v
+df1	gsc.py	/^    df1 = get_fscore(ticker)$/;"	v
+df1	old_python/industry_score_xy.py	/^df1 = getasheet(filenames, sheets, 'ticker')$/;"	v
+df2	old_python/industry_score_xy.py	/^df2 = df1[include_mask & pipeline_mask & industry_mask]$/;"	v
+directory	modelimport.py	/^directory = sys.argv[2] if len(sys.argv) >=3 else '\/home\/michael\/Documents\/325capital\/Canal/;"	v
+directory	testscript.py	/^directory = '\/home\/michael\/Documents\/325capital\/CanalystModels\/'$/;"	v
+display	mbepscreen.py	/^display = ['name', 'business', 'roic_high_5', 'roic_avg_5', 'roic', 'roic_ago_5', 'roic_trend', /;"	v
+display_ep	mbepscreen.py	/^display_ep = ['name', 'business', 'market_cap', 'ebitda_ltm', 'capex_ltm', 'EstMktCap', 'net_deb/;"	v
+display_price_opp	mbepscreen.py	/^display_price_opp = ['name', 'business', 'market_cap', 'net_debt_ltm', 'EP', 'EstMktCap', 'price/;"	v
+display_sources_uses	canimport.py	/^display_sources_uses = ['fcf_3_yrs', 'ma_3_yrs', 'shareholders_3_yrs', 'net_debt_3_yrs', 'actual/;"	v
+display_value_summary	modelimport.py	/^display_value_summary = ['net_revenue_ttm', 'adj_ebitda_ttm', 'adj_ebitda_margin_ttm', 'capex_tt/;"	v
+display_value_summary	testscript.py	/^display_value_summary = ['net_revenue_ttm', 'adj_ebitda_ttm', 'capex_ttm', 'ep_ttm', 'net_revenu/;"	v
+do	playf.py	/^do = b.loc[day_one]$/;"	v
+down	old_python/fix_forecast.py	/^down = [-.2, -.07, .08, .035, .035]$/;"	v
+down	old_python/sector_forecast.py	/^down = [-.2, -.07, .08, .035, .035]$/;"	v
+dt	build_fscores_excel.py	/^import datetime as dt$/;"	I
+dt	old_python/sagard_returns.py	/^import datetime as dt$/;"	I
+dt	screen1.py	/^    import  datetime as dt$/;"	I	function:get_fscore	file:
+dt	screen1.py.79cbdf7bdb6f23c264e3a392a326c454.py	/^    import  datetime as dt$/;"	I	function:get_fscore	file:
+e	s2.py	/^e = e.append(forecast.ebitda[1:])$/;"	v
+e	s2.py	/^e = inc.ebitda \/ 1e6$/;"	v
+ebitda_scenario	ep.py	/^ebitda_scenario = []$/;"	v
+edgar_page	edgartest.py	/^edgar_page = requests.get(target_url.format(action,CIK,type,dateb,count))$/;"	v
+edgar_tree	edgartest.py	/^edgar_tree = BeautifulSoup(edgar_page.text, 'lxml')$/;"	v
+else	modelimport.py	/^        else: colsum = colsum + pd.Series(model_q.iloc[:,i])$/;"	v
+em	s2.py	/^em = e \/ r$/;"	v
+entries	old_python/sagard_returns.py	/^entries = cd['Status'] == 'Entry'$/;"	v
+entry_ep	screen_tree.py	/^entry_ep = (b.ep_irr_sector >= .1)$/;"	v
+entry_investments	old_python/sagard_returns.py	/^entry_investments = statusdf.loc[statusdf['Entry'] <= 0,'Entry'].sum()$/;"	v
+entry_receipts	old_python/sagard_returns.py	/^entry_receipts = statusdf.loc[statusdf['Entry'] > 0,'Entry'].sum()$/;"	v
+ep_down	old_python/fix_forecast.py	/^ep_down = pd.DataFrame()$/;"	v
+ep_irr	s2.py	/^ep_irr = ((sell_price \/ score.price) ** (1 \/ 5) ) - 1$/;"	v
+ep_reg	old_python/fix_forecast.py	/^ep_reg = pd.DataFrame()$/;"	v
+ep_sector	old_python/fix_forecast.py	/^ep_sector = pd.DataFrame()$/;"	v
+ep_sector	old_python/sector_forecast.py	/^ep_sector = pd.DataFrame()$/;"	v
+experience_tests	playf.py	/^experience_tests = [$/;"	v
+f	build_fscores_excel.py	/^    f = []$/;"	v
+f	stitch.py	/^f = f.set_index('symbol')$/;"	v
+f	stitch.py	/^f = pd.concat([f1, f2, f3, f4, f5])$/;"	v
+f1	stitch.py	/^f1 = pd.read_excel('fscores_1.xlsx')$/;"	v
+f2	stitch.py	/^f2 = pd.read_excel('fscores_2.xlsx')$/;"	v
+f3	stitch.py	/^f3 = pd.read_excel('fscores_3.xlsx')$/;"	v
+f4	stitch.py	/^f4 = pd.read_excel('fscores_4.xlsx')$/;"	v
+f5	stitch.py	/^f5 = pd.read_excel('fscores_5.xlsx')$/;"	v
+fa	ep.py	/^import FundamentalAnalysis as fa$/;"	I
+fa	old_python/sector_forecast.py	/^import FundamentalAnalysis as fa$/;"	I
+fa	playf.py	/^import FundamentalAnalysis as fa$/;"	I
+fa	s1.py	/^import FundamentalAnalysis as fa$/;"	I
+fa	s2.py	/^import FundamentalAnalysis as fa$/;"	I
+fa	screen1.py	/^    import  FundamentalAnalysis as fa$/;"	I	function:get_fscore	file:
+fa	screen1.py	/^    import FundamentalAnalysis as fa$/;"	I	function:get_ep	file:
+fa	screen1.py.79cbdf7bdb6f23c264e3a392a326c454.py	/^    import  FundamentalAnalysis as fa$/;"	I	function:get_fscore	file:
+fa	screen1.py.79cbdf7bdb6f23c264e3a392a326c454.py	/^    import FundamentalAnalysis as fa$/;"	I	function:get_ep	file:
+fidelity	build_fscores_excel.py	/^    fidelity = get_fidelity_sheets(f)$/;"	v
+fields	modelimport.py	/^fields = fields.str.lower()$/;"	v
+fields	modelimport.py	/^fields = fields.str.replace(' ', '_')$/;"	v
+fields	modelimport.py	/^fields = fields.str.replace('(','')$/;"	v
+fields	modelimport.py	/^fields = fields.str.replace(')','')$/;"	v
+fields	modelimport.py	/^fields = pd.Series(model_q.columns)$/;"	v
+fields	modelimport.py	/^fields = pd.Series(temp_model.index)$/;"	v
+fields	modelimport.py	/^fields = temp_model.section.values + '_' + fields$/;"	v
+fields	testscript.py	/^fields = temp_model.index$/;"	v
+fields_debug	modelimport.py	/^fields_debug = fields.copy()$/;"	v
+fields_debug2	modelimport.py	/^fields_debug2 = fields.copy()$/;"	v
+fields_imported	modelimport.py	/^fields_imported = temp_model.index$/;"	v
+fields_imported	testscript.py	/^fields_imported = temp_model.index$/;"	v
+fig	gs.py	/^fig = plt.figure(constrained_layout=True)$/;"	v
+fig	gsc.py	/^fig = plt.figure()$/;"	v
+fig	old_python/industry_forecasts.py	/^fig, ax1 = subplots()$/;"	v
+fig	old_python/industry_score_xy.py	/^fig, ax1 = plt.subplots()$/;"	v
+fig	old_python/sagard_returns.py	/^fig, axs  = plt.subplots(nrows = 1, ncols = 2)$/;"	v
+fig	s2.py	/^fig = plt.figure(constrained_layout = True)$/;"	v
+file_mrfp	canimport.py	/^file_mrfp = open('mrfp.txt', 'w')$/;"	v
+filenames	build_fscores_excel.py	/^filenames = ['..\/sc1.xls', '..\/sc2.xls',$/;"	v
+filenames	old_python/industry_forecasts.py	/^filenames = ["US Comparative Industry__13_05_2020.xlsx"]$/;"	v
+filenames	old_python/industry_score_xy.py	/^filenames = ["with325.xlsx"]$/;"	v
+filenames	old_python/sagard_returns.py	/^filenames = ['..\/..\/Returns\/Sagard Track Record Master.xlsx']$/;"	v
+filenames	s2.py	/^filenames = ['fscores.xlsx']$/;"	v
+filenumber	build_fscores_excel.py	/^    filenumber = re.search('\\d', filen)[0]$/;"	v
+fixers	screen_tree.py	/^fixers = (b.ebitda_margin_ltm < b.ebitda_margin_high_5)$/;"	v
+forecast	ep.py	/^forecast = forecast.astype(np.float) \/ 1e6$/;"	v
+forecast	ep.py	/^forecast = pd.DataFrame(columns=np.arange(start=0, stop=11, step=1))$/;"	v
+forecast	s2.py	/^forecast = forecast.T$/;"	v
+forecast	s2.py	/^forecast, inputs = get_ep(ticker = ticker, inc = inc, bs = bs, cf = cf, revenue_scenario = reven/;"	v
+fye	canimport.py	/^    fye = datetime  #fiscal year end$/;"	v	class:TickerData
+g	old_python/industry_score_xy.py	/^    g =ax1.scatter(x = df2[x], y = df2[y], c = df2[z].map(huepalette), s = df2[t] * 100)$/;"	v
+g	s2.py	/^g = g.append(forecast.gm[1:])$/;"	v
+g	s2.py	/^g = inc.grossProfit \/ 1e6$/;"	v
+g	s2.py	/^g = series_bar(ax = ax2, data_labels = ['sell price', 'buy_price (10%)', 'implied ebitda_multipl/;"	v
+g1	s2.py	/^g1 = series_line(ax = ax1, data_label = "em", values = em, title = 'financials', percent = True)$/;"	v
+g1	s2.py	/^g1 = series_line(ax = ax1, data_label = "gm", values = gm, title = 'financials', percent = True)$/;"	v
+g1	s2.py	/^g1 = series_line(ax = ax1, data_label = "r cagr", values = r.pct_change(1), title = 'financials'/;"	v
+g2	s2.py	/^g2 = series_bar(ax = ax3, data_labels = ['irr', 'tv percent of value'], values = [ep_irr, value_/;"	v
+generates_enough_cash	screen_tree.py	/^generates_enough_cash = (b.surplus_cash_as_percent_of_price > .05) | ($/;"	v
+get_analysis	getdata_325.py	/^def get_analysis(symbol):$/;"	f
+get_canalyst_model	get_canalyst_model.py	/^def get_canalyst_model(ticker, directory):$/;"	f
+get_ep	screen1.py	/^def get_ep(*, ticker, inc = pd.DataFrame(), bs = pd.DataFrame(), cf = pd.DataFrame(), revenue_sc/;"	f
+get_ep	screen1.py.79cbdf7bdb6f23c264e3a392a326c454.py	/^def get_ep(*, ticker, inc = pd.DataFrame(), bs = pd.DataFrame(), cf = pd.DataFrame(), revenue_sc/;"	f
+get_fidelity_sheets	getdata_325.py	/^def get_fidelity_sheets(filenames):$/;"	f
+get_fmp_data	direct_fmp.py	/^def get_fmp_data(statement):$/;"	f
+get_fscore	screen1.py	/^def get_fscore(tickers):$/;"	f
+get_fscore	screen1.py.79cbdf7bdb6f23c264e3a392a326c454.py	/^def get_fscore(tickers):$/;"	f
+get_historic_prices	getdata_325.py	/^def get_historic_prices(ticker):$/;"	f
+get_holders	getdata_325.py	/^def get_holders(symbol):$/;"	f
+get_key_stats	getdata_325.py	/^def get_key_stats(ticker):$/;"	f
+get_latest_file_for_ticker	cantest.py	/^def get_latest_file_for_ticker(ticker, directory):$/;"	f
+get_latest_file_for_ticker	get_canalyst_model.py	/^def get_latest_file_for_ticker(ticker, directory):$/;"	f
+get_master_screen_sheets	getdata_325.py	/^def get_master_screen_sheets(name):$/;"	f
+get_profile	getdata_325.py	/^def get_profile(symbol):$/;"	f
+get_summary_page	cantest.py	/^def get_summary_page(ticker):$/;"	f
+get_token	getdata_325.py	/^def get_token():$/;"	f
+get_xbrl_data	getdata_325.py	/^def get_xbrl_data(ticker, line_item, period):$/;"	f
+get_xbrl_lineitems	getdata_325.py	/^def get_xbrl_lineitems(ticker):$/;"	f
+get_yahoo_labels	getdata_325.py	/^def get_yahoo_labels(data):$/;"	f
+getasheet	getdata_325.py	/^def getasheet(filenames, sheets, index_name):$/;"	f
+getyahoosheet	getdata_325.py	/^def getyahoosheet(filenames):$/;"	f
+gm	s2.py	/^gm = g \/ r$/;"	v
+good_roic	screen_tree.py	/^good_roic = (b.roic >= roic_test_hurdle)$/;"	v
+growers	screen_tree.py	/^growers = (b.revenue_growth_3 > b.revenue_growth_3.quantile(q=.75))$/;"	v
+gs	gs.py	/^gs = fig.add_gridspec(3, 3)$/;"	v
+gs	gsc.py	/^gs = fig.add_gridspec(3, 3)$/;"	v
+gs	s2.py	/^gs = fig.add_gridspec(2,2)$/;"	v
+handles	old_python/industry_score_xy.py	/^    handles, labels =g.legend_elements(prop="sizes", alpha=0.5)$/;"	v
+high_debt	mbepscreen.py	/^high_debt = (irlist.net_debt_to_ebitda_ltm > 3)$/;"	v
+high_debt	screen_tree.py	/^high_debt = (d.net_debt_to_ebitda_ltm > 3)$/;"	v
+high_quality	screen_tree.py	/^high_quality = good_roic & stable_GM & stable_EM & stable_revenue$/;"	v
+hist	gs.py	/^hist = get_historic_prices(ticker)$/;"	v
+hist	gsc.py	/^hist = get_historic_prices(ticker)$/;"	v
+huepalette	old_python/industry_score_xy.py	/^huepalette = dict(zip(set(df2[z]), itertools.cycle(palette325)))$/;"	v
+ic_decreasing	screen_tree.py	/^ic_decreasing = (b.ic < b.ic_ago_5)$/;"	v
+ic_increasing	screen_tree.py	/^ic_increasing = (b.ic > b.ic_ago_5)$/;"	v
+implied_ebitda_multiple	s2.py	/^implied_ebitda_multiple = forecast.ev[5] \/ forecast.ebitda[5]$/;"	v
+inc	ep.py	/^inc = fa.income_statement(ticker, api_key, 'annual').T$/;"	v
+inc	s2.py	/^inc = fa.income_statement(ticker, api_key, 'annual').T$/;"	v
+include_mask	old_python/industry_score_xy.py	/^include_mask = df1['include?'] == 1$/;"	v
+industries	old_python/industry_score_xy.py	/^industries = ['IT']$/;"	v
+industry	old_python/industry_forecasts.py	/^industry = getasheet(filenames, sheets, 'Industry Classification')$/;"	v
+industry_facets	graphics_325.py	/^def industry_facets(df):$/;"	f
+industry_mask	old_python/industry_score_xy.py	/^industry_mask = df1['short_industry'].isin(industries)$/;"	v
+inputs	ep.py	/^inputs = pd.DataFrame()$/;"	v
+inputs	s2.py	/^forecast, inputs = get_ep(ticker = ticker, inc = inc, bs = bs, cf = cf, revenue_scenario = reven/;"	v
+irexclude	mbepscreen.py	/^irexclude=pd.read_csv('irexclude.csv')$/;"	v
+irlist	mbepscreen.py	/^irlist = curruniv[~curruniv.business.isin(irexclude.business)].copy()$/;"	v
+iter_	edgartest.py	/^    iter_ = xml_trees[i].getiterator()$/;"	v
+knowledge	screen_tree.py	/^knowledge = (b.tamale_status.isin($/;"	v
+l	old_python/industry_score_xy.py	/^l = True$/;"	v
+labels	old_python/industry_score_xy.py	/^    handles, labels =g.legend_elements(prop="sizes", alpha=0.5)$/;"	v
+last_recession_cagrs	s2.py	/^last_recession_cagrs = inc.revenue.pct_change(1)['2009':'2013']$/;"	v
+live_tests	playf.py	/^live_tests = {$/;"	v
+live_tests	screen_tree.py	/^live_tests = {$/;"	v
+market_cap	gs.py	/^market_cap = df1.loc[ticker, 'market_cap']$/;"	v
+market_cap	modelimport.py	/^market_cap = float(yahoo_quote['Market Cap'][0:-1]) #drop units and convert string to type float$/;"	v
+market_cap_units	modelimport.py	/^market_cap_units = yahoo_quote['Market Cap'][-1]$/;"	v
+market_leader	screen_tree.py	/^market_leader = b.market_leader_test$/;"	v
+mdates	build_fscores_excel.py	/^import matplotlib.dates as mdates$/;"	I
+mdates	gs.py	/^import matplotlib.dates as mdates$/;"	I
+mdates	old_python/sagard_returns.py	/^import matplotlib.dates as mdates$/;"	I
+missing	testscript.py	/^missing = set(checklist).difference(model_columns)$/;"	v
+model	modelimport.py	/^model = temp_model.T #transpose the model so that the periods become the row index$/;"	v
+model	testscript.py	/^model = temp_model.T #transpose the model so that the periods become the row index$/;"	v
+model_columns	testscript.py	/^model_columns = std_model.columns.tolist()$/;"	v
+model_dict	modelimport.py	/^    model_dict = eval(f.read())$/;"	v
+model_dict	testscript.py	/^    model_dict = eval(f.read())$/;"	v
+model_fy	modelimport.py	/^model_fy = model[model.index.str.startswith('F')].copy()$/;"	v
+model_name	modelimport.py	/^model_name = model_dict.get(ticker) \\$/;"	v
+model_name	testscript.py	/^model_name = model_dict.get(ticker) \\$/;"	v
+model_q	modelimport.py	/^model_q = model[model.index.str.startswith('Q')].copy()$/;"	v
+mrfp	canimport.py	/^    mrfp = ''   #most recent fiscal period$/;"	v	class:TickerData
+mrfp	modelimport.py	/^mrfp = mrfp_dict.get(ticker) \\$/;"	v
+mrfp	testscript.py	/^mrfp = mrfp_dict.get(ticker) \\$/;"	v
+mrfp_dict	modelimport.py	/^    mrfp_dict = eval(f.read())$/;"	v
+mrfp_dict	testscript.py	/^    mrfp_dict = eval(f.read())$/;"	v
+mrfy	canimport.py	/^    mrfy = ''   #most recent complete fiscal year$/;"	v	class:TickerData
+n_stacked_bar	graphics_325.py	/^def n_stacked_bar(ax, data_labels, values, title, percent, segment_labels=[]):$/;"	f
+name	old_python/industry_score_xy.py	/^name = 'test'$/;"	v
+name_pattern	old_python/industry_forecasts.py	/^name_pattern = r'\\) (.+)$'$/;"	v
+names	old_python/sagard_returns.py	/^names = getasheet(filenames, sheets, 'Ticker')$/;"	v
+np	build_fscores_excel.py	/^import numpy as np$/;"	I
+np	cantest.py	/^import numpy as np$/;"	I
+np	ep.py	/^import numpy as np$/;"	I
+np	getdata_325.py	/^import numpy as np$/;"	I
+np	graphics_325.py	/^import numpy as np$/;"	I
+np	old_python/industry_score_xy.py	/^import numpy as np$/;"	I
+np	old_python/sagard_returns.py	/^import numpy as np$/;"	I
+np	old_python/sector_forecast.py	/^import numpy as np$/;"	I
+np	playf.py	/^import numpy as np$/;"	I
+np	s1.py	/^import numpy as np$/;"	I
+np	s2.py	/^import numpy as np$/;"	I
+np	screen1.py	/^    import  numpy as np$/;"	I	function:get_fscore	file:
+np	screen1.py	/^import numpy as np$/;"	I
+np	screen1.py.79cbdf7bdb6f23c264e3a392a326c454.py	/^    import  numpy as np$/;"	I	function:get_fscore	file:
+np	screen1.py.79cbdf7bdb6f23c264e3a392a326c454.py	/^import numpy as np$/;"	I
+page	edgartest.py	/^    page = requests.get(link)$/;"	v
+page_text	edgartest.py	/^    page_text = requests.get(link).text$/;"	v
+palette325	graphics_325.py	/^palette325 = [$/;"	v
+path	modelimport.py	/^path = directory +  model_dict[ticker] + ".xlsx"$/;"	v
+path	testscript.py	/^path = directory +  model_dict[ticker] + ".xlsx"$/;"	v
+pcogs	ep.py	/^pcogs = [i[0] for i in pcogs]$/;"	v
+pcogs	ep.py	/^pcogs = cogsreg.predict(revenues)$/;"	v
+pd	build_fscores_excel.py	/^import pandas as pd$/;"	I
+pd	cantest.py	/^import pandas as pd$/;"	I
+pd	ep.py	/^import pandas as pd$/;"	I
+pd	get_canalyst_model.py	/^import pandas as pd$/;"	I
+pd	getdata_325.py	/^    import pandas as pd$/;"	I	function:get_xbrl_data	file:
+pd	getdata_325.py	/^    import pandas as pd$/;"	I	function:get_xbrl_lineitems	file:
+pd	getdata_325.py	/^import pandas as pd$/;"	I
+pd	graphics_325.py	/^import pandas as pd$/;"	I
+pd	gs.py	/^import pandas as pd$/;"	I
+pd	gsc.py	/^import pandas as pd$/;"	I
+pd	mbepscreen.py	/^import pandas as pd$/;"	I
+pd	modelimport.py	/^import pandas as pd$/;"	I
+pd	old_python/industry_forecasts.py	/^import pandas as pd$/;"	I
+pd	old_python/industry_score_xy.py	/^import pandas as pd$/;"	I
+pd	old_python/sagard_returns.py	/^import pandas as pd$/;"	I
+pd	old_python/sector_forecast.py	/^import pandas as pd$/;"	I
+pd	playf.py	/^import pandas as pd$/;"	I
+pd	s1.py	/^import pandas as pd$/;"	I
+pd	s2.py	/^import pandas as pd$/;"	I
+pd	screen1.py	/^    import  pandas as pd$/;"	I	function:get_fscore	file:
+pd	screen1.py	/^import pandas as pd$/;"	I
+pd	screen1.py.79cbdf7bdb6f23c264e3a392a326c454.py	/^    import  pandas as pd$/;"	I	function:get_fscore	file:
+pd	screen1.py.79cbdf7bdb6f23c264e3a392a326c454.py	/^import pandas as pd$/;"	I
+pd	screen_tree.py	/^import pandas as pd$/;"	I
+pd	stitch.py	/^import pandas as pd$/;"	I
+pd	testscript.py	/^import pandas as pd$/;"	I
+percent	old_python/sagard_returns.py	/^percent = False$/;"	v
+pipe_current	canimport.py	/^    pipe_current = ''   #current pipeline stage$/;"	v	class:TickerData
+pipeline_mask	old_python/industry_score_xy.py	/^pipeline_mask = df1['325'] > 0$/;"	v
+plt	build_fscores_excel.py	/^import matplotlib.pyplot as plt$/;"	I
+plt	getdata_325.py	/^import matplotlib.pyplot as plt$/;"	I
+plt	graphics_325.py	/^import matplotlib.pyplot as plt$/;"	I
+plt	gs.py	/^import matplotlib.pyplot as plt$/;"	I
+plt	gsc.py	/^import matplotlib.pyplot as plt$/;"	I
+plt	old_python/industry_forecasts.py	/^import matplotlib.pyplot as plt$/;"	I
+plt	old_python/industry_score_xy.py	/^import matplotlib.pyplot as plt$/;"	I
+plt	old_python/sagard_returns.py	/^import matplotlib.pyplot as plt$/;"	I
+plt	old_python/sector_forecast.py	/^import matplotlib.pyplot as plt$/;"	I
+plt	playf.py	/^import matplotlib.pyplot as plt$/;"	I
+plt	s1.py	/^import matplotlib.pyplot as plt$/;"	I
+plt	s2.py	/^import matplotlib.pyplot as plt$/;"	I
+plt	screen_tree.py	/^import matplotlib.pyplot as plt$/;"	I
+price_change_52_high	gs.py	/^price_change_52_high = df1.price_change_52[ticker]$/;"	v
+price_change_ytd	gs.py	/^price_change_ytd = df1.last_price[ticker] \/ hist.loc['2019-12-31']['Close'] - 1$/;"	v
+print_mb_report	cantest.py	/^def print_mb_report(ticker):$/;"	f
+print_mb_report	get_canalyst_model.py	/^def print_mb_report(ticker):$/;"	f
+psga	ep.py	/^psga = [i[0] for i in psga]$/;"	v
+psga	ep.py	/^psga = sgareg.predict(revenues)$/;"	v
+puoc_tests	playf.py	/^puoc_tests = [$/;"	v
+python.linting.enabled	.vim/coc-settings.json	/^  "python.linting.enabled": true$/;"	b
+python.linting.pep8Enabled	.vim/coc-settings.json	/^  "python.linting.pep8Enabled": false,$/;"	b
+python.linting.pylintEnabled	.vim/coc-settings.json	/^  "python.linting.pylintEnabled": true,$/;"	b
+quality_revenue	mbepscreen.py	/^quality_revenue = irlist.revenue_growth_3 > 0$/;"	v
+quality_revenue	screen_tree.py	/^quality_revenue = d.revenue_growth_3 > 0$/;"	v
+r	s1.py	/^    r = fa.income_statement(co, api_key, 'annual').T$/;"	v
+r	s2.py	/^r = inc.revenue \/ 1e6$/;"	v
+r	s2.py	/^r = r.append(forecast.revenue[1:])$/;"	v
+refresh_yahoo	getdata_325.py	/^def refresh_yahoo(tickerdf):$/;"	f
+revenue_investments_working	screen_tree.py	/^revenue_investments_working = (b.revenue_growth_3 == b.revenue_growth_max)$/;"	v
+revenue_scenario	ep.py	/^    revenue_scenario = np.full(5, inputs['revenue_growth_3_median'][0])$/;"	v
+revenue_scenario	ep.py	/^revenue_scenario = []$/;"	v
+revenue_scenario	s2.py	/^revenue_scenario = [-.25, .05, .05,.05,.05]$/;"	v
+revenues	ep.py	/^revenues = forecast.loc['revenue'].values.reshape(-1, 1)$/;"	v
+revenues	ep.py	/^revenues = inc.revenue.fillna(0).values.reshape(-1, 1)$/;"	v
+rhrf	screen_tree.py	/^rhrf = (roic_high & roic_down)$/;"	v
+rhrr	screen_tree.py	/^rhrr = (roic_high & ~roic_down)$/;"	v
+rlrf	screen_tree.py	/^rlrf = (~roic_high & roic_down)$/;"	v
+rlrr	screen_tree.py	/^rlrr = (~roic_high & ~roic_down)$/;"	v
+roic_down	mbepscreen.py	/^roic_down = (irlist.roic_trend < 0)$/;"	v
+roic_down	screen_tree.py	/^roic_down = (d.roic_trend < 0)$/;"	v
+roic_high	mbepscreen.py	/^roic_high = (irlist.roic_avg_5 > .08) & (irlist.roic_high_5 > .08)$/;"	v
+roic_high	screen_tree.py	/^roic_high = (d.roic_avg_5 > roic_test_hurdle) & ($/;"	v
+roic_low	mbepscreen.py	/^roic_low = (irlist.roic_high_5 <= .08)$/;"	v
+roic_low	screen_tree.py	/^roic_low = (d.roic_high_5 <= roic_test_hurdle)$/;"	v
+roic_med	mbepscreen.py	/^roic_med = (irlist.roic_avg_5 <= .08) & (irlist.roic_high_5 > .08)$/;"	v
+roic_med	screen_tree.py	/^roic_med = (d.roic_avg_5 <= roic_test_hurdle) & ($/;"	v
+roic_test_hurdle	screen_tree.py	/^roic_test_hurdle = .1$/;"	v
+roic_up	mbepscreen.py	/^roic_up = (irlist.roic_trend >= 0)$/;"	v
+roic_up	screen_tree.py	/^roic_up = (d.roic_trend >= 0)$/;"	v
+rows	edgartest.py	/^    rows = table_tag.find_all('tr')$/;"	v
+rows	edgartest.py	/^rows = table_tag.find_all('tr')$/;"	v
+rscens	old_python/sector_forecast.py	/^rscens = dict(zip(short_sectors, rss))$/;"	v
+rss	old_python/sector_forecast.py	/^rss = [ TMTr , Finr , Agr , ComSvcr , Healthr , Retailr , Indusr , REr , CCr , Techr , Enerr , B/;"	v
+run_eps	screen1.py	/^def run_eps(d_in, inc = pd.DataFrame(), bs = pd.DataFrame(), cf = pd.DataFrame(), ebitda_scenari/;"	f
+run_eps	screen1.py.79cbdf7bdb6f23c264e3a392a326c454.py	/^def run_eps(d_in, inc = pd.DataFrame(), bs = pd.DataFrame(), cf = pd.DataFrame(), ebitda_scenari/;"	f
+run_tests	screen1.py	/^def run_tests(df_in = pd.DataFrame(), tests = []):$/;"	f
+run_tests	screen1.py.79cbdf7bdb6f23c264e3a392a326c454.py	/^def run_tests(df_in = pd.DataFrame(), tests = []):$/;"	f
+s	s2.py	/^s = inc.grossProfit - inc.ebitda$/;"	v
+s	s2.py	/^s = s.append(forecast.sga[1:])$/;"	v
+s	s2.py	/^s = s\/1e6$/;"	v
+sbm	screen_tree.py	/^sbm = (b.SBM_test >= b.SBM_test.quantile(q=.75))$/;"	v
+sbm_tests	playf.py	/^sbm_tests = [$/;"	v
+scat	graphics_325.py	/^def scat(df, x, y, h, al):$/;"	f
+score	s2.py	/^score = d.loc[ticker]$/;"	v
+section_index	modelimport.py	/^section_index = []$/;"	v
+section_index	testscript.py	/^section_index = []$/;"	v
+section_names	modelimport.py	/^section_names = {$/;"	v
+section_names	testscript.py	/^section_names = {$/;"	v
+sector_not_wanted	ep.py	/^sector_not_wanted = ['Biotechnology',$/;"	v
+sector_not_wanted	playf.py	/^sector_not_wanted = ['Biotechnology',$/;"	v
+sector_not_wanted	s2.py	/^sector_not_wanted = ['Biotechnology',$/;"	v
+sell_price	s2.py	/^sell_price = forecast.value_per_share[5]$/;"	v
+series_bar	graphics_325.py	/^def series_bar(ax, data_labels, values, title, percent):$/;"	f
+series_line	graphics_325.py	/^def series_line(*, ax, data_label, values, title, percent):$/;"	f
+set_tests	screen1.py	/^def set_tests(b = pd.DataFrame()):$/;"	f
+set_tests	screen1.py.79cbdf7bdb6f23c264e3a392a326c454.py	/^def set_tests(b = pd.DataFrame()):$/;"	f
+sga	ep.py	/^sga = (inc.revenue - inc.ebitda -$/;"	v
+sgareg	ep.py	/^sgareg = LinearRegression()$/;"	v
+sheets	old_python/industry_forecasts.py	/^sheets = {"Sheet1":[1939,"C:AT", 1685]}$/;"	v
+sheets	old_python/industry_score_xy.py	/^sheets = {"Sheet1": [0, "A:CR", 2179]}$/;"	v
+sheets	old_python/sagard_returns.py	/^sheets = {'Cash Flows':[20,'C:AS',106]}$/;"	v
+sheets	old_python/sagard_returns.py	/^sheets = {'Mekko Graphics':[642,'C:AS',5]}$/;"	v
+short_sector_not_wanted	ep.py	/^short_sector_not_wanted = ['Financial Services',$/;"	v
+short_sector_not_wanted	playf.py	/^short_sector_not_wanted = ['Financial Services',$/;"	v
+short_sector_not_wanted	s2.py	/^short_sector_not_wanted = ['Financial Services',$/;"	v
+short_sector_wanted	ep.py	/^short_sector_wanted = ['TMT',$/;"	v
+short_sector_wanted	playf.py	/^short_sector_wanted = ['TMT',$/;"	v
+short_sector_wanted	s2.py	/^short_sector_wanted = ['TMT',$/;"	v
+short_sectors	old_python/sector_forecast.py	/^short_sectors = ['TMT', 'Financial Services', 'Ag Chem and Materials',$/;"	v
+show	screen_tree.py	/^show = ['name', 'roic', 'revenue_ltm', 'revenue_growth_3', 'ebitda_ltm', 'ev_to_ebitda_ltm',$/;"	v
+si	modelimport.py	/^import yahoo_fin.stock_info as si$/;"	I
+sic_pattern	old_python/industry_forecasts.py	/^sic_pattern = r'^\\((.+)\\)'$/;"	v
+sns	getdata_325.py	/^import seaborn as sns$/;"	I
+sns	graphics_325.py	/^import seaborn as sns$/;"	I
+sns	old_python/industry_score_xy.py	/^import seaborn as sns$/;"	I
+sns	old_python/sector_forecast.py	/^import seaborn as sns$/;"	I
+sns	playf.py	/^import seaborn as sns$/;"	I
+sns	s1.py	/^import seaborn as sns$/;"	I
+sns	s2.py	/^import seaborn as sns$/;"	I
+so	gs.py	/^so = df1.loc[ticker, 'so']$/;"	v
+stable_EM	screen_tree.py	/^stable_EM = (b.ebitda_margin_ltm \/ b.ebitda_margin_high_5 >= .9)$/;"	v
+stable_GM	screen_tree.py	/^stable_GM = (b.gm_ltm \/ b.gm_high_5 >= .9)$/;"	v
+stable_revenue	screen_tree.py	/^stable_revenue = (b.revenue_growth_3 > -b.revenue_growth_3.quantile(q=.1))$/;"	v
+stacked_bar	graphics_325.py	/^def stacked_bar(ax, x, data_labels, values, title):$/;"	f
+status_current	canimport.py	/^    status_current = '' #pending, active, monitor, excluded$/;"	v	class:TickerData
+statusdf	old_python/sagard_returns.py	/^statusdf = cd.groupby('Status').sum().T$/;"	v
+std_field	testscript.py	/^std_field = fields.str.lower()$/;"	v
+std_field	testscript.py	/^std_field = std_field.str.replace(' ', '_')$/;"	v
+std_field	testscript.py	/^std_field = temp_model.section + '_' + std_field$/;"	v
+std_model	testscript.py	/^std_model = clean_model.rename(columns=std_names)$/;"	v
+std_model_fy	testscript.py	/^std_model_fy = std_model[std_model.index.str.startswith('F')]$/;"	v
+std_model_q	testscript.py	/^std_model_q = std_model[std_model.index.str.startswith('Q')]$/;"	v
+std_names	testscript.py	/^std_names = {$/;"	v
+t	old_python/industry_score_xy.py	/^t = 'revenue_growth_yoy'$/;"	v
+table_tag	edgartest.py	/^    table_tag = tree.find('table', class_='tableFile', summary="Data Files")$/;"	v
+table_tag	edgartest.py	/^table_tag = edgar_tree.find('table', class_='tableFile2', summary='Results')$/;"	v
+target_url	edgartest.py	/^target_url = "https:\/\/www.sec.gov\/cgi-bin\/browse-edgar?action={}&CIK={}&type={}&dateb={}&cou/;"	v
+tax_rate	screen_tree.py	/^tax_rate = .3$/;"	v
+temp	canimport.py	/^temp = df['<field>'].rolling(4).sum()$/;"	v
+temp_model	modelimport.py	/^temp_model = can_model[can_model.index.notnull()]$/;"	v
+temp_model	modelimport.py	/^temp_model = temp_model.loc[:,~temp_model.columns.str.startswith('Unn')]$/;"	v
+temp_model	modelimport.py	/^temp_model = temp_model.set_index('std_field')$/;"	v
+temp_model	modelimport.py	/^temp_model = temp_model[temp_model.section != temp_model.index]$/;"	v
+temp_model	testscript.py	/^temp_model = can_model[can_model.index.notnull()]$/;"	v
+temp_model	testscript.py	/^temp_model = temp_model.loc[:,~temp_model.columns.str.startswith('Unn')]$/;"	v
+temp_model	testscript.py	/^temp_model = temp_model.set_index('std_field')$/;"	v
+temp_model	testscript.py	/^temp_model = temp_model[temp_model.section != temp_model.index]$/;"	v
+temp_model_debug	modelimport.py	/^temp_model_debug = temp_model.copy()$/;"	v
+test_data	gsc.py	/^test_data = testdict['bs_risks_tests']$/;"	v
+test_data	gsc.py	/^test_data = testdict['experience_tests']$/;"	v
+test_data	gsc.py	/^test_data = testdict['puoc_tests']$/;"	v
+test_data	gsc.py	/^test_data = testdict['sbm_tests']$/;"	v
+test_data	gsc.py	/^test_data = testdict['trade_tests']$/;"	v
+test_data	gsc.py	/^test_data = testdict['valuation_tests']$/;"	v
+testdict	gsc.py	/^testdict = set_tests(d)$/;"	v
+ticker	ep.py	/^ticker = sys.argv[1]$/;"	v
+ticker	gs.py	/^ticker = sys.argv[1].upper()$/;"	v
+ticker	gsc.py	/^ticker = sys.argv[1].upper()$/;"	v
+ticker	modelimport.py	/^ticker = sys.argv[1]$/;"	v
+ticker	s2.py	/^ticker = 'ATRO'$/;"	v
+ticker	testscript.py	/^ticker = sys.argv[1]$/;"	v
+ticker_test_values	gsc.py	/^ticker_test_values = [df1.loc[ticker, i] for i in actual_data]$/;"	v
+title	gs.py	/^title = "EP price today and buy prices. \\n status = {}, market leader ={}".format($/;"	v
+title	gs.py	/^title = "Margins vs. Highs"$/;"	v
+title	gs.py	/^title = "Trading Stats"$/;"	v
+title	gsc.py	/^title = 'Balance Sheet Risks tests =  {:2.1f}%'.format($/;"	v
+title	gsc.py	/^title = 'Blueprint Execution tests =  {:2.1f}%'.format(sum(values) \/ len(values) * 100) + '\\n'/;"	v
+title	gsc.py	/^title = 'Poor Use of Cash\/Needs Cash tests =  {:2.1f}%'.format(sum(values) \/ len($/;"	v
+title	gsc.py	/^title = 'Superior Business Model tests =  {:2.1f}%'.format($/;"	v
+title	gsc.py	/^title = 'Trade Risks tests =  {:2.1f}%'.format(sum(values) \/ len(values) * 100)$/;"	v
+title	gsc.py	/^title = 'Valuation tests =  {:2.1f}%'.format(sum(values) \/ len(values) * 100)$/;"	v
+today	edgartest.py	/^today = datetime.date.today()$/;"	v
+too_much_ic	screen_tree.py	/^too_much_ic = (abs(b.roic_change_from_ic) > abs(b.roic_change_from_r))$/;"	v
+trade	screen_tree.py	/^trade = (b.TRADE_test >= b.TRADE_test.quantile(q=.75))$/;"	v
+trade_tests	playf.py	/^trade_tests = [$/;"	v
+tree	edgartest.py	/^    tree = BeautifulSoup(page.text, 'lxml')$/;"	v
+twoplots	graphics_325.py	/^def twoplots(df, name, x, y, z, t, al, xlabel, ylabel, l):$/;"	f
+type	edgartest.py	/^type = "10-Q"$/;"	v
+update_fscores_with_canalyst	cantest.py	/^def update_fscores_with_canalyst(ticker):$/;"	f
+update_fscores_with_canalyst	get_canalyst_model.py	/^def update_fscores_with_canalyst(ticker):$/;"	f
+valuation	mbepscreen.py	/^valuation = irlist.BaseReturn > .2$/;"	v
+valuation	screen_tree.py	/^valuation = (b.VALUATION_test >= b.VALUATION_test.quantile(q=.75))$/;"	v
+valuation	screen_tree.py	/^valuation = d.base_return > .2$/;"	v
+valuation_tests	playf.py	/^valuation_tests = [$/;"	v
+value_from_tv_percent	s2.py	/^value_from_tv_percent = forecast.tv_value_in_year[5] \/ forecast.ev[5]$/;"	v
+values	gs.py	/^values = [adv * 1000, adv\/so * 100, adv\/so *$/;"	v
+values	gs.py	/^values = [df1.loc[ticker, i] for i in data]$/;"	v
+values	gsc.py	/^values = [df1.loc[ticker, i] for i in test_data]$/;"	v
+values	old_python/sagard_returns.py	/^values = [0.173338979, 0.324151129]$/;"	v
+values	old_python/sagard_returns.py	/^values = [core_investments + core_receipts, entry_investments + entry_receipts]$/;"	v
+wasrh	screen_tree.py	/^wasrh = (b.roic_high_5 >= roic_test_hurdle)$/;"	v
+weight_tests	screen1.py	/^def weight_tests(df_in = pd.DataFrame(), weights = []):$/;"	f
+weight_tests	screen1.py.79cbdf7bdb6f23c264e3a392a326c454.py	/^def weight_tests(df_in = pd.DataFrame(), weights = []):$/;"	f
+x	modelimport.py	/^x = 1$/;"	v
+x	old_python/industry_score_xy.py	/^x = 'net_debt_to_ebitda_ltm'$/;"	v
+xlabel	old_python/industry_score_xy.py	/^xlabel = 'Net Debt to EBITDA (LTM)'$/;"	v
+xml_links	edgartest.py	/^xml_links = []$/;"	v
+xml_trees	edgartest.py	/^xml_trees = []$/;"	v
+xml_urls	edgartest.py	/^xml_urls = []$/;"	v
+y	old_python/industry_score_xy.py	/^y = 'ev_to_ebitda_ltm'$/;"	v
+yahoo_quote	modelimport.py	/^yahoo_quote = si.get_quote_table(ticker)$/;"	v
+yf	getdata_325.py	/^    import yfinance as yf$/;"	I	function:get_historic_prices	file:
+ylabel	old_python/industry_score_xy.py	/^ylabel = 'EV to EBITDA (LTM)'$/;"	v
+z	old_python/industry_score_xy.py	/^z = 'short_industry'$/;"	v

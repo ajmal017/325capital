@@ -74,7 +74,10 @@ def get_fscore(tickers):
             # get the other main stock indicators from Yahoo
             try:
                 key_stats = get_key_stats(ticker)
+<<<<<<< HEAD
                 logger.info(f'Got yahoo key stats for {ticker}')
+=======
+>>>>>>> d3b4d81c1b903220f8f8a6ae964a5c9767820674
             except:
                 logger.warning(f'Get key stats failed for {ticker}')
                 continue
@@ -195,6 +198,11 @@ def get_fscore(tickers):
             all['fcfe_to_marketcap'] = all.fcfe / all.marketCapitalization # cf, bs
             all['revenue_growth_3'] = all.revenue / all.revenue.shift(3) ** (1 / 3) - 1
             all['ebitda_growth_3'] = all.ebitda / all.ebitda.shift(3) ** (1 / 3) - 1
+<<<<<<< HEAD
+=======
+
+            # convert the dataframe to correct dtypes (let pandas infer correct conversion)
+>>>>>>> d3b4d81c1b903220f8f8a6ae964a5c9767820674
             all = all.convert_dtypes()
             logger.info(f'Cleaned up all for {ticker}')
 
@@ -206,6 +214,10 @@ def get_fscore(tickers):
             ep_multiple = 10
             tax_rate = 0.30
             all['ep'] = ((all.ebitda + all.capitalExpenditure) * ep_multiple - (all.totalDebt - all.cashAndShortTermInvestments)) / 1e6
+<<<<<<< HEAD
+=======
+
+>>>>>>> d3b4d81c1b903220f8f8a6ae964a5c9767820674
 
             # Create the score for ticker
             # favor yahoo stats when in doubt
@@ -354,7 +366,10 @@ def get_fscore(tickers):
             df['capex_to_ocf'] = df.capex_ltm / df.ocf_ltm
             df['equity_sold'] = all.commonStockIssued[now] / 1e6 # cf
             df['financing_acquired'] = all.otherFinancingActivites[now] / 1e6 # cf
+<<<<<<< HEAD
             logger.info(f'Finished cash flow items for {ticker}')
+=======
+>>>>>>> d3b4d81c1b903220f8f8a6ae964a5c9767820674
 
             short_columns = [i for i in key_stats.columns if 'Short' in i] # find the short interest columns in key_stats
 
@@ -380,7 +395,10 @@ def get_fscore(tickers):
                     + df.ep_value_from_ebitda
                     + df.ep_value_from_ic
                     )
+<<<<<<< HEAD
             logger.info(f'Finished ep related items for {ticker}')
+=======
+>>>>>>> d3b4d81c1b903220f8f8a6ae964a5c9767820674
 
             # Trade Metrics
             try:
@@ -415,7 +433,11 @@ def get_fscore(tickers):
                 df['last_work'] = ttfdf.last_work[ticker]
                 df['sagard_peers'] = pd.to_numeric(ttfdf.sagard_peers[ticker])
                 df['market_leader'] = pd.to_numeric(ttfdf.market_leader[ticker])
+<<<<<<< HEAD
                 df['triggers'] = ttfdf.triggers[ticker]
+=======
+                df['triggers'] = ttdf.triggers[ticker]
+>>>>>>> d3b4d81c1b903220f8f8a6ae964a5c9767820674
             except:
                 df['sector'] = profile.sector[0]
                 df['business'] = profile.industry[0]
@@ -425,7 +447,10 @@ def get_fscore(tickers):
                 df['sagard_peers'] = 0
                 df['market_leader'] = 0
                 df['triggers'] = pd.NA
+<<<<<<< HEAD
             logger.info(f'Finished basic status info for {ticker}')
+=======
+>>>>>>> d3b4d81c1b903220f8f8a6ae964a5c9767820674
 
             df.set_index('symbol', inplace = True)
 
@@ -490,6 +515,7 @@ def get_ep(*, ticker, inc = pd.DataFrame(), bs = pd.DataFrame(), cf = pd.DataFra
         # Find the fixed and variable components of costs at the GM level and then at EBITDA
         # Get the data with the X = revenues and Y first COGS and then Y as SG&A
         # Fill in missing values in revenues if required
+<<<<<<< HEAD
         inc.revenue  = inc.revenue.replace(0, np.nan)
         inc.grossProfit  = inc.grossProfit.replace(0, np.nan)
         inc.ebitda  = inc.ebitda.replace(0, np.nan)
@@ -500,6 +526,18 @@ def get_ep(*, ticker, inc = pd.DataFrame(), bs = pd.DataFrame(), cf = pd.DataFra
         revenues = np.array(inc.revenue.fillna(0).values).reshape(-1,1)
         cogs = np.array((inc.revenue - inc.grossProfit).fillna(0).values).reshape(-1,1)
         sga = np.array((inc.revenue - inc.ebitda - inc.costOfRevenue).fillna(0).values).reshape(-1,1)
+=======
+        inc.revenue  = inc.revenue.replace(0, np.nan).interpolate()
+        inc.grossProfit  = inc.grossProfit.replace(0, np.nan).interpolate()
+        inc.ebitda  = inc.ebitda.replace(0, np.nan).interpolate()
+        inc.costOfRevenue  = inc.costOfRevenue.replace(0, np.nan).interpolate()
+        inc.incomeBeforeTax  = inc.incomeBeforeTax.replace(0, np.nan).interpolate()
+        inc['revenue_growth_3'] = (inc.revenue / inc.revenue.shift(3)) ** (1 / 3) - 1
+        bs.totalDebt  = bs.totalDebt.replace(0, np.nan).interpolate()
+        revenues = inc.revenue.fillna(0).values.reshape(-1,1)
+        cogs = (inc.revenue - inc.grossProfit).fillna(0).values.reshape(-1,1)
+        sga = (inc.revenue - inc.ebitda - inc.costOfRevenue).fillna(0).values.reshape(-1,1)
+>>>>>>> d3b4d81c1b903220f8f8a6ae964a5c9767820674
 
         cogsreg = LinearRegression()
         cogsreg.fit(revenues, cogs)
