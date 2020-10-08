@@ -1254,3 +1254,181 @@ def weight_tests(df_in = pd.DataFrame(), weights = []):
 
     return d
 
+def get_canalyst_ep(ticker, revenue_scenario = [], ebitda_scenario = []):
+# a function that takes a ticker and financials and returns a base case earnings power
+# model in forecasts (dataframe) and the assumptions it used in inputs (a dataframe also)
+# ticker is a string ticker (e.g. 'GPX'), inc is fa.income_statement, bs is balance sheet, cf is
+# cash flow. revenue_scenario is a iterable of 5 growth rates for years 1 through 5 to use
+# ebitda_scenario is a list that is multiplied by the ebitda margin to push scenario up or down in total
+
+
+    from sklearn.linear_model import LinearRegression
+    from getdata_325 import get_can_series, get_key_stats
+
+    print('getting forecast with revenue scenario: ', revenue_scenario)
+    try:
+        # Get the financials for the ticker in question. Focus on annuals for now
+        _q, cfo = get_can_series(ticker, 'MO_CFS_CFO', 'sum')
+        _q, cfo_before_wc = get_can_series(ticker, 'MO_CFS_CFO_BeforeWC', 'sum')
+        wc = cfo - cfo_before_wc
+
+        # Find the fixed and variable components of costs at the GM level and then at EBITDA
+        # Get the data with the X = revenues and Y first COGS and then Y as SG&A
+        # Fill in missing values in revenues if required
+        _q, revenue = get_can_series(ticker, 'MO_RIS_REV', 'sum')
+        _q, gp = get_can_series(ticker, 'MO_IS_GP', 'sum')
+        _q, ebitda= get_can_series(ticker, 'MO_RIS_EBITDA_Adj', 'sum')
+        _q, ebit = get_can_series(ticker, 'MO_RIS_EBIT', 'sum')
+        _q, ebt = get_can_series(ticker, 'MO_RIS_EBT', 'sum')
+        _q, capex = get_can_series(ticker, 'MO_CFSum_Capex', 'sum')
+        revenue_growth_3 = (revenue/revenue.shift(3)) ** (1 / 3) - 1
+        _q, debt = get_can_series(ticker, 'MO_BSS_Debt', 'bs')
+        _q, cash = get_can_series(ticker, 'MO_BSS_Cash', 'bs')
+        _q, da = get_can_series(ticker, 'MO_RIS_DA', 'sum')
+        _q, sbc = get_can_series(ticker, 'MO_RIS_SBC', 'sum')
+        _q, inte = get_can_series(ticker, 'MO_RIS_IE', 'sum')
+        _q, tax = get_can_series(ticker, 'MO_RIS_Tax_Current', 'sum')
+        _q, dividends = get_can_series(ticker, 'MO_CFSum_Dividend', 'sum')
+        key_stats = get_key_stats(ticker)
+
+        cogs = revenue - gp
+        sga  = gp - ebitda
+
+        cogsreg = LinearRegression()
+        cogsreg.fit(np.array(revenue).reshape(-1,1), np.array(cogs).reshape(-1,1))
+        sgareg = LinearRegression()
+        sgareg.fit(np.array(revenue).reshape(-1,1), np.array(sga).reshape(-1,1))
+
+        # hold some key inputs for calculations
+        inputs = pd.DataFrame()
+        inputs['ep_discount'] = [.1]
+        inputs['out_years_revenue_growth'] = [.03]
+        inputs['da_to_revenue_5_median'] = (da / revenue)[-5:].median()
+        inputs['sbc_to_revenue_5_median'] = (sbc / revenue)[-5:].median()
+        inputs['interest_rate'] = (inte / debt)[-2:].median()
+        inputs['wc_to_revenue_5_median'] = (wc / revenue)[-5:].median()
+        inputs['capex_to_revenue_5_median'] = (capex / revenue)[-5:].median()
+        inputs['maintenance_capex_to_revenue'] = (capex / revenue)[-5:].min()
+        inputs['revenue_growth_3_median'] = revenue_growth_3.median()
+        inputs['ebitda_margin_3_median'] = (ebitda / revenue)[-3:].median()
+        inputs['interest_placeholder'] = (inte / revenue)[-5:].mean()
+        inputs['so'] = pd.to_numeric(key_stats.so[ticker])
+        # use last tax_rate given changes in 2019
+        inputs['tax_rate'] = (tax / ebt)[-2:].mean()
+        inputs['dividend_payout_to_ebitda_ratio_3_median'] = (dividends / ebitda)[-3:].median()
+
+        # create a forecast dataframe
+        forecast = pd.DataFrame(columns = np.arange(start = 0, stop = 11, step = 1))
+
+        # Fill in a starting year using LTM
+        forecast.loc['revenue', 0] = revenue[-1]
+        forecast.loc['gm', 0] = gp[-1]
+        forecast.loc['sga', 0] = sga[-1]
+        forecast.loc['ebitda', 0] = ebitda[-1]
+        forecast.loc['da', 0] = da[-1]
+        forecast.loc['ebit', 0] = ebit[-1]
+        forecast.loc['interest_expense', 0] = inte[-1]
+        forecast.loc['net_debt', 0] = debt[-1] - cash[-1]
+        forecast.loc['total_debt', 0] = debt[-1]
+        forecast.loc['wc', 0] = wc[-1]
+        forecast.loc['cum_dividends', 0] = dividends[-1]
+
+        # set up to evenutally use scenarios
+        if len(revenue_scenario) == 0:
+            # no revenue scenario provided, so use historical 3 year median
+            revenue_scenario = np.full(5, inputs['revenue_growth_3_median'][0])
+
+        # Fill in revenues which drive a lot of the model; regular growth for years 1 - 5 (remember python lists end AFTER the alst year wanted
+        # and fill in long-term forecast from years 6-10
+        for year in forecast.columns[1:6]:
+            forecast.loc['revenue',year] = forecast.loc['revenue', year - 1] * (1 + revenue_scenario[year - 1])
+
+        for year in forecast.columns[6:]:
+            forecast.loc['revenue',year] = forecast.loc['revenue', year - 1] * (1 + inputs['out_years_revenue_growth'][0])
+
+        # fill in predicted cogs and sga for revenue forecast
+        revenues = forecast.loc['revenue'].values.reshape(-1,1)
+        pcogs = cogsreg.predict(revenues)
+        pcogs = [i[0]  for i in pcogs]
+        forecast.loc['cogs'] = pcogs
+
+        psga = sgareg.predict(revenues)
+        psga = [i[0]  for i in psga]
+        forecast.loc['sga'] = psga
+
+        # forecast.loc['ebitda'] = forecast.loc['revenue'] * inputs['ebitda_margin_3_median'][0]
+        forecast.loc['gm'] = forecast.loc['revenue'] - forecast.loc['cogs']
+        forecast.loc['ebit'] = forecast.loc['gm'] - forecast.loc['sga'] # Flipped this around from before based on Michael's observation
+
+        # do non-cross-year calcs first
+        forecast.loc['da' ] = forecast.loc['revenue'] * inputs['da_to_revenue_5_median'][0] # TODO base this off asset base rather than revenue? PPE? Goodwill issues? ebit + DA - maintenance capex (1-tax) is earnings power
+        forecast.loc['ebitda' ] = forecast.loc['ebit'] + forecast.loc['da']  # Flipped this around from before based on Michael's observation
+
+        # if there is an ebitda scenario, apply it
+        # note multiplying multiplier by ebitda is same as by ebitda margin since revenue is fixed
+        if len(ebitda_scenario) > 1:
+            for year in forecast.columns[1:]:
+                forecast.loc['ebitda', year] = forecast.loc['ebitda', year] * (ebitda_scenario[year - 1])
+        elif len(ebitda_scenario) == 1:
+            for year in forecast.columns[1:]:
+                forecast.loc['ebitda', year] = forecast.loc['ebitda', year] * (ebitda_scenario[0])
+
+        forecast.loc['maintenance_capex' ] = forecast.loc['revenue'] * inputs['maintenance_capex_to_revenue'][0]
+        forecast.loc['capex' ] = forecast.loc['revenue'] * inputs['capex_to_revenue_5_median'][0]
+        forecast.loc['wc' ] = forecast.loc['revenue'] * inputs['wc_to_revenue_5_median'][0]
+        forecast.loc['dividends' ] = forecast.loc['ebitda'] * inputs['dividend_payout_to_ebitda_ratio_3_median'][0]
+        forecast.loc['earnings_power' ] = ( forecast.loc['ebitda'] - forecast.loc['maintenance_capex'] ) * (1  - inputs['tax_rate'][0] )
+
+        # do some cross-year calculations
+        for year in forecast.columns[1:]:
+            forecast.loc['change_in_working_cap', year] = forecast.loc['wc', year] - forecast.loc['wc', year - 1]
+            forecast.loc['total_debt', year] = forecast.loc['total_debt', year - 1] - forecast.loc['ebitda', year] - forecast.loc['capex', year]
+            forecast.loc['interest_expense', year] = max(0, forecast.loc['total_debt', year - 1] * inputs['interest_rate'][0])
+            forecast.loc['cum_dividends', year ] = forecast.loc['dividends', year] + forecast.loc['dividends', year - 1]
+
+        forecast.loc['IBT'] = forecast.loc['ebit']  - forecast.loc['interest_expense']
+        forecast.loc['taxes'] = forecast.loc['IBT'] * inputs['tax_rate'][0]
+        forecast.loc['NI' ] = forecast.loc['IBT'] - forecast.loc['taxes']
+
+        forecast.loc['cash_available_to_pay_debt'] = (
+                forecast.loc['ebitda']
+                - forecast.loc['taxes']
+                - forecast.loc['interest_expense']
+                - forecast.loc['change_in_working_cap']
+                - forecast.loc['capex']
+                - forecast.loc['dividends']
+                    )
+
+        for year in forecast.columns[1:]:
+            forecast.loc['net_debt', year] = forecast.loc['net_debt', year - 1] - forecast.loc['cash_available_to_pay_debt', year]
+
+        # calculate incremental earnings power in the outyears
+        # set up some year 5 cumulative markers
+        forecast.loc['discounted_ep', 5] = 0
+
+        for year in forecast.columns[6:]:
+            forecast.loc['incremental_ep', year] = forecast.loc['earnings_power', year] - forecast.loc['earnings_power', 5]
+            # put in extra capital required to maintain?
+            forecast.loc['discounted_ep', year] = forecast.loc['earnings_power', year] / ( (1 + inputs['ep_discount'][0]) ** (year) )
+            forecast.loc['cumulative_ep', year] = forecast.loc['discounted_ep', year] +  forecast.loc['discounted_ep', year - 1]
+            forecast.loc['tv'] = forecast.loc['cumulative_ep', year] / inputs['ep_discount'][0]
+
+        forecast.loc['ep_in_year'] = forecast.loc['earnings_power'] / inputs['ep_discount'][0]
+
+        for year in forecast.columns:
+            forecast.loc['tv_value_in_year', year] = forecast.loc['tv', 10] / ( ( 1 + inputs['ep_discount'][0] ) ** ( 10 - year) )
+
+        forecast.loc['ev'] = forecast.loc['ep_in_year'] + forecast.loc['tv_value_in_year'] + forecast.loc['cum_dividends']
+        forecast.loc['implied_ebitda_multiple'] = forecast.loc['ev'] / forecast.loc['ebitda']
+        forecast.loc['equity_value'] = forecast.loc['ev'] - forecast.loc['net_debt']
+        forecast.loc['value_per_share'] = forecast.loc['equity_value'] / inputs['so'][0]
+
+        forecast = forecast.astype(np.float)
+        forecast.loc['value_per_share']
+        forecast.loc['implied_ebitda_multiple']
+    except:
+        print('could not get forecast')
+        return None, None
+
+    return forecast, inputs
+
