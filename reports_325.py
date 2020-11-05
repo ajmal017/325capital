@@ -26,7 +26,7 @@ def report_score (ticker, live = 0):
     # If it is live, pull live data, else fscores.  fscores may have fresher tests
     if bool(live):
         print('live is ', bool(live), 'so get live data')
-        df1 = get_fscore(ticker)
+        df1 = get_b_score(ticker)
         d.update(df1)
         d.to_excel('fscores.xlsx')
     else:

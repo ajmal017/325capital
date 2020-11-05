@@ -40,7 +40,7 @@ def category_bar(ax, data_labels, values, title):
     xlocs = np.arange(len(data_labels))
     g = ax.scatter(xlocs, values)
     ax.set_xticks(xlocs)
-    ax.set_xticklabels(data_labels, rotation=0)
+    ax.set_xticklabels(data_labels, rotation=0, wrap = True)
     ax.set_title(title)
 
     return ax
@@ -143,7 +143,7 @@ def n_stacked_bar(ax, data_labels, values, title, percent, segment_labels=[]):
 
     # Set x bar locations (e.g. a simple count) and put in the x-labels
     ax.set_xticks(xlocs)
-    ax.set_xticklabels(data_labels, rotation=0)
+    ax.set_xticklabels(data_labels, rotation=0, wrap = True)
 
     # Set the y limits according to high and low
     ax.set_ylim(bottom=low, top=high)
@@ -164,7 +164,7 @@ def compare_series_bar(ax, data_labels, value_list, title, percent):
     xlocs = np.arange(len(data_labels))
     number_of_series = len(value_list)
     width = 0.45 / number_of_series
-    high = max(max(max(value_list)), percent*0.25) * 1.35
+    high = max(max(value_list), percent*0.25) * 1.35
     low = min(0, min(min(value_list)) * 2, -high/5)
 
     for j, values in enumerate(value_list):
@@ -194,9 +194,9 @@ def compare_series_bar(ax, data_labels, value_list, title, percent):
             )
 
     ax.set_xticks(xlocs + width / number_of_series)
-    ax.set_xticklabels(data_labels, rotation=0, size='smaller')
+    ax.set_xticklabels(data_labels, rotation=0, size='smaller', wrap = True)
     # Not sure I need this here so commenting it out
-    # ax.set_ylim(bottom = low, top = high)
+    ax.set_ylim(bottom = low, top = high)
     if percent:
         ax.yaxis.set_major_formatter(
             PercentFormatter(xmax=1, decimals=0, symbol="%"))
@@ -236,9 +236,10 @@ def series_bar(ax, data_labels, values, title, percent):
             ha='center'
         )
     ax.set_xticks(xlocs)
-    ax.set_xticklabels(data_labels, rotation=0, size='smaller')
-    # Not sure I need this here so commenting it out
-    # ax.set_ylim(bottom = low, top = high)
+    if len(values) >= 5: rot = 15
+    else: rot = 0
+    ax.set_xticklabels(data_labels, rotation=rot, size='smaller', wrap = True)
+    ax.set_ylim(bottom = low, top = high)
     if percent:
         ax.yaxis.set_major_formatter(
             PercentFormatter(xmax=1, decimals=0, symbol="%"))

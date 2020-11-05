@@ -451,7 +451,7 @@ def get_fscore(tickers):
 
     return returndf
 
-def get_ep(*, ticker, inc = pd.DataFrame(), bs = pd.DataFrame(), cf = pd.DataFrame(), revenue_scenario = [], ebitda_scenario = []):
+def get_ep( ticker, inc = pd.DataFrame(), bs = pd.DataFrame(), cf = pd.DataFrame(), revenue_scenario = [], ebitda_scenario = []):
 # a function that takes a ticker and financials and returns a base case earnings power
 # model in forecasts (dataframe) and the assumptions it used in inputs (a dataframe also)
 # ticker is a string ticker (e.g. 'GPX'), inc is fa.income_statement, bs is balance sheet, cf is
@@ -1289,11 +1289,15 @@ def get_canalyst_ep(ticker, revenue_scenario = [], ebitda_scenario = []):
         _q, inte = get_can_series(ticker, 'MO_RIS_IE', 'sum')
         _q, tax = get_can_series(ticker, 'MO_RIS_Tax_Current', 'sum')
         _q, dividends = get_can_series(ticker, 'MO_CFSum_Dividend', 'sum')
-        key_stats = get_key_stats(ticker)
+        key_stats = get_key_stats(ticker.split(' ')[0])
 
         cogs = revenue - gp
         sga  = gp - ebitda
 
+        # Turn np.nan values into 0 for regression (lots of Nan for missing year data)
+        revenue = revenue.fillna(value = 0)
+        cogs = cogs.fillna(value = 0)
+        sga = sga.fillna(value = 0)
         cogsreg = LinearRegression()
         cogsreg.fit(np.array(revenue).reshape(-1,1), np.array(cogs).reshape(-1,1))
         sgareg = LinearRegression()
@@ -1312,7 +1316,7 @@ def get_canalyst_ep(ticker, revenue_scenario = [], ebitda_scenario = []):
         inputs['revenue_growth_3_median'] = revenue_growth_3.median()
         inputs['ebitda_margin_3_median'] = (ebitda / revenue)[-3:].median()
         inputs['interest_placeholder'] = (inte / revenue)[-5:].mean()
-        inputs['so'] = pd.to_numeric(key_stats.so[ticker])
+        inputs['so'] = pd.to_numeric(key_stats.so[ticker.split(' ')[0]])
         # use last tax_rate given changes in 2019
         inputs['tax_rate'] = (tax / ebt)[-2:].mean()
         inputs['dividend_payout_to_ebitda_ratio_3_median'] = (dividends / ebitda)[-3:].median()
@@ -1431,4 +1435,313 @@ def get_canalyst_ep(ticker, revenue_scenario = [], ebitda_scenario = []):
         return None, None
 
     return forecast, inputs
+
+def run_canalyst_tests(df_in = pd.DataFrame(), tests = []):
+    # This function takes a datafraame of scores and runs tests on it.
+    # And returns the updated dataframe with new tests run
+    # It assumes the input dataframe has all the right data in it already
+
+    if df_in.empty:
+        print ('Cant run tests - dataframe is empty')
+        return None
+
+    df = df_in.copy()
+
+    if isinstance(df, pd.Series):
+        df = pd.DataFrame(df).T
+
+
+    # tests
+    # Get the tests to use from set_tests. Don't send in a dataframe for live tests
+    #   Note: set_tests returns a dict with 'tests' key as the main tests list
+    if len(tests) == 0:
+        tests = set_canalyst_tests()['tests']
+
+    for i in df.index:
+        try:
+            # valuation tests
+            df.loc[i,'ev_to_ebitda_ltm_test'] = df.loc[i,'ev_to_ebitda_ltm'] <= tests['ev_to_ebitda_ltm_test']
+            df.loc[i,'price_change_52_test'] = df.loc[i,'price_change_52'] <= tests['price_change_52_test']
+            valuation_tests = [
+                    'ev_to_ebitda_ltm_test',
+                    'price_change_52_test'
+                    ]
+            # When getting average, fill NAs with 0 and replace True False with 0, 1
+            df.loc[i,'VALUATION_test'] = sum(df.loc[i,valuation_tests].fillna(0)) / len(valuation_tests)
+
+            # superior business model tests
+            df.loc[i,'roic_high_5_test'] = df.loc[i,'roic_high_5'] >= tests['roic_high_5_test']
+            df.loc[i,'dividend_growth_3_test'] = df.loc[i,'dividend_growth_3'] >= tests['dividend_growth_3_test']
+            df.loc[i,'gm_ltm_test'] = df.loc[i,'gm_ltm'] >= tests['gm_ltm_test']
+            df.loc[i,'ebitda_margin_ltm_test'] = df.loc[i,'ebitda_margin_ltm'] >= tests['ebitda_margin_ltm_test']
+            df.loc[i,'sgam_ltm_test'] = df.loc[i,'sgam_ltm'] <= tests['sgam_ltm_test']
+            df.loc[i,'revenue_growth_3_test'] = df.loc[i,'revenue_growth_3'] > tests['revenue_growth_3_test']
+            df.loc[i,'revenue_growth_max_test'] = df.loc[i,'revenue_growth_3'] > tests['revenue_growth_max_test']
+            df.loc[i,'market_leader_test'] = df.loc[i, 'market_leader'] >= tests['market_leader_test']
+
+            sbm_tests = [
+                'roic_high_5_test',
+                'dividend_growth_3_test',
+                'gm_ltm_test',
+                'ebitda_margin_ltm_test',
+                'sgam_ltm_test',
+                'revenue_growth_3_test',
+                'revenue_growth_max_test',
+                'market_leader_test'
+                ]
+            df.loc[i,'SBM_test'] = sum(df.loc[i,sbm_tests].fillna(0)) / len(sbm_tests)
+
+            # poor use of cash tests / watch-outs (lower is better)
+            df.loc[i,'capex_to_revenue_avg_3_test'] = df.loc[i,'capex_to_revenue_avg_3'] >= tests['capex_to_revenue_avg_3_test']
+            df.loc[i,'surplus_cash_as_percent_of_price_test'] = df.loc[i,'surplus_cash_as_percent_of_price'] >= tests['surplus_cash_as_percent_of_price_test']
+            df.loc[i,'icf_avg_3_to_fcf_test'] = df.loc[i,'icf_avg_3_to_fcf'] >= tests['icf_avg_3_to_fcf_test']
+            df.loc[i,'icf_to_ocf_test'] = df.loc[i,'icf_to_ocf'] >= tests['icf_to_ocf_test']
+            df.loc[i,'capex_to_ocf_test'] = df.loc[i,'capex_to_ocf'] >= tests['capex_to_ocf_test']
+            puoc_tests = [
+                'capex_to_revenue_avg_3_test',
+                'surplus_cash_as_percent_of_price_test',
+                'icf_avg_3_to_fcf_test',
+                'icf_to_ocf_test',
+                'capex_to_ocf_test'
+                ]
+            df.loc[i,'PUOC_test'] = sum(df.loc[i,puoc_tests].fillna(0)) / len(puoc_tests)
+
+            # balance sheet risk tests (lower is better)
+            df.loc[i,'icf_and_ocf_negative_test'] = (df.loc[i,'icf_ltm'] < 0) & (df.loc[i,'ocf_ltm'] < 0)
+            df.loc[i,'net_debt_to_ebitda_ltm_test'] = df.loc[i,'net_debt_to_ebitda_ltm'] >= tests['net_debt_to_ebitda_ltm_test']
+            df.loc[i,'ebitda_to_interest_coverage_test'] = df.loc[i,'ebitda_to_interest_coverage'] <= tests['ebitda_to_interest_coverage_test']
+            bs_risks_tests = [
+                'icf_and_ocf_negative_test',
+                'net_debt_to_ebitda_ltm_test',
+                'ebitda_to_interest_coverage_test',
+                ]
+            df.loc[i,'BS_risks_test'] = sum(df.loc[i,bs_risks_tests].fillna(0)) / len(bs_risks_tests)
+
+            # trading issues tests (lower is better)
+            df.loc[i,'short_interest_ratio_test'] = df.loc[i,'short_interest_ratio'] >= tests['short_interest_ratio_test']
+            df.loc[i,'insider_ownership_total_test'] = df.loc[i,'insider_ownership_total'] >= tests['insider_ownership_total_test']
+            df.loc[i,'insiders_can_get_out_quickly'] = df.loc[i,'insider_ownership_total'] / df.loc[i,'adv_as_percent_so']
+            df.loc[i,'insiders_can_get_out_quickly_test'] = df.loc[i, 'insiders_can_get_out_quickly'] >= tests['insiders_can_get_out_quickly_test']
+            df.loc[i,'adv_avg_months_3_test'] = df.loc[i,'adv_avg_months_3'] <= tests['adv_avg_months_3_test']
+            df.loc[i,'insiders_selling_ltm_test'] = df.loc[i,'insiders_selling_ltm'] <= tests['insiders_selling_ltm_test']
+            trade_tests = [
+                'short_interest_ratio_test',
+                'insider_ownership_total_test',
+                'adv_avg_months_3_test',
+                'insiders_selling_ltm_test'
+                ]
+            df.loc[i,'TRADE_test'] = sum(df.loc[i,trade_tests].fillna(0)) / len(trade_tests)
+
+            # performance improvement opp tests
+            df.loc[i,'em_opportunity_test'] = df.loc[i,'ebitda_margin_high_5'] - df.loc[i,'ebitda_margin_ltm'] >= tests['em_opportunity_test']
+            df.loc[i,'sgam_opportunity_test'] = df.loc[i, 'sgam_ltm'] - df.loc[i,'sgam_low_5'] >= tests['sgam_opportunity_test']
+            df.loc[i,'roic_opportunity_test'] = df.loc[i,'roic_high_5'] - df.loc[i,'roic_high_5'] >= tests['roic_opportunity_test']
+            pi_tests = [
+                'em_opportunity_test',
+                'sgam_opportunity_test',
+                'roic_opportunity_test',
+                ]
+            df.loc[i,'PI_test'] = sum(df.loc[i,pi_tests].fillna(0)) / len(pi_tests)
+        except:
+            print('Error running tests. For diagnostic purposes, printing df_in and tests')
+            print (df, tests)
+            return None
+
+    return df
+
+def set_canalyst_tests(b = pd.DataFrame()):
+    # This function sets tests and returns the key variables in a dictonary
+    # So that calling functions have access to the latest tests
+    # If the function is called with a proper dataframe, d, it will calculate
+    # live tests based on those and return that.
+
+    TESTS = ['VALUATION_test', 'SBM_test', 'PUOC_test', 'BS_risks_test', 'TRADE_test']
+    valuation_tests = [
+       'ev_to_ebitda_ltm_test',
+       'price_change_52_test'
+       ]
+    sbm_tests = [
+        'roic_high_5_test',
+        'dividend_growth_3_test',
+        'gm_ltm_test',
+        'ebitda_margin_ltm_test',
+        'sgam_ltm_test',
+        'revenue_growth_3_test',
+        'revenue_growth_max_test',
+        'market_leader_test'
+        ]
+
+    puoc_tests = [
+        'capex_to_revenue_avg_3_test',
+        'surplus_cash_as_percent_of_price_test',
+        'icf_avg_3_to_fcf_test',
+        'icf_to_ocf_test',
+        'capex_to_ocf_test'
+        ]
+    bs_risks_tests = [
+        'icf_and_ocf_negative_test',
+        'net_debt_to_ebitda_ltm_test',
+        'ebitda_to_interest_coverage_test',
+        ]
+    trade_tests = [
+        'short_interest_ratio_test',
+        'insider_ownership_total_test',
+        'adv_avg_months_3_test',
+        'insiders_selling_ltm_test'
+        ]
+    experience_tests = [
+            'price_opp_at_em_high_test' ,
+            'price_opp_at_sgam_low_test',
+            'price_opp_at_roic_high_test',
+            ]
+
+    valuation = [
+       'pe_to_mid_cycle_ratio',
+       'ev_to_ebitda_ltm',
+       'price_change_52'
+       ]
+
+    sbm = [
+        'roic_high_5',
+        'dividend_growth_3',
+        'gm_ltm',
+        'ebitda_margin_ltm',
+        'sgam_ltm',
+        'revenue_growth_3',
+        'revenue_growth_max',
+        'market_leader'
+        ]
+
+    puoc = [
+        'capex_to_revenue_avg_3',
+        'roic_change_from_ic',
+        'surplus_cash_as_percent_of_price',
+        'additional_debt_from_ebitda_multiple_per_share',
+        'icf_avg_3_to_fcf',
+        'icf_to_ocf',
+        'equity_sold',
+        'financing_acquired',
+        'capex_to_ocf'
+        ]
+
+    bs_risks = [
+        'icf_and_ocf_negative',
+        'net_debt_to_ebitda_ltm',
+        'ebitda_to_interest_coverage',
+        ]
+
+    trade = [
+        'short_interest_ratio',
+        'insider_ownership_total',
+        'insiders_can_get_out_quickly',
+        'adv_avg_months_3',
+        'float',
+        'insiders_selling_ltm'
+        ]
+
+    experience = [
+            'em_opportunity' ,
+            'sgam_opportunity',
+            'roic_opporunity',
+            ]
+
+    if b.empty:
+        tests = {
+                'ev_to_ebitda_ltm_test' : 8, # less than June 2020 median is 7.19. High qartile is 12.33, low quartile is -5.31
+                'pe_to_mid_cycle_ratio_test': .85,  # less than  June 2020 low quartile is .533632, high q is 1.49
+                'price_change_52_test': -.14725, # less than June 2020 median, low quartile is -.3875, high q is .182
+                'price_change_last_Q_test': .051763, # less than  June 2020 low q, median is .2952, high q is .596285
+
+                'roic_high_5_test': .080157, # greater than June 2020 top quartile
+                'gm_ltm_test' : .345134, # greater than  June 2020 top quartile,.555943 median = .345134
+                'dividend_growth_3_test': .05, # greater than June 2020 median Top quartile is 0.011755
+                'ebitda_margin_ltm_test': .130, # greater than June 2020 Top quartile, median is .0659
+                'sgam_ltm_test': .217179, # greater than  June 2020 median, low quartile = .108991 high q = .439870
+                'revenue_growth_3_test': .124, # greater than  June 2020 median. Top quartile = .450341
+                'revenue_growth_max_test': .14, # greater than original Sagard test
+                'market_leader_test' : 1, # greater than market leader score will be a year if so or 0 if NOT
+
+                'capex_to_revenue_avg_3_test': .009, # greater than June 2020 top quartile, median = .028490
+                'roic_change_from_ic_test' : 0, # less than
+                'surplus_cash_as_percent_of_price_test':-.1133, # greater than June 2020 top quartile is .123063, median is -.113380
+                'icf_avg_3_to_fcf_test': 1, # greater than
+                'icf_to_ocf_test': -.274591, # greater than  June 2020 high quartile .142, median is -.274591
+                'capex_to_ocf_test': .099408, # greater than June 2020 median.  High quartile is .396726
+
+                'icf_and_ocf_negative_test': 0, # should not be the case
+                'net_debt_to_ebitda_ltm_test': 3, # greater than original Sagard test. current June 2020 median is 1.975
+                'ebitda_to_interest_coverage_test': 3.4, # less than June 2020 median
+
+                'short_interest_ratio_test': 7.26, # greater than June 2020 top quartile 7.26, median = 3.92
+                'insider_ownership_total_test': .182050, # greater than June 2020 top quartile .182050, median = .0607
+                'insiders_can_get_out_quickly_test': 19.658, # greater than June 2020 top quartile
+                'adv_avg_months_3_test': .376, # less than June 2020 median
+                'float_test': 14.31, # less than June 2020 lowest quartile
+                'insiders_selling_ltm_test': .035, # less than June 2020 median; lowest quartile is 0
+
+                'em_opportunity_test' : .05, # greater than June 2020 median is 0.909
+                'sgam_opportunity_test': .05, # greater than June 2020 median is 0.9837
+                'roic_opportunity_test': .05,# greater than June 2020 median is 1.167, high quartile is 1.5
+                }
+    else:
+        tests = {
+                'ev_to_ebitda_ltm_test' : 8, # less than June 2020 median is 7.19. High qartile is 12.33, low quartile is -5.31
+                'price_change_52_test': b.price_change_52.quantile(q = 0.5), # less than June 2020 median, low quartile is -.3875, high q is .182
+                'price_change_last_Q_test': b.price_change_last_Q.quantile(q = 0.5), # less than  June 2020 low q, median is .2952, high q is .596285
+
+                'roic_high_5_test': b.roic_high_5.quantile(q = .75), # greater than June 2020 top quartile
+                'gm_ltm_test' : b.gm_ltm.quantile(q = 0.5), # greater than  June 2020 top quartile,.555943 median = .345134
+                'dividend_growth_3_test': b.dividend_growth_3.quantile(q = 0.5), # greater than June 2020 median Top quartile is 0.011755
+                'ebitda_margin_ltm_test': b.ebitda_margin_ltm.quantile(q = .75), # greater than June 2020 Top quartile, median is .0659
+                'sgam_ltm_test': b.sgam_ltm.quantile(q = 0.5), # greater than  June 2020 median, low quartile = .108991 high q = .439870
+                'revenue_growth_3_test': b.revenue_growth_3.quantile(q = 0.5), # greater than  June 2020 median. Top quartile = .450341
+                'revenue_growth_max_test': .14, # greater than original Sagard test
+                'market_leader_test' : 1, # greater than market leader score will be a year if so or 0 if NOT
+
+                'capex_to_revenue_avg_3_test': b.capex_to_revenue_avg_3.quantile(q = 0.5), # greater than June 2020 top quartile, median = .028490
+                'roic_change_from_ic_test' : 0, # less than
+                'surplus_cash_as_percent_of_price_test':b.surplus_cash_as_percent_of_price.quantile(q = .75), # greater than June 2020 top quartile is .123063, median is -.113380
+                'additional_debt_from_ebitda_multiple_per_share_test' : 0, # greater than
+                'icf_avg_3_to_fcf_test': 1, # greater than
+                'icf_to_ocf_test': ( b.icf_ltm / b.ocf_ltm ).quantile(q = .75), # greater than  June 2020 high quartile .142, median is -.274591
+                'equity_sold_test': b.equity_sold.quantile(q = .75), # greater than June 2020 top quartile
+                'financing_acquired_test': b.financing_acquired.quantile(q = 0.5), # greater than June 2020 median
+                'capex_to_ocf_test': b.capex_to_ocf.quantile(q = 0.5), # greater than June 2020 median.  High quartile is .396726
+
+                'icf_and_ocf_negative_test': 0, # should not be the case
+                'net_debt_to_ebitda_ltm_test': 3, # greater than original Sagard test. current June 2020 median is 1.975
+                'ebitda_to_interest_coverage_test': b.ebitda_to_interest_coverage.quantile(q = 0.5), # less than June 2020 median
+
+                'short_interest_ratio_test': b.short_interest_ratio.quantile(q = 0.5), # greater than June 2020 top quartile 7.26, median = 3.92
+                'insider_ownership_total_test': b.insider_ownership_total.quantile(q = .75), # greater than June 2020 top quartile .182050, median = .0607
+                'insiders_can_get_out_quickly_test': (b.insider_ownership_total / b.adv_as_percent_so ).quantile(q = .75), # greater than June 2020 top quartile
+                'adv_avg_months_3_test': b.adv_avg_months_3.quantile(q = 0.5), # less than June 2020 median
+                'float_test': b.float.quantile(q = 0.25), # less than June 2020 lowest quartile
+                'insiders_selling_ltm_test': b.insiders_selling_ltm.quantile(q = 0.5), # less than June 2020 median; lowest quartile is 0
+
+                'price_opp_at_em_high_test' : 1.3, # greater than June 2020 median is 0.909
+                'price_opp_at_sgam_low_test': 1.2, # greater than June 2020 median is 0.9837
+                'price_opp_at_roic_high_test': 1.2, # greater than June 2020 median is 1.167, high quartile is 1.5
+                }
+
+
+    # Set up a return dictionary with all the test defintions
+    returndict = {
+            'TESTS': TESTS,
+            'valuation_tests': valuation_tests,
+            'valuation': valuation,
+            'sbm_tests': sbm_tests,
+            'sbm': sbm,
+            'puoc_tests': puoc_tests,
+            'puoc': puoc,
+            'bs_risks_tests': bs_risks_tests,
+            'bs_risks': bs_risks,
+            'trade_tests': trade_tests,
+            'trade': trade,
+            'experience_tests': experience_tests,
+            'experience': experience,
+            'tests' : tests
+            }
+
+    return returndict
 

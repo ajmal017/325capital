@@ -1167,9 +1167,6 @@ def get_csin_and_model_for_ticker(ticker):
     import requests
     token ='eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6ImFzaHJpdmFzdGF2YSIsImVtYWlsIjoiYXNocml2YXN0YXZhQDMyNWNhcGl0YWwuY29tIiwiZmlyc3RfbmFtZSI6IkFuaWwiLCJsYXN0X25hbWUiOiJTaHJpdmFzdGF2YSIsImNvbXBhbnlfbmFtZSI6IjMyNSBDYXBpdGFsIiwiaXNfc3VwZXJ1c2VyIjpmYWxzZSwiaXNfc3RhZmYiOmZhbHNlLCJpc19zeW50aGV0aWMiOmZhbHNlLCJpc19jb2xsZWN0aXZlIjpmYWxzZSwidXNlcl91dWlkIjoiYmY1ZGRmNjctMjBhNC00MTc4LThjNjYtNTlhOGYzMDQ5ZGYyIiwiaWF0IjoxNjAxOTM2MDczLCJpc3MiOiJhcHAuY2FuYWx5c3QuY29tIiwidHlwZSI6ImFwcGxpY2F0aW9uIiwidXVpZCI6IjMyODZkZWRmLTVjYzktNGJiNy04MTRjLTI0OWIxZWIyMjUyZiJ9.huaTYZWul7ZSvK5KHSBBA9wELE12Me5_JQCdB9wm1MU'
 
-    ticker = ticker.upper()
-    ticker = ticker+' US'
-
     base_url = 'https://mds.canalyst.com/api'
 
     # Authentication string
@@ -1193,6 +1190,7 @@ def get_csin_and_model_for_ticker(ticker):
 
     return r.json()['results'][0]['csin'], r.json()['results'][0]['latest_equity_model']['model_version']['name']
 
+
 def get_can_series(ticker, field = 'MO_RIS_REV', ltm_type = 'sum'):
     """
     This function takes a ticker in upper or lower case and calls
@@ -1210,7 +1208,13 @@ def get_can_series(ticker, field = 'MO_RIS_REV', ltm_type = 'sum'):
     """
 
     import requests
+    import logging
+    logger = logging.getLogger(__name__)
     token ='eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6ImFzaHJpdmFzdGF2YSIsImVtYWlsIjoiYXNocml2YXN0YXZhQDMyNWNhcGl0YWwuY29tIiwiZmlyc3RfbmFtZSI6IkFuaWwiLCJsYXN0X25hbWUiOiJTaHJpdmFzdGF2YSIsImNvbXBhbnlfbmFtZSI6IjMyNSBDYXBpdGFsIiwiaXNfc3VwZXJ1c2VyIjpmYWxzZSwiaXNfc3RhZmYiOmZhbHNlLCJpc19zeW50aGV0aWMiOmZhbHNlLCJpc19jb2xsZWN0aXZlIjpmYWxzZSwidXNlcl91dWlkIjoiYmY1ZGRmNjctMjBhNC00MTc4LThjNjYtNTlhOGYzMDQ5ZGYyIiwiaWF0IjoxNjAxOTM2MDczLCJpc3MiOiJhcHAuY2FuYWx5c3QuY29tIiwidHlwZSI6ImFwcGxpY2F0aW9uIiwidXVpZCI6IjMyODZkZWRmLTVjYzktNGJiNy04MTRjLTI0OWIxZWIyMjUyZiJ9.huaTYZWul7ZSvK5KHSBBA9wELE12Me5_JQCdB9wm1MU'
+
+    # Check if ticker is in bloomberg format
+    if not(' US' in ticker.upper() or ' CN' in ticker.upper()):
+        ticker = ticker.upper()+' US'
 
     csin, model_version = get_csin_and_model_for_ticker(ticker)
 
@@ -1239,13 +1243,29 @@ def get_can_series(ticker, field = 'MO_RIS_REV', ltm_type = 'sum'):
     # Grab the key fields from results
     d = pd.json_normalize(r.json()['results'])
 
-    # Return -1 if field is not found
+    if d.empty:
+        # Try new field name without RIS, instead IS
+        params = {'page_size': 500,
+                'csin': csin,
+                'model_version': model_version,
+                'time_series_name': field.replace('RIS', 'IS')
+                }
+
+        target_url = base_url + endpoint_path
+        r = requests.get(
+                target_url,
+                headers = headers,
+                params = params,
+                )
+        d = pd.json_normalize(r.json()['results'])
+
     if d.empty:
         print(f"Can't find {field} you requested to for {ticker}")
         print(f"For debugging purposes csin and model number are: {csin} and {model_version}")
         print(f"Target url is : {target_url}")
         print(f"Return response is : {r.json()}")
-        return pd.Series(np.zeros(40)), pd.Series(np.zeros(10))
+        logger.info(f'Cant find {field} or IS version of field for {csin} and {model_version} for {ticker}')
+        return pd.Series(index = pd.date_range('2013-01-01', periods = 30, freq = 'Q'), data = np.array([np.nan] * 30)), pd.Series(index = pd.date_range('2009-01-01', periods = 11, freq = 'Y'), data = np.array([np.nan] * 11)),
 
     # Catch if the untis can be converted to millions or should stay as is
     indollars = d['time_series.unit.symbol'].str.contains('$', regex = False)
@@ -1295,6 +1315,7 @@ def get_canalyst_fscore(tickers):
     import statistics
     import datetime as dt
     import FundamentalAnalysis as fa
+    from screen1 import get_canalyst_ep
 
     # Set up logger
     logger = logging.getLogger(__name__)
@@ -1308,8 +1329,7 @@ def get_canalyst_fscore(tickers):
     ttfdf = pd.read_excel('fscores.xlsx').set_index('symbol')
 
     # Read all the canalyst tickers
-    cans = pd.read_excel('canalyst_tickers.xlsx').set_index('ticker')
-
+    cans = pd.read_excel('universe.xlsx').set_index('tickers.Bloomberg')
 
     # Create a return df
     returndf = pd.DataFrame()
@@ -1321,43 +1341,60 @@ def get_canalyst_fscore(tickers):
     for ticker in tickers:
         print(f"Getting data for {ticker}...")
 
+        try:
+            if not( " US" in ticker or " CN" in ticker):
+                ticker= ticker.upper() + " US"
+        except:
+            logger.warning(f'Ticker is not good: {yahoo_ticker}')
+            continue
+
         # Set up a new dataframe just for this company
         df = pd.DataFrame()
 
-        # Get company description and other profile data
-        api_key = "c350f6f5a4396d349ee4bbacde3d5999"
-        profile = fa.profile(ticker, api_key).T
 
         try:
             # Get Yahoo insider stats
-            tgt = f'https://finance.yahoo.com/quote/{ticker}/insider-transactions?p={ticker}'
+            # If ticker is CN, then add .TO to yahoo ticker
+            if " CN" in ticker:
+                yahoo_ticker = ticker.split(' ')[0] + '.TO'
+            else:
+                yahoo_ticker = ticker.split(' ')[0]
+
+            tgt = f'https://finance.yahoo.com/quote/{yahoo_ticker}/insider-transactions?p={yahoo_ticker}'
             try:
                 inside = pd.read_html(tgt)[0]
-                logger.info(f'Got insider transactions for {ticker}')
+                logger.info(f'Got insider transactions for {yahoo_ticker}')
             except:
-                logger.error(f'Get insider stats from yahoo failed for {ticker}. Setting inside to empty dataframe')
+                logger.error(f'Get insider stats from yahoo failed for {yahoo_ticker}. Setting inside to empty dataframe')
                 inside = pd.DataFrame()
 
             # get the other main stock indicators from Yahoo
             try:
-                key_stats = get_key_stats(ticker)
-                logger.info(f'Got yahoo key stats for {ticker}')
+                key_stats = get_key_stats(yahoo_ticker)
+                logger.info(f'Got yahoo key stats for {yahoo_ticker}')
             except:
-                logger.warning(f'Get key stats failed for {ticker}')
+                logger.warning(f'Get key stats failed for {yahoo_ticker}')
                 continue
 
-            # Get the historical price data
-            hist = get_historic_prices(ticker)
+            try:
+                # Get the historical price data
+                hist = get_historic_prices(yahoo_ticker)
 
-            breakpoint()
-            logger.info(f'Creating fscore for {ticker}')
-            df.loc[0,'symbol'] = ticker
-            df['bloomberg_ticker'] = cans['tickers.Bloomberg'][ticker]
-            df['csin'], df['model_number'] = get_csin_and_model_for_ticker(ticker)
-            df['name'] = cans.name[ticker]
-            df['date_of_data'] = pd.to_datetime(dt.datetime.today())
-            df['price'] =  hist.last('1D')['Close'][0]
-            logger.info(f'Got historical market data')
+                # Get company description and other profile data
+                api_key = "c350f6f5a4396d349ee4bbacde3d5999"
+                profile = fa.profile(yahoo_ticker, api_key).T
+
+                logger.info(f'Creating fscore for {ticker}')
+                df.loc[0,'symbol'] = ticker.split(' ')[0]
+                df['bloomberg_ticker'] = ticker
+                df['csin'], df['model_number'] = get_csin_and_model_for_ticker(ticker)
+                df['name'] = cans.name[ticker]
+                df['date_of_data'] = pd.to_datetime(dt.datetime.today())
+                df['price'] =  hist.last('1D')['Close'][0]
+                logger.info(f'Got historical market data')
+            except:
+                logger.info(f'Failed to get historical market data for {ticker}')
+                continue
 
             # Revenue and adjusted EBITDA
 
@@ -1405,31 +1442,36 @@ def get_canalyst_fscore(tickers):
             # Market related facts
 
             # Read from key_stats for fresh data
-            df['ev'] = key_stats.ev[ticker]
-            df['ev_to_ebitda_ltm'] = df.ev / df.ebitda_ltm
-            df['market_cap'] = key_stats.market_cap[ticker]
-            df['so'] = key_stats.so[ticker]
-            df['price_change_52'] = key_stats.price_change_52[ticker] # TODO from hist?
+            df['ev'] = key_stats.ev[yahoo_ticker]
+            df['market_cap'] = key_stats.market_cap[yahoo_ticker]
+            df['so'] = key_stats.so[yahoo_ticker]
+            df['price_change_52'] = key_stats.price_change_52[yahoo_ticker] # TODO from hist?
             df['price_change_ytd'] = df.price / hist.last('1Y')['Close'][0] - 1 # choose a relative time period that is comparable eg. three months, LTM, or something
             df['price_change_last_Q'] = df.price / hist.last('1Q')['Close'][0] -1 # Added to put in a relatve lagging period
-            df['pe'] = pd.to_numeric(key_stats.pe_ltm[ticker])
+            df['pe'] = pd.to_numeric(key_stats.pe_ltm[yahoo_ticker])
             df['ep_multiple'] = 10
 
             try:
-                df['short_interest_ratio'] = pd.to_numeric(key_stats.loc[ticker,short_columns[0]])
+                short_columns = [i for i in key_stats.columns if 'Short' in i] # find the short interest columns in key_stats
+                df['short_interest_ratio'] = pd.to_numeric(key_stats.loc[yahoo_ticker,short_columns[0]])
             except:
                 df['short_interest_ratio'] = np.nan
 
-            df['insider_ownership_total'] = pd.to_numeric(key_stats.insider_percent[ticker])
-            df['adv_avg_months_3'] = pd.to_numeric(key_stats.vol_avg_3_mo[ticker])
+            df['insider_ownership_total'] = pd.to_numeric(key_stats.insider_percent[yahoo_ticker])
+            df['adv_avg_months_3'] = pd.to_numeric(key_stats.vol_avg_3_mo[yahoo_ticker])
             df['adv_as_percent_so'] = df.adv_avg_months_3 / df.so
 
             # Read from yahoo insiders
             try:
                 df['net_insider_purchase_6'] = pd.to_numeric(inside.loc[inside.index[-1], 'Shares'].replace('%', '')) / 100
+                insiders_selling = inside.iloc[4, 1]
+                if isinstance(insiders_selling, str):
+                    insiders_selling = pd.to_numeric(inside.iloc[4, 1].replace('%', ''), errors = 'coerce')/ 100
+                df['insiders_selling_ltm'] = insiders_selling
             except:
-                logger.warning(f'get insider purchase failed for {ticker}')
+                logger.warning(f'get insiders failed for {ticker}')
                 df['net_insider_purchase_6'] = np.NAN
+                df['insiders_selling_ltm'] = np.nan
 
             logger.info(f'Got key_stats data including insiders')
 
@@ -1465,6 +1507,9 @@ def get_canalyst_fscore(tickers):
             qocf, ocf = get_can_series(ticker, 'MO_CFS_CFO', 'sum')
             qacq, acq = get_can_series(ticker, 'MO_CFSum_Acquisition', 'sum')
             qdiv, div = get_can_series(ticker, 'MO_CFSum_Divestiture', 'sum')
+            qdividends, dividends = get_can_series(ticker, 'MO_CFSum_Dividend', 'sum')
+            dividend_growth_3 = (dividends / dividends.shift(3)) ** (1 / 3) - 1
+            capex_to_revenue_avg_3 = (capex / revenue)[-3:].mean()
             #qbb, fbb = get_can_series(ticker, 'MO_CFS_Buybacks')
             fcfe = cfo + capex
 
@@ -1480,18 +1525,28 @@ def get_canalyst_fscore(tickers):
             df['capex_ltm'] = capex[-1]
             df['capex_avg_3'] = capex[-3:].mean()
             df['capex_ago_5'] = capex[-5]
+            df['capex_to_revenue_avg_3'] = capex_to_revenue_avg_3
+            df['dividend_growth_3'] = dividend_growth_3[-1]
             #df['buybacks_cf_ltm'] = qbb.rolling(4).sum()[-1]
             #df['buybacks_cf_sum_3'] = qbb.rolling(4).sum().rolling(3).sum()[-1]
+            df['ev_to_ebitda_ltm'] = df.ev / df.ebitda_ltm
+            df['net_debt_to_ebitda_ltm'] = df.net_debt_ltm / df.ebitda_ltm
+            df['ebitda_to_interest_coverage'] = df.ebitda_ltm / df.interest_expense_ltm
 
             logger.info(f'Got cash flow items')
 
             # Combined Items
 
             roic = ebit * (1 - tax_rate) / ic
+            surplus_cash_as_percent_of_price = (cash - debt) / df.so[0] / df.price[0]
 
             df['roic_ltm'] = roic[-1]
             df['roic_high_5'] = roic[-5:].max()
             df['roic_avg_5']= roic[-5:].mean()
+            df['surplus_cash_as_percent_of_price']= surplus_cash_as_percent_of_price[-1]
+            df['icf_avg_3_to_fcf'] = df.icf_avg_3 / df.fcfe_ltm
+            df['icf_to_ocf'] = df.icf_ltm / df.ocf_ltm
+            df['capex_to_ocf'] = df.capex_ltm / df.ocf_ltm
 
             logger.info(f'Created ROICs')
 
@@ -1501,7 +1556,7 @@ def get_canalyst_fscore(tickers):
             df['ep_avg_3'] = ep[-3:].mean()
             df['ep_ago_5'] = ep[-5]
             df['ep_market_cap'] = df.ep_ltm * df.ep_multiple - df.net_debt_ltm
-            df['ep_value_from_fcfe'] = df.fcfe_avg_3 * df.ep_multiple
+            df['ep_value_from_fcfe'] = df.fcfe_avg_3 * 5
             df['ep_value_from_ebitda'] = (
                             (df.ebitda_margin_high_5 - df.ebitda_margin_ltm) * df.revenue_ltm
                             * df.ep_multiple
@@ -1526,24 +1581,41 @@ def get_canalyst_fscore(tickers):
 
             # Put in the past experience flags
             try:
-                df['sector'] = ttfdf.sector[ticker]
-                df['business'] = ttfdf.business[ticker]
-                df['short_sector'] = ttfdf.short_sector[ticker]
-                df['tamale_status'] = ttfdf.tamale_status[ticker]
-                df['last_work'] = ttfdf.last_work[ticker]
-                df['sagard_peers'] = pd.to_numeric(ttfdf.sagard_peers[ticker])
-                df['market_leader'] = pd.to_numeric(ttfdf.market_leader[ticker])
-                df['triggers'] = ttfdf.triggers[ticker]
+                df['sector'] = ttfdf.sector[yahoo_ticker]
+                df['business'] = ttfdf.business[yahoo_ticker]
+                df['short_sector'] = ttfdf.short_sector[yahoo_ticker]
+                df['tamale_status'] = ttfdf.tamale_status[yahoo_ticker]
+                df['status'] = df.tamale_status
+                df['last_work'] = ttfdf.last_work[yahoo_ticker]
+                df['sagard_peers'] = pd.to_numeric(ttfdf.sagard_peers[yahoo_ticker])
+                df['market_leader'] = pd.to_numeric(ttfdf.market_leader[yahoo_ticker])
+                df['triggers'] = ttfdf.triggers[yahoo_ticker]
             except:
                 df['sector'] = cans.industry[ticker]
                 df['business'] = cans.sector[ticker]
                 df['short_sector'] = cans.sub_sector[ticker]
                 df['tamale_status'] = pd.NA
+                df['status'] = df.tamale_status
                 df['last_work'] = pd.NA
                 df['sagard_peers'] = 0
                 df['market_leader'] = 0
                 df['triggers'] = pd.NA
             logger.info(f'Finished basic status info for {ticker}')
+
+            # Run full ep model flat and normal recover
+            revenue_flat = [0, 0, 0, 0, 0]
+            f, i = get_canalyst_ep(ticker, revenue_scenario = revenue_flat)
+            try:
+                df['sell_price'] = f.T.value_per_share[5]
+                df['implied_ebitda_multiple'] = f.T.ev[5] / f.T.ebitda[5]
+                df['ep_today'] = f.T.value_per_share[1]
+                df['buy_price_ten_percent'] =df['sell_price'] / ((1 + i.ep_discount[0]) ** 5)
+            except:
+                df['sell_price'] = df.ep_total_est_value / df.so
+                df['implied_ebitda_multiple'] = pd.NA
+                df['ep_today'] = df.ep_ltm / df.so
+                df['buy_price_ten_percent'] =df['sell_price'] / ((1 + .10) ** 5)
+            df['ep_irr'] = ((df['sell_price'] /df['price']) ** ( 1 / 5)) -1
 
 
             # Trade Metrics
@@ -1551,9 +1623,12 @@ def get_canalyst_fscore(tickers):
 
         except:
             print(f'Getting record for {ticker} failed')
-            return
+            continue
 
-    return df
+        returndf = returndf.append(df)
+        print(f'Got and appended {ticker}')
+
+    return returndf
 
 
 def get_basic_screener(df):
@@ -1581,3 +1656,4 @@ def get_basic_screener(df):
         returndf = returndf.append(key_stats)
 
     return returndf
+

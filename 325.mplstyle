@@ -61,7 +61,7 @@ xtick.minor.size: 0
 xtick.minor.width: .5
 xtick.bottom: True
 xtick.top: False
-xtick.labelsize: 7
+xtick.labelsize: 5
 
 ytick.color: .15
 ytick.direction: out
