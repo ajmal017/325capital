@@ -1,3 +1,24 @@
+def get_b_field(ticker, field, region= "US"):
+    import bql
+
+    bq = bql.Service()
+
+    # fix the ticker if required
+    if not isinstance(ticker, bql.om.bql_item.BqlItem):
+        if 'Equity' not in ticker:
+            ticker = f'{ticker.upper()} {region} Equity'
+
+    # remove spaces from field
+    field = field.replace(" ", "")
+
+    request = f"""
+    get({field})for(['{ticker}'])
+    """
+    response = bq.execute(request)
+
+    return response[0].df()[field][0]
+
+
 def get_b_score(tickers):
     import pandas as pd
     import numpy as np

@@ -161,3 +161,149 @@ def report_b_score (ticker, live = 0):
     plt.show()
 
     return fig
+
+
+def report_b_test (ticker, live = 0):
+    import matplotlib.dates as mdates
+    import matplotlib.pyplot as plt
+    from graphics_325 import series_bar, compare_series_bar
+    import bql
+    import bqviz as bqv
+    from bquant import get_b_score, get_b_field
+
+    bq = bql.Service()
+
+    plt.style.use('325.mplstyle')
+
+    # Convert to upper in case user put in lower case
+    ticker = ticker.upper()
+
+    d = pd.read_excel('325universe.xlsx')
+    d = d.set_index('ticker')
+
+    # Read the main database into d
+    ttfdf = pd.read_excel('fscores.xlsx')
+    ttfdf = ttfdf.set_index('symbol')
+
+
+    # If it is live, pull live data, else fscores.  fscores may have fresher tests
+    if bool(live):
+        print('live is', bool(live), 'so get live data')
+        df1 = get_b_score(ticker)
+    else:
+        df1 = d
+
+    df1 = df1.merge(ttfdf[['tamale_status', 'last_work', 'sagard_peers', 'market_leader', 'triggers']], how = 'left', left_index = True, right_index = True)
+
+    categories = ['sector', 'business', 'tamale_status', 'last_work']
+    for category in categories:
+        df1[category] = df1[category].astype('category')
+
+
+    # get the historical prices
+    prices = bq.data.px_last(dates = bq.func.range('-3Y', '0D'), per = 'D')
+    request = bql.Request(f'{ticker} US Equity', {'px_last':prices})
+    response = bq.execute(request)
+    hist = response[0].df()
+    hist = hist.set_index(pd.to_datetime(hist.DATE))['px_last']
+    df1['last_price'] = hist.last('1D')[0]
+
+    # Make the first row of graphs
+    fig = plt.figure(constrained_layout=True)
+    gs = fig.add_gridspec(2, 2)
+    fig.suptitle(ticker + " - {} \n{} {:2.1f}".format(
+        df1.name[ticker], df1.business[ticker], df1.last_price[ticker]))
+
+
+    # First Row, First Column
+
+    ax = fig.add_subplot(gs[0, 0])
+    data_labels = ['roic_ltm', 'gm_ltm', 'capex_ltm', 'fcfe_yield']
+    values = [
+            df1.loc[ticker, 'roic_ltm'],
+            df1.loc[ticker, 'gm_ltm'],
+            df1.loc[ticker, 'capex_ltm'],
+            df1.loc[ticker, 'fcfe_ltm'] / df1.loc[ticker, 'ebitda_ltm']
+            ]
+    test_values = [
+             d.roic_ltm.quantile(q = .75),
+             d.gm_ltm.quantile(q = .75),
+             (d.capex_ltm / d.revenue_ltm).quantile(q = .25),
+             (d.fcfe_ltm / d.ebitda_ltm).quantile(q = .75)
+             ]
+    compare_series_bar(
+            ax = ax,
+            data_labels = data_labels,
+            value_list = [values, test_values],
+            title = 'Quality (top quartile)',
+            percent = True
+            )
+
+    # First, Row, Second Column
+    ax = fig.add_subplot(gs[0,1])
+    data_labels = ['em_delta', 'sgam_delta', 'roic_delta', 'ceo_tenure']
+    values = [
+            df1.loc[ticker, 'em_high_5'] - df1.loc[ticker, 'em_ltm'],
+            df1.loc[ticker, 'sgam_ltm'] - df1.loc[ticker, 'sgam_low_5'],
+            df1.loc[ticker, 'roic_high_5'] - df1.loc[ticker, 'roic_ltm'],
+            df1.loc[ticker, 'ceo_tenure']
+            ]
+    test_values = [
+            (d.em_high_5 - d.em_ltm).quantile(q = 0.75),
+            (d.sgam_ltm - d.sgam_low_5).quantile(q = 0.75),
+            (d.roic_high_5 - d.roic_ltm).quantile(q=0.75),
+            d.ceo_tenure.quantile(q =0.25)
+            ]
+    compare_series_bar(
+            ax = ax,
+            data_labels = data_labels,
+            value_list = [values, test_values],
+            title = 'Opportunity for Value',
+            percent = True,
+            )
+
+    # Second Row, First Column
+    ax = fig.add_subplot(gs[1,0])
+    data_labels = ['revenue_growth_3', 'revenue_growth_ntm']
+    values = [
+            df1.loc[ticker, i] for i in data_labels
+            ]
+    test_values = [
+            d[i].quantile(q = 0.75) for i in data_labels
+            ]
+    compare_series_bar(
+            ax = ax,
+            data_labels = data_labels,
+            value_list = [values, test_values],
+            title = 'Growth Rates',
+            percent = True,
+            )
+
+    # Second Row, Second Column
+    ax = fig.add_subplot(gs[1,1])
+    data_labels = ['ocf to icf ratio', 'net_debt to ocf', 'capex to ocf ratio', 'ocf to net_debt due in one year']
+    debt_due_in_1_year = get_b_field(ticker, 'MATURING_DEBT_1Y_TO_TOTAL_DEBT(fpt=A)') * df1.loc[ticker, 'total_debt']
+    values = [
+            df1.loc[ticker, 'ocf_ltm'] / df1.loc[ticker, 'icf_ltm'],
+            df1.loc[ticker, 'net_debt_ltm'] / df1.loc[ticker, 'ocf_ltm'],
+            df1.loc[ticker, 'capex_ltm'] / df1.loc[ticker, 'ocf_ltm'],
+            debt_due_in_1_year / df1.loc[ticker, 'ocf_ltm'],
+            ]
+    test_values = [
+            (d.ocf_ltm / d.icf_ltm).quantile(q = 0.75),
+            (d.net_debt_ltm / d.ocf_ltm).quantile(q = 0.5),
+            (d.capex_ltm / d.ocf_ltm).quantile(q = 0.5),
+            3
+            ]
+    compare_series_bar(
+            ax = ax,
+            data_labels = data_labels,
+            value_list = [values, test_values],
+            title = 'Cash Flow Characteristics',
+            percent = True,
+            )
+
+
+    return fig
+
+
