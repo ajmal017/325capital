@@ -1191,7 +1191,7 @@ def get_csin_and_model_for_ticker(ticker):
     return r.json()['results'][0]['csin'], r.json()['results'][0]['latest_equity_model']['model_version']['name']
 
 
-def get_can_series(ticker, field = 'MO_RIS_REV', ltm_type = 'sum'):
+def get_can_series(ticker, fields = [ 'MO_RIS_REV' ], ltm_type = 'sum'):
     """
     This function takes a ticker in upper or lower case and calls
     get_csin_and_model_for_ticker function to get a canalst csin and
@@ -1226,29 +1226,13 @@ def get_can_series(ticker, field = 'MO_RIS_REV', ltm_type = 'sum'):
     # Set up to get company list
     endpoint_path = f'/equity-model-series/{csin}/equity-models/{model_version}/historical-data-points/'
 
+    d = pd.DataFrame()
     # Parameters to pass
-    params = {'page_size': 500,
-            'csin': csin,
-            'model_version': model_version,
-            'time_series_name': field
-            }
-
-    target_url = base_url + endpoint_path
-    r = requests.get(
-            target_url,
-            headers = headers,
-            params = params,
-            )
-
-    # Grab the key fields from results
-    d = pd.json_normalize(r.json()['results'])
-
-    if d.empty:
-        # Try new field name without RIS, instead IS
+    for field in fields:
         params = {'page_size': 500,
                 'csin': csin,
                 'model_version': model_version,
-                'time_series_name': field.replace('RIS', 'IS')
+                'time_series_name': field
                 }
 
         target_url = base_url + endpoint_path
@@ -1257,17 +1241,29 @@ def get_can_series(ticker, field = 'MO_RIS_REV', ltm_type = 'sum'):
                 headers = headers,
                 params = params,
                 )
+
+        # Grab the key fields from results
         d = pd.json_normalize(r.json()['results'])
 
-    if d.empty:
-        print(f"Can't find {field} you requested to for {ticker}")
-        print(f"For debugging purposes csin and model number are: {csin} and {model_version}")
-        print(f"Target url is : {target_url}")
-        print(f"Return response is : {r.json()}")
-        logger.info(f'Cant find {field} or IS version of field for {csin} and {model_version} for {ticker}')
-        return pd.Series(index = pd.date_range('2013-01-01', periods = 30, freq = 'Q'), data = np.array([np.nan] * 30)), pd.Series(index = pd.date_range('2009-01-01', periods = 11, freq = 'Y'), data = np.array([np.nan] * 11)),
+        # If that field didn't work continue to try the next one int he list
+        if d.empty:
+            print(f"Can't find {field} you requested to for {ticker}")
+            logger.info(f'Cant find {field} for {csin} and {model_version} for {ticker}')
+            continue
 
-    # Catch if the untis can be converted to millions or should stay as is
+    # All the fields were empty after iterating through the list so this failed
+    if d.empty:
+        print(f"Tried all {fields} for {ticker} and failed")
+        logger.info(f'Cant find {fields} for {csin} and {model_version} for {ticker}')
+        return pd.Series(
+                index = pd.date_range('2013-01-01', periods = 30, freq = 'Q'),
+                data = np.array([np.nan] * 30)
+                ), pd.Series(
+                        index = pd.date_range('2009-01-01', periods = 11, freq = 'Y'),
+                        data = np.array([np.nan] * 11)
+                        )
+
+    # Catch if the units can be converted to millions or should stay as is
     indollars = d['time_series.unit.symbol'].str.contains('$', regex = False)
     inpercent = d['time_series.unit.symbol'].str.contains('%', regex = False)
     d.value = d.value.astype(np.float)
@@ -1345,7 +1341,7 @@ def get_canalyst_fscore(tickers):
             if not( " US" in ticker or " CN" in ticker):
                 ticker= ticker.upper() + " US"
         except:
-            logger.warning(f'Ticker is not good: {yahoo_ticker}')
+            logger.warning(f'Ticker is not good: {ticker}')
             continue
 
         # Set up a new dataframe just for this company
@@ -1399,23 +1395,30 @@ def get_canalyst_fscore(tickers):
             # Revenue and adjusted EBITDA
 
             # Get the revenue and adjust EBITDA from canalyst (in millions)
-            qrevenue, revenue = get_can_series(ticker, 'MO_RIS_REV', 'sum')
-            qebitda, ebitda = get_can_series(ticker, 'MO_RIS_EBITDA_Adj', 'sum')
-            qgp, gp = get_can_series(ticker, 'MO_IS_GP', 'sum')
-            qni, ni = get_can_series(ticker, 'MO_IS_NI_ContinOp', 'sum')
-            qebit, ebit = get_can_series(ticker, 'MO_RIS_EBIT', 'sum')
-            qda,da = get_can_series(ticker, 'MO_RIS_DA', 'sum')
-            qint, inte = get_can_series(ticker,'MO_RIS_IE', 'sum')
-            qebt, ebt = get_can_series(ticker, 'MO_RIS_EBT', 'sum')
-            qtax_current_rate, tax_current_rate = get_can_series(ticker, 'MO_RIS_TaxRate_Current', 'rate')
-            qtax_deferred_rate, tax_deferred_rate = get_can_series(ticker, 'MO_RIS_TaxRate_Deferred', 'rate')
+            qrevenue, revenue = get_can_series(ticker, [ 'MO_RIS_REV' ], 'sum')
+            qebitda, ebitda = get_can_series(ticker, [ 'MO_RIS_EBITDA_Adj' ], 'sum')
+            qcogs, cogs = get_can_series(ticker, ['MO_MA_COGS_NONGAAP', 'MO_MA_COGS_DA_Including', 'MO_MA_COGS'], 'sum')
+            qgp, gp = get_can_series(ticker, [ 'MO_IS_GP' ], 'sum')
+            if not gp.any():
+                qgp = qrevenue - qcogs
+                gp = revenue - cogs
+            qni, ni = get_can_series(ticker, [ 'MO_RIS_NI_NONGAPP_Diluted' ], 'sum')
+            qebit, ebit = get_can_series(ticker, [ 'MO_RIS_Reported_operatingIncome_NONGAAP', 'MO_RIS_EBIT_Adj', 'MO_RIS_EBIT' ], 'sum')
+            qda,da = get_can_series(ticker, [ 'MO_RIS_DA','MO_RIS_DA_operating' ], 'sum')
+            qint, inte = get_can_series(ticker,[ 'MO_RIS_IE_NONGAAP', 'MO_RIS_IE' ], 'sum')
+            qebt, ebt = get_can_series(ticker, [ 'MO_RIS_EBT_NONGAAP','MO_RIS_EBT_Adj', 'MO_RIS_EBT' ], 'sum')
+            qtaxes, taxes = get_can_series(ticker, ['MO_RIS_Tax_NONGAAP'], 'sum')
+            qtax_current, tax_current = get_can_series(ticker, [ 'MO_RIS_Tax_Current' ], 'sum')
+            qtax_deferred, tax_deferred = get_can_series(ticker, [ 'MO_RIS_Tax_Deferred' ], 'sum')
             revenue_growth = (revenue / revenue.shift(3)) ** (1 / 3) - 1
             ebitda_margin = ebitda / revenue
             gm = gp / revenue
             # estimate SGA as difference between gross profit and EBITDA; this is cash expense mostly
             sga = gp - ebitda
             sgam  = sga / revenue
-            tax_rate = (tax_current_rate + tax_deferred_rate)
+            if not taxes.any():
+                taxes = tax_current + tax_deferred
+            tax_rate = (taxes / ebt)
 
             df['revenue_ltm'] = revenue[-1]
             df['revenue_growth_3'] = revenue_growth[-1]
@@ -1478,15 +1481,15 @@ def get_canalyst_fscore(tickers):
             # Balance sheet items
 
             # Get the total debt, cash, net debt, etc. from canalyst (in millions)
-            qdebt, debt = get_can_series(ticker, 'MO_BSS_Debt', 'bs')
-            qcash, cash = get_can_series(ticker, 'MO_BSS_Cash', 'bs')
+            qdebt, debt = get_can_series(ticker, [ 'MO_BSS_Debt' ], 'bs')
+            qcash, cash = get_can_series(ticker, [ 'MO_BSS_Cash' ], 'bs')
 
             df['total_debt_ltm'] = debt[-1]
             df['cash_ltm'] = cash[-1]
             df['net_debt_ltm'] = df.total_debt_ltm - df.cash_ltm
 
             # Total Shareholer's equity
-            qse, se = get_can_series(ticker, 'MO_BS_SE', 'bs')
+            qse, se = get_can_series(ticker, [ 'MO_BS_SE' ], 'bs')
             df['total_book_equity'] = se[-1]
 
             # Invested Capital TODO check how canalyst caluclates it
@@ -1501,17 +1504,17 @@ def get_canalyst_fscore(tickers):
             # Cash Flow related items
 
             # Get the key cash flow lines from canalyst (in millions)
-            qcfo, cfo = get_can_series(ticker, 'MO_CFS_CFO', 'sum')
-            qcapex, capex = get_can_series(ticker, 'MO_CFSum_Capex', 'sum')
-            qicf, icf = get_can_series(ticker, 'MO_CFS_CFI', 'sum')
-            qocf, ocf = get_can_series(ticker, 'MO_CFS_CFO', 'sum')
-            qacq, acq = get_can_series(ticker, 'MO_CFSum_Acquisition', 'sum')
-            qdiv, div = get_can_series(ticker, 'MO_CFSum_Divestiture', 'sum')
-            qdividends, dividends = get_can_series(ticker, 'MO_CFSum_Dividend', 'sum')
+            qcapex, capex = get_can_series(ticker, [ 'MO_CFSum_Capex' ], 'sum')
+            qicf, icf = get_can_series(ticker, [ 'MO_CFS_CFI' ], 'sum')
+            qocf, ocf = get_can_series(ticker, [ 'MO_CFS_CFO' ], 'sum')
+            qacq, acq = get_can_series(ticker, [ 'MO_CFSum_Acquisition' ], 'sum')
+            qdiv, div = get_can_series(ticker, [ 'MO_CFSum_Divestiture' ], 'sum')
+            qdividends, dividends = get_can_series(ticker, [ 'MO_DS_Dividend','MO_CFSum_Dividend' ], 'sum')
             dividend_growth_3 = (dividends / dividends.shift(3)) ** (1 / 3) - 1
             capex_to_revenue_avg_3 = (capex / revenue)[-3:].mean()
-            #qbb, fbb = get_can_series(ticker, 'MO_CFS_Buybacks')
-            fcfe = cfo + capex
+            qbb, fbb = get_can_series(ticker, [ 'MO_CFS_Buybacks' ], 'sum')
+            qequity_issued, equity_issued = get_can_series(ticker, [ 'MO_CFsum_NetShares'], 'sum')
+            fcfe = ocf + capex
 
             df['fcfe_ltm'] = fcfe[-1]
             df['fcfe_avg_3'] = fcfe[-3:].mean()
@@ -1575,7 +1578,7 @@ def get_canalyst_fscore(tickers):
                     + df.ep_value_from_ebitda
                     + df.ep_value_from_ic
                     )
-
+            df['ep_total_to_market_cap'] = df.ep_total_est_value / df.market_cap
             df['description'] = profile.description[0]
             df['country'] = cans.country_code[ticker]
 
@@ -1603,23 +1606,23 @@ def get_canalyst_fscore(tickers):
             logger.info(f'Finished basic status info for {ticker}')
 
             # Run full ep model flat and normal recover
-            revenue_flat = [0, 0, 0, 0, 0]
-            f, i = get_canalyst_ep(ticker, revenue_scenario = revenue_flat)
-            try:
-                df['sell_price'] = f.T.value_per_share[5]
-                df['implied_ebitda_multiple'] = f.T.ev[5] / f.T.ebitda[5]
-                df['ep_today'] = f.T.value_per_share[1]
-                df['buy_price_ten_percent'] =df['sell_price'] / ((1 + i.ep_discount[0]) ** 5)
-            except:
-                df['sell_price'] = df.ep_total_est_value / df.so
-                df['implied_ebitda_multiple'] = pd.NA
-                df['ep_today'] = df.ep_ltm / df.so
-                df['buy_price_ten_percent'] =df['sell_price'] / ((1 + .10) ** 5)
-            df['ep_irr'] = ((df['sell_price'] /df['price']) ** ( 1 / 5)) -1
+            # revenue_flat = [0, 0, 0, 0, 0]
+            # f, i = get_canalyst_ep(ticker, revenue_scenario = revenue_flat)
+            # try:
+            #     df['sell_price'] = f.T.value_per_share[5]
+            #     df['implied_ebitda_multiple'] = f.T.ev[5] / f.T.ebitda[5]
+            #     df['ep_today'] = f.T.value_per_share[1]
+            #     df['buy_price_ten_percent'] =df['sell_price'] / ((1 + i.ep_discount[0]) ** 5)
+            # except:
+            #     df['sell_price'] = df.ep_total_est_value / df.so
+            #     df['implied_ebitda_multiple'] = pd.NA
+            #     df['ep_today'] = df.ep_ltm / df.so
+            #     df['buy_price_ten_percent'] =df['sell_price'] / ((1 + .10) ** 5)
+            # df['ep_irr'] = ((df['sell_price'] /df['price']) ** ( 1 / 5)) -1
 
 
             # Trade Metrics
-            logger.info(f'Created ep items')
+            # logger.info(f'Created ep items')
 
         except:
             print(f'Getting record for {ticker} failed')

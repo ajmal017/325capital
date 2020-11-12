@@ -18,8 +18,43 @@ def get_b_field(ticker, field, region= "US"):
 
     return response[0].df()[field][0]
 
+def update_tags(ticker,last_work,status,monitor_price):
+    import pandas as pd
+    import numpy as np
 
-def get_b_score(tickers):
+    ttftags = pd.read_excel('ttftags.xlsx').set_index('symbol')
+
+    if ticker not in ttftags.index:
+        print('ticker not in ttftags.xlsx\n')
+        print('Adding data to ttftags.xlsx\n')
+    else:
+        if not ttftags.loc[ticker].empty():
+            print('Current status before updating:\n')
+            print(f'ticker: {ttftags.loc[ticker, "ticker"]}\n')
+            print(f'status: {ttftags.loc[ticker,"status"]}\n')
+            print(f'last_work: {ttftags.loc[ticker,"last_work"]}\n')
+            print(f'monitor price: {ttftags.loc[ticker,"monitor_price"]}\n')
+
+    print('Updating status :\n')
+    ttftags.loc[ticker,"status"] = status
+    ttftags.loc[ticker,"last_work"] = last_work
+    ttftags.loc[ticker,"monitor_price"] = monitor_price
+    print(f'status: {status}')
+    print(f'last_work: {last_work}')
+    print(f'monitor price: {monitor_price}')
+
+    ttftags.to_excel('ttftags.xlsx')
+    print(f'saved to ttftags.xlsx')
+
+    return 0
+
+def add_value_to_dict(fields):
+    with_value_fields = {}
+    for key, value in fields.items():
+        with_value_fields[key] = value['value']
+    return with_value_fields
+
+def get_b_score(bq,tickers):
     import pandas as pd
     import numpy as np
     import bql
@@ -28,16 +63,14 @@ def get_b_score(tickers):
     # Set up the bloomberg service
     bq = bql.Service()
 
-    # Set up the universes I care about
-    ttfwatch = bq.univ.members('U30460937-3', type = 'PORT')
-    ttfuniverse = bq.univ.members('U30460937-4', type = 'PORT')
-
     # get the fields one by one
     field_dict = {
         'name' : bq.data.name(),
+        'bloomberg_ticker': bq.data.id_bb_company()['ID'],
         'date_of_data' : bq.func.today(),
-        'sector' : bq.data.gics_industry_group_name(),
-        'business' : bq.data.icb_sector_name(),
+        'sector' : bq.data.gics_sector_name(),
+        'business' : bq.data.gics_industry_group_name(),
+        'description' : bq.data.cie_des(),
         'last_price' : bq.data.px_last(),
         'ev_ltm' : bq.data.curr_entp_val() / 1e6,
         'total_debt' : bq.data.long_term_borrowings_detailed() / 1e6,
@@ -84,20 +117,25 @@ def get_b_score(tickers):
         'insider_shares_purch_1Q' : bq.data.num_insider_shares_purch(per = 'Q') / 1e6,
         'adv_3_mo' : bq.data.px_volume(per = 'Q') / 180 / 1e6,
         'so' : bq.data.is_sh_for_diluted_eps(fpt = 'LTM') / 1e6,
-        'price_high_52_weeks' : bq.func.max(bq.data.px_last(dates = bq.func.range('-1Y', '0D')))
+        'price_high_52_weeks' : bq.func.max(bq.data.px_last(dates = bq.func.range('-1Y', '0D'))),
+        'status' : bq.data._cde('UD_STATUS'),
+        'last_work' : bq.data._cde('UD_LAST_WORK'),
+        'triggers' : bq.data._cde('UD_TRIGGERS'),
+        'monitor_price' : bq.data._cde('UD_MONITOR_PRICE'),
     }
 
     # fix the ticker if required
     if not isinstance(tickers, bql.om.bql_item.BqlItem):
         if 'Equity' not in tickers:
             tickers = f'{tickers.upper()} US Equity'
+        tickers = bq.univ.list(tickers)
+
+    field_dict = add_value_to_dict(field_dict)
 
     # make the request
-    df = pd.DataFrame()
-    for field, dataitem in field_dict.items():
-        request = bql.Request(tickers, {field: dataitem})
-        response = bq.execute(request)
-        df = pd.concat([df, response[0].df()[field]], axis = 'columns', sort  = False)
+    request = bql.Request(tickers, field_dict, with_params = {'MODE':'CACHED'})
+    response = bq.execute(request)
+    df = bql.combined_df(response)
 
 
     df['price_change_52'] = df.last_price / df.price_high_52_weeks - 1
@@ -149,10 +187,61 @@ def get_b_score(tickers):
     df['ep_total'] = df.ep_total_est_value / df.so
     df['buy_price_entry'] = df.ep_total / (1 + .10)**5
 
-
+    # Set up the index to be clean with ticker as the main index
     df = df.reset_index(0)
     df['ticker'] = df.ID.str.split(' ', expand = True)[0]
     df = df.set_index('ticker')
 
+    # Get descriptive tags from ttftags and add into database
+
     return df
+
+
+def load_cde_fields(bq, df):
+    import pandas as pd
+    import bqcde
+
+    cdes = df[['ID', 'last_work', 'status', 'triggers', 'monitor_price', 'ep_today', 'ep_total', 'ep_market_cap', 'ep_value_from_ebitda', 'ep_value_from_fcfe', 'ep_value_from_roic', 'ep_total_est_value']].copy()
+    cdes.rename(columns = {
+        'last_work': 'UD_LAST_WORK',
+        'status':'UD_STATUS',
+        'triggers':'UD_TRIGGERS',
+        'monitor_price':'UD_MONITOR_PRICE',
+        'ep_today': 'UD_EP_TODAY',
+        'ep_total':'UD_EP_TOTAL',
+        'ep_market_cap':'UD_EP_MARKET_CAP',
+        'ep_value_from_ebitda':'UD_EP_VALUE_FROM_EBITDA',
+        'ep_value_from_fcfe':'UD_EP_VALUE_FROM_FCFE',
+        'ep_value_from_roic':'UD_EP_VALUE_FROM_ROIC',
+        'ep_total_est_value':'UD_EP_TOTAL_EST_VALUE',
+        }, inplace = True)
+
+    cdes['UD_MONITOR_PRICE'].fillna(value = 0, inplace = True)
+    cdes['UD_EP_TODAY'].fillna(value = 0, inplace = True)
+    cdes['UD_EP_TOTAL'].fillna(value = 0, inplace = True)
+    cdes['UD_LAST_WORK'].fillna(value = ' ', inplace = True)
+    cdes['UD_TRIGGERS'].fillna(value = ' ', inplace = True)
+    cdes['UD_STATUS'].fillna(value = ' ', inplace = True)
+    cdes['AS_OF_DATE'] = df.date_of_data
+
+    # create the metatdata object for these fields
+    metadata_object = bqcde.get_fields(['UD_LAST_WORK',
+        'UD_STATUS',
+        'UD_TRIGGERS',
+        'UD_MONITOR_PRICE',
+        'UD_EP_TODAY',
+        'UD_EP_TOTAL',
+        'UD_EP_MARKET_CAP',
+        'UD_EP_VALUE_FROM_EBITDA',
+        'UD_EP_VALUE_FROM_FCFE',
+        'UD_EP_VALUE_FROM_ROIC',
+        'UD_EP_TOTAL_EST_VALUE',
+        ])
+
+    # Write the fields
+    bqcde.write(fields = metadata_object, dataframe = cdes)
+
+    return
+
+
 

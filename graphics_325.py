@@ -164,8 +164,14 @@ def compare_series_bar(ax, data_labels, value_list, title, percent):
     xlocs = np.arange(len(data_labels))
     number_of_series = len(value_list)
     width = 0.45 / number_of_series
-    high = max(max(value_list), percent*0.25) * 1.35
-    low = min(0, min(min(value_list)) * 2, -high/5)
+    high = low = 0
+    for item in value_list:
+        for elem in item:
+            high = max(high, elem)
+            low = min(low, elem)
+
+    high = max(high, percent*0.25) * 1.35
+    low = min(0, low, -high/5) * 1.25
 
     for j, values in enumerate(value_list):
         for i, v in enumerate(values):
