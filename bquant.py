@@ -1,3 +1,53 @@
+def get_ttf_universe():
+    import bql
+
+    # Set up the bloomberg service
+    bq = bql.Service()
+
+    # Set up some filters for which exchange we are on
+    exchange = bq.data.exch_code()
+    NA_exchanges = bq.func.or_(exchange == "US", exchange == "CN")
+
+    univ = bq.univ.equitiesuniv(['PRIMARY','ACTIVE']).filter(NA_exchanges)
+
+    # create some filters using market_cap
+    market_cap = bq.data.market_cap()
+    less_than_1750 = market_cap <= 1750e6
+    more_than_100 = market_cap >= 100e6
+    size_criteria = bq.func.and_(
+            less_than_1750,
+            more_than_100,
+            )
+    univ = bq.univ.filter(univ, size_criteria)
+
+    # create a filter domicile in US
+    country = bq.data.cntry_of_domicile()
+    in_us = country == 'US'
+    in_cn = country == 'CN'
+    in_na = bq.func.or_(in_us, in_cn)
+    univ = bq.univ.filter(univ, in_na)
+
+
+    # create a filter to remove industries
+    group = bq.data.gics_industry_group_name()
+    sector = bq.data.gics_sector_name()
+    not_in_banks = group != 'Banks'
+    not_in_energy = group != 'Energy'
+    not_in_biotech = sector != 'Biotechnology'
+    not_in_finance = group != 'Diversified Financials'
+    # not_in_retail = group != 'Food & Staples Retailing'
+    not_in_insurance = group != 'Insurance'
+    univ = bq.univ.filter(univ, not_in_banks)
+    univ = bq.univ.filter(univ, not_in_energy)
+    univ = bq.univ.filter(univ, not_in_biotech)
+    univ = bq.univ.filter(univ, not_in_finance)
+    # univ = bq.univ.filter(univ, not_in_retail)
+    univ = bq.univ.filter(univ, not_in_insurance)
+
+    # return the universe
+    return univ
+
+
 def get_b_field(ticker, field, region= "US"):
     import bql
 
@@ -18,35 +68,45 @@ def get_b_field(ticker, field, region= "US"):
 
     return response[0].df()[field][0]
 
-def update_tags(ticker,last_work,status,monitor_price):
+def update_tags(ID,last_work,status,monitor_price,triggers):
     import pandas as pd
-    import numpy as np
+    import bqcde
+    from datetime import date
 
-    ttftags = pd.read_excel('ttftags.xlsx').set_index('symbol')
 
-    if ticker not in ttftags.index:
-        print('ticker not in ttftags.xlsx\n')
-        print('Adding data to ttftags.xlsx\n')
-    else:
-        if not ttftags.loc[ticker].empty():
-            print('Current status before updating:\n')
-            print(f'ticker: {ttftags.loc[ticker, "ticker"]}\n')
-            print(f'status: {ttftags.loc[ticker,"status"]}\n')
-            print(f'last_work: {ttftags.loc[ticker,"last_work"]}\n')
-            print(f'monitor price: {ttftags.loc[ticker,"monitor_price"]}\n')
+    if 'Equity' not in ID:
+        print(f'please submit with a bloomberg ticker/ID and not{ticker}')
+        return
 
-    print('Updating status :\n')
-    ttftags.loc[ticker,"status"] = status
-    ttftags.loc[ticker,"last_work"] = last_work
-    ttftags.loc[ticker,"monitor_price"] = monitor_price
-    print(f'status: {status}')
-    print(f'last_work: {last_work}')
-    print(f'monitor price: {monitor_price}')
+    # Get today's date
+    d = date.today()
 
-    ttftags.to_excel('ttftags.xlsx')
-    print(f'saved to ttftags.xlsx')
+    # Set up the upload dataframe
+    cdes = pd.DataFrame(
+            data = {
+                'ID': [ID],
+                'AS_OF_DATE':d,
+                'UD_LAST_WORK':[last_work],
+                'UD_TRIGGERS':[triggers],
+                'UD_STATUS':[status],
+                'UD_MONITOR_PRICE':[monitor_price]
+                }
+            )
 
-    return 0
+    # create the metatdata object for these fields
+    metadata_object = bqcde.get_fields(
+                [
+                'UD_LAST_WORK',
+                'UD_STATUS',
+                'UD_TRIGGERS',
+                'UD_MONITOR_PRICE',
+                ]
+            )
+
+    # Write the fields
+    bqcde.write(fields = metadata_object, dataframe = cdes)
+
+    return
 
 def add_value_to_dict(fields):
     with_value_fields = {}
@@ -87,7 +147,7 @@ def get_b_score(bq,tickers):
         'fcfe_high_5' : (bq.func.max(bq.data.free_cash_flow_equity(fpo = bq.func.range(-5,0))) * (1 - bq.data.is_statutory_tax_rate())) / 1e6,
         'ep_1_ago' : ((bq.data.ebitda(fpo = '-1', fa_adjusted = 'Y') + bq.data.capital_expend(fpo = '-1')) * ( 1 - bq.data.is_statutory_tax_rate())) / 1e6,
         'ep_ltm' : ((bq.data.ebitda(fpo = '0', fa_adjusted = 'Y') + bq.data.capital_expend(fpo = '0')) * ( 1 - bq.data.is_statutory_tax_rate())) / 1e6,
-        'cash_ltm' : bq.data.casH_and_marketable_securities(fa_period_type = 'LTM') / 1e6,
+        'cash_ltm' : bq.data.cash_and_marketable_securities(fa_period_type = 'LTM') / 1e6,
         'tax_rate' : bq.func.avg( bq.data.cf_cash_paid_for_tax(fpo = bq.func.range(-5,0)) / bq.data.ebitda(fa_adjusted = 'Y', fpo = bq.func.range(-5,0))) / 1e2,
         'wc_change_3' : (bq.data.non_cash_working_capital(fpo = '0') - bq.data.non_cash_working_capital(fpo = '-2Q'))/1e6,
         'fcfe' :( (bq.data.EBITDA(fa_adjusted = 'Y') - \
@@ -122,6 +182,7 @@ def get_b_score(bq,tickers):
         'last_work' : bq.data._cde('UD_LAST_WORK'),
         'triggers' : bq.data._cde('UD_TRIGGERS'),
         'monitor_price' : bq.data._cde('UD_MONITOR_PRICE'),
+        'market_leader' : bq.data._cde('UD_MARKET_LEADER'),
     }
 
     # fix the ticker if required
@@ -192,7 +253,8 @@ def get_b_score(bq,tickers):
     df['ticker'] = df.ID.str.split(' ', expand = True)[0]
     df = df.set_index('ticker')
 
-    # Get descriptive tags from ttftags and add into database
+    # Store a backup locally
+    df.to_excel('325Universe.xlsx')
 
     return df
 
@@ -201,7 +263,24 @@ def load_cde_fields(bq, df):
     import pandas as pd
     import bqcde
 
-    cdes = df[['ID', 'last_work', 'status', 'triggers', 'monitor_price', 'ep_today', 'ep_total', 'ep_market_cap', 'ep_value_from_ebitda', 'ep_value_from_fcfe', 'ep_value_from_roic', 'ep_total_est_value']].copy()
+    cdes = df[
+            [
+            'ID',
+            'last_work',
+            'status',
+            'triggers',
+            'monitor_price',
+            'ep_today',
+            'ep_total',
+            'ep_market_cap',
+            'ep_value_from_ebitda',
+            'ep_value_from_fcfe',
+            'ep_value_from_roic',
+            'ep_total_est_value',
+            'market_leader',
+            ]
+            ].copy()
+
     cdes.rename(columns = {
         'last_work': 'UD_LAST_WORK',
         'status':'UD_STATUS',
@@ -214,6 +293,7 @@ def load_cde_fields(bq, df):
         'ep_value_from_fcfe':'UD_EP_VALUE_FROM_FCFE',
         'ep_value_from_roic':'UD_EP_VALUE_FROM_ROIC',
         'ep_total_est_value':'UD_EP_TOTAL_EST_VALUE',
+        'market_leader':'UD_MARKET_LEADER',
         }, inplace = True)
 
     cdes['UD_MONITOR_PRICE'].fillna(value = 0, inplace = True)
@@ -236,6 +316,7 @@ def load_cde_fields(bq, df):
         'UD_EP_VALUE_FROM_FCFE',
         'UD_EP_VALUE_FROM_ROIC',
         'UD_EP_TOTAL_EST_VALUE',
+        'UD_MARKET_LEADER',
         ])
 
     # Write the fields
